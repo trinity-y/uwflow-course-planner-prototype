@@ -1,0 +1,224 @@
+{
+  "program": "Bachelor of Software Engineering",
+  "calendar": "2025\u20132026",
+  "startYear": 2025,
+  "groups": [
+    "Computer science",
+    "Mathematics",
+    "Complementary studies",
+    "Electives"
+  ],
+  "courses": [
+    {
+      "code": "CS 135",
+      "title": "Designing Functional Programs",
+      "group": "Computer science",
+      "required": true,
+      "fixedTerm": "1A",
+      "prerequisiteOptions": []
+    },
+    {
+      "code": "CS 136",
+      "title": "Elementary Algorithm Design",
+      "group": "Computer science",
+      "required": true,
+      "fixedTerm": "1B",
+      "prerequisiteOptions": [
+        [
+          "CS 135"
+        ]
+      ]
+    },
+    {
+      "code": "CS 246",
+      "title": "Object-Oriented Software Development",
+      "group": "Computer science",
+      "required": true,
+      "prerequisiteOptions": [
+        [
+          "CS 136"
+        ]
+      ]
+    },
+    {
+      "code": "CS 247",
+      "title": "Software Engineering Principles",
+      "group": "Computer science",
+      "required": true,
+      "prerequisiteOptions": [
+        [
+          "CS 246"
+        ],
+        [
+          "CS 251"
+        ]
+      ]
+    },
+    {
+      "code": "CS 350",
+      "title": "Operating Systems",
+      "group": "Computer science",
+      "required": true,
+      "prerequisiteOptions": [
+        [
+          "CS 246",
+          "CS 251"
+        ],
+        [
+          "CS 240",
+          "CS 251"
+        ]
+      ]
+    },
+    {
+      "code": "CS 251",
+      "title": "Computer Organization and Design",
+      "group": "Computer science",
+      "required": true,
+      "prerequisiteOptions": [
+        [
+          "CS 136"
+        ]
+      ]
+    },
+    {
+      "code": "CS 240",
+      "title": "Data Structures and Data Management",
+      "group": "Computer science",
+      "required": false,
+      "prerequisiteOptions": [
+        [
+          "CS 136"
+        ]
+      ]
+    },
+    {
+      "code": "MATH 135",
+      "title": "Algebra for Honours Mathematics",
+      "group": "Mathematics",
+      "required": true,
+      "fixedTerm": "1A",
+      "prerequisiteOptions": []
+    },
+    {
+      "code": "MATH 137",
+      "title": "Calculus 1 for Honours Mathematics",
+      "group": "Mathematics",
+      "required": true,
+      "fixedTerm": "1A",
+      "prerequisiteOptions": []
+    },
+    {
+      "code": "MATH 138",
+      "title": "Calculus 2 for Honours Mathematics",
+      "group": "Mathematics",
+      "required": true,
+      "fixedTerm": "1B",
+      "prerequisiteOptions": [
+        [
+          "MATH 137"
+        ]
+      ]
+    },
+    {
+      "code": "STAT 230",
+      "title": "Probability",
+      "group": "Mathematics",
+      "required": true,
+      "prerequisiteOptions": [
+        [
+          "MATH 138"
+        ]
+      ]
+    },
+    {
+      "code": "ENGL 109",
+      "title": "Introduction to Academic Writing",
+      "group": "Complementary studies",
+      "required": true,
+      "prerequisiteOptions": []
+    },
+    {
+      "code": "ECON 101",
+      "title": "Introduction to Microeconomics",
+      "group": "Electives",
+      "required": false,
+      "prerequisiteOptions": []
+    },
+    {
+      "code": "PSYCH 101",
+      "title": "Introductory Psychology",
+      "group": "Electives",
+      "required": false,
+      "prerequisiteOptions": []
+    },
+    {
+      "code": "CS 145",
+      "title": "Designing Functional Programs (Advanced)",
+      "group": "Electives",
+      "required": false,
+      "prerequisiteOptions": []
+    }
+  ],
+  "initialPlan": {
+    "CS 135": "1A",
+    "MATH 135": "1A",
+    "MATH 137": "1A",
+    "ENGL 109": "1A",
+    "CS 136": "1B",
+    "MATH 138": "1B",
+    "CS 246": "2A"
+  },
+  "sequences": {
+    "Stream 8": [
+      "1A",
+      "1B",
+      "WT1",
+      "2A",
+      "WT2",
+      "2B",
+      "WT3",
+      "3A",
+      "WT4",
+      "3B",
+      "WT5",
+      "4A",
+      "WT6",
+      "4B"
+    ],
+    "Stream 4": [
+      "1A",
+      "WT1",
+      "1B",
+      "WT2",
+      "2A",
+      "WT3",
+      "2B",
+      "WT4",
+      "3A",
+      "WT5",
+      "3B",
+      "WT6",
+      "4A",
+      "4B"
+    ],
+    "Regular": [
+      "1A",
+      "1B",
+      "OFF1",
+      "2A",
+      "2B",
+      "OFF2",
+      "3A",
+      "3B",
+      "OFF3",
+      "4A",
+      "4B"
+    ]
+  },
+  "academicTermCapacity": {},
+  "choiceRequirements": [],
+  "sourceUrl": "https://uwaterloo.ca/academic-calendar/",
+  "requirementSummary": [],
+  "prerequisiteScope": "Illustrative test fixture"
+}

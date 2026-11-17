@@ -1,34 +1,32 @@
-# Degree planner UI prototype
+# Degree planner prototypes
 
-Requires Node.js 20+; no package installation or backend needed.
+Both prototypes live here and run without a backend.
+
+| Directory | Prototype | Runtime |
+| --- | --- | --- |
+| `original/` | Original roadmap, planner, and wishlist | Node.js 20+, no installation |
+| `degree-planner/` | React course palette, term preview, wishlist, calendar rules, minors and specializations | Existing `frontend/` Bun dependencies |
+| `comparison.html` | Side-by-side view of both prototypes | Emitted by the frontend build |
+
+From the repository root, use two terminals:
 
 ```sh
-cd ~/Desktop/vscode/uni/uwflow-course-planner-prototype/prototype
-npm start
+make prototype-planner     # http://localhost:3000/degree-planner
+make prototype-original    # http://localhost:5173
 ```
 
-Open http://localhost:5173. Use `PORT=5174 npm start` if the port is occupied.
-Run `npm test` for scheduling logic checks.
+Compare them at http://localhost:3000/planner-comparison.html. If frontend
+dependencies are missing, run `make frontend-install` first.
 
-- Roadmap: study-term prerequisite graph, course details, elective slots and graduation progress.
-- Planner: all four-month terms including work, exchange and breaks; drag/drop, keyboard move controls, load limits, extra terms, generation and validation.
-- Wishlist: add/search/remove courses, filters, drag or arrow priority ordering, and scheduling.
-- Header: program, stream, calendar and start-year configuration.
-- Completed courses: manual history entry and independent completed-credit accounting.
-- Save plan: localStorage; history and edits also save automatically in this browser.
+```sh
+make prototype-check       # frontend lint, types and tests; original model tests
+make frontend-build        # production assets, including the comparison page
+```
 
-Course rules, requirement totals, program sequences and offerings are illustrative. SE and CE share the sample catalog. The prototype does not import transcripts, query UWFlow, check every graduation rule or optimize globally. Generation is a priority-ordered greedy heuristic and retains existing placements. External course links open UWFlow. This app is isolated from the existing React/backend application.
+The React prototype reuses UWFlow components, generated GraphQL types and the
+frontend build tools. Its source and tests are in `degree-planner/`; the app
+contains only its route, lazy import, and shared CSS integration. Do not install
+a second set of React dependencies here.
 
-View controls:
-- Planner's Show work terms toggle only changes visibility, not course placement.
-- All terms switches Roadmap and Planner from paginated views to a horizontally scrollable degree timeline.
-- Click the program subtitle or profile button to set start and expected end terms/years. The default timeline contains 15 four-month terms (approximately five years).
-- Course details, requirements and legend collapse independently; course details appear first.
-- Wishlist search filters saved courses by code or name, together with the existing filters.
-
-Additional controls:
-- Click empty page space to deselect a course. Course actions and dialogs remain usable while selected.
-- Hide details panel expands the term board; Show details panel restores it.
-- Every displayed term has Add course; work terms also have Add PD. Pickers search the hardcoded sample catalog.
-- Completed history includes search and per-course completion terms, including pre-degree terms. Dated prerequisites must precede the dependent course.
-- Planner course borders are neutral; prerequisite routes use rounded curves around cards.
+See [the React prototype guide](degree-planner/README.md) for calendar sources
+and planning behavior, or [the original guide](original/README.md).

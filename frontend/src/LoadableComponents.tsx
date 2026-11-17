@@ -53,3 +53,7 @@ export const LoadableDesignSystemPage = loadable(
       /* webpackPrefetch: true */ './pages/designSystemPage/DesignSystemPage'
     ),
 );
+
+export const LoadableDegreePlannerPage = loadable(
+  () => import('../../prototype/degree-planner/DegreePlannerPage'),
+);

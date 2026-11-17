@@ -25,3 +25,11 @@
     border-style: solid;
   }
 }
+
+@layer base {
+  .degree-planner :where(*),
+  .degree-planner-dialog :where(*) {
+    border-width: 0;
+    border-style: solid;
+  }
+}

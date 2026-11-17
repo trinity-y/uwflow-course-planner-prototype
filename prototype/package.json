@@ -1,1 +1,4 @@
-{"name":"uwflow-degree-planner-prototype","private":true,"type":"module","scripts":{"start":"node server.mjs","test":"node --test model.test.mjs"}}
+{
+  "name": "@uwflow/prototypes",
+  "private": true
+}

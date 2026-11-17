@@ -6,6 +6,7 @@ and deployment configuration. A single branch or PR can update the entire stack.
 | Directory | Contents |
 | --- | --- |
 | `frontend/` | React application, Bun lockfile, frontend Dockerfile, Vercel configuration |
+| `prototype/` | Original and React degree planner prototypes, comparison page, calendar fixtures |
 | `flow/` | Go API, email worker, and UW importer |
 | `hasura/` | Database migrations and GraphQL metadata |
 | `nginx/` | Production frontend and API reverse proxy |
@@ -34,10 +35,18 @@ make frontend-generate  # requires a matching local Hasura schema
 make migration-test     # build/deployment command tests; no Docker required
 ```
 
-The root Git hook runs non-mutating frontend lint when frontend files are staged.
+The root Git hook runs non-mutating frontend lint when frontend or React prototype files are staged.
 `make hooks` replaces this clone's `core.hooksPath`; it applies to linked worktrees
 sharing that Git configuration. Existing standalone frontend clones should be
 replaced by a fresh monorepo clone. See [frontend documentation](frontend/README.md).
+
+## Degree planner prototypes
+
+Both prototypes are grouped under [`prototype/`](prototype/README.md). From the
+repository root, run `make prototype-planner` for the React planner on port 3000
+and `make prototype-original` in another terminal for the original on port 5173.
+Compare them at `http://localhost:3000/planner-comparison.html`.
+`make prototype-check` validates both prototypes without a backend.
 
 ## Builds and deployment
 

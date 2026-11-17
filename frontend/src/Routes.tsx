@@ -61,3 +61,5 @@ export const getCoursePageRoute = (courseCode: string) =>
   toCoursePageRoute({ courseCode });
 export const getProfPageRoute = (profCode: string) =>
   toProfPageRoute({ profCode });
+
+export const DEGREE_PLANNER_PAGE_ROUTE = '/degree-planner';

@@ -2,7 +2,7 @@
 
 # Frontend-only commands must not load backend credentials.
 .DEFAULT_GOAL := help
-ifneq ($(strip $(filter-out help frontend-% hooks migration-test,$(MAKECMDGOALS))),)
+ifneq ($(strip $(filter-out help frontend-% prototype-% hooks migration-test,$(MAKECMDGOALS))),)
 include .env
 export
 endif
@@ -152,3 +152,13 @@ migration-test: ## Test build/deploy commands without touching Docker or product
 .PHONY: frontend-container-test
 frontend-container-test: ## Check the built frontend image with Nginx and disposable upstreams
 	python3 script/test-frontend-container.py
+
+.PHONY: prototype-planner prototype-original prototype-check
+
+prototype-planner: frontend-start ## Run the React degree planner prototype on port 3000
+
+prototype-original: ## Run the original degree planner prototype on port 5173
+	cd prototype/original && node server.mjs
+
+prototype-check: frontend-check ## Validate both degree planner prototypes without a backend
+	cd prototype/original && node --test model.test.mjs

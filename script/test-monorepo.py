@@ -114,6 +114,14 @@ if os.getenv("FAIL_COMMAND") in sys.argv[1:]:
         self.run_command(["make", "help"])
         self.run_command(["make", "-n", "start"], expected=2)
 
+    def test_prototype_make_targets_do_not_read_backend_environment(self):
+        shutil.copy(ROOT / "Makefile", self.directory / "Makefile")
+        (self.directory / ".env").write_text("this is not valid Make syntax\n")
+        result = self.run_command(["make", "-n", "prototype-planner", "prototype-original", "prototype-check"])
+        self.assertIn("cd prototype/original && node server.mjs", result.stdout)
+        self.assertIn("cd prototype/original && node --test model.test.mjs", result.stdout)
+        self.assertEqual(self.calls(), [])
+
     def test_hook_lints_frontend_without_modifying_staged_work(self):
         self.run_command(["git", "init", "--quiet"])
         (self.directory / "frontend").mkdir()

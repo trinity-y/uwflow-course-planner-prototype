@@ -1,0 +1,1159 @@
+{
+  "program": "Bachelor of Software Engineering",
+  "calendar": "2025\u20132026",
+  "startYear": 2025,
+  "sourceUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/programs/H1zle10Cs3",
+  "prerequisiteScope": "Course graph shows SE curriculum routes and selected alternatives. Full calendar prerequisites include grades, standing, corequisites and other routes; these are not evaluated by this prototype.",
+  "groups": [
+    "Core courses",
+    "Required choices",
+    "Professional development",
+    "Electives",
+    "Other courses"
+  ],
+  "courses": [
+    {
+      "code": "CS 137",
+      "title": "Programming Principles",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b861ad5a8cf717288a5b6b"
+    },
+    {
+      "code": "CHE 102",
+      "title": "Chemistry for Engineers",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65cb8c253cb0dd422f9288ab"
+    },
+    {
+      "code": "MATH 115",
+      "title": "Linear Algebra for Engineering",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: 4U Calculus and Vectors or 4U Mathematics of Data Management Complete 1 of the following Enrolled in H-Software Engineering Enrolled in a program offered by Faculty of Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b90628b44f43033f69e76a"
+    },
+    {
+      "code": "MATH 117",
+      "title": "Calculus 1 for Engineering",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Must have completed the following: 4U Calculus and Vectors Enrolled in H-Computer Engineering , H-Electrical Engineering , H-Nanotechnology Engineering , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b906f75c94795825e56ec8"
+    },
+    {
+      "code": "MATH 135",
+      "title": "Algebra for Honours Mathematics",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: 4U Calculus and Vectors, 4U Mathematics of Data Management Complete 1 of the following Enrolled in H-Mathematical Physics (BSc) , or H-Software Engineering Enrolled in an Honours Mathematics program or Mathematics/BASE",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66ed9d777a6d1f397daa9fe0"
+    },
+    {
+      "code": "SE 101",
+      "title": "Introduction to Methods of Software Engineering",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1A",
+      "units": 0.25,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b0d323cba7815947c32a"
+    },
+    {
+      "code": "CS 138",
+      "title": "Introduction to Data Abstraction and Implementation",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 137"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: CS137 - Programming Principles (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b267bd23cba719b1479aa2"
+    },
+    {
+      "code": "ECE 124",
+      "title": "Digital Circuits and Systems",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1B",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Students must be in level 1B or higher Enrolled in H-Computer Engineering , CS-Digital Hardware Specialization , H-Electrical Engineering , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66d9e352a4a61e37256cadeb"
+    },
+    {
+      "code": "ECE 140",
+      "title": "Linear Circuits",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1B",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Students must be in level 1B or higher Enrolled in H-Computer Engineering , H-Electrical Engineering , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66d9e38c6a6e2eaccb63ae51"
+    },
+    {
+      "code": "ECE 192",
+      "title": "Engineering Economics and Impact on Society",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1B",
+      "units": 0.25,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Students must be in level 1B or higher Enrolled in H-Computer Engineering , H-Electrical Engineering , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d34e126715e91cef80fe"
+    },
+    {
+      "code": "MATH 119",
+      "title": "Calculus 2 for Engineering",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 117"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: MATH116 - Calculus 1 for Engineering (0.50) MATH117 - Calculus 1 for Engineering (0.50) MATH127 - Calculus 1 for the Sciences (0.50) MATH137 - Calculus 1 for Honours Mathematics (0.50) MATH147 - Calculus 1 (Advanced Level) (0.50) Enrolled in H-Computer Engineering , H-Electrical Engineering , H-Nanotechnology Engineering , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9082c23cba710ea47be65"
+    },
+    {
+      "code": "SE 102",
+      "title": "Seminar",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "1B",
+      "units": 0.0,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b0fc6cd5896ac3e90980"
+    },
+    {
+      "code": "CS 241",
+      "title": "Foundations of Sequential Programs",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 138"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Complete 1 of the following Must have completed the following: CS138 - Introduction to Data Abstraction and Implementation (0.50) Complete all of the following Must have completed the following: CS136L - Tools and Techniques for Software Development (0.25) Earned a minimum grade of 85% in at least 1 of the following: CS136 - Elementary Algorithm Design and Data Abstraction (0.50) CS146 - Elementary Algorithm Design and Data Abstraction (Advanced Level) (0.50) Complete all of the following Must have completed the following: CS136L - Tools and Techniques for Software Development (0.25) Must have completed at least 1 of the following: CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d8a1466ac1cf38cb4d61"
+    },
+    {
+      "code": "ECE 222",
+      "title": "Digital Computers",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "ECE 124",
+          "CS 137"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: BME393 - Digital Systems (0.50) ECE124 - Digital Circuits and Systems (0.50) MTE262 - Introduction to Digital Logic (0.50) SYDE192 - Digital Systems (0.50) Must have completed at least 1 of the following: BME121 - Digital Computation (0.50) CS115 - Introduction to Computer Science 1 (0.50) CS135 - Designing Functional Programs (0.50) CS137 - Programming Principles (0.50) CS145 - Designing Functional Programs (Advanced Level) (0.50) ECE150 - Fundamentals of Programming (0.50) MSE121 - Introduction to Computer Programming (0.50) MTE121 - Digital Computation (0.50) SYDE121 - Digital Computation (0.50) Students must be in level 2A or higher Complete 1 of the following Enrolled in CS-Digital Hardware Specialization , or H-Software Engineering Enrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/68923b16f8a6877efe974332"
+    },
+    {
+      "code": "SE 201",
+      "title": "Seminar",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2A",
+      "units": 0.0,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/681a7a2e76ad7b403b617046"
+    },
+    {
+      "code": "SE 212",
+      "title": "Logic and Computation",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 138",
+          "MATH 135"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: CS138 - Introduction to Data Abstraction and Implementation (0.50) MATH135 - Algebra for Honours Mathematics (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b17d5c94792964e573e4"
+    },
+    {
+      "code": "STAT 206",
+      "title": "Statistics for Software Engineering",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 115",
+          "MATH 119"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed the following: MATH115 - Linear Algebra for Engineering (0.50) MATH119 - Calculus 2 for Engineering (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b3ed2ce9d30de9ecb0ba"
+    },
+    {
+      "code": "ECE 105",
+      "title": "Classical Mechanics",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "2A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Students must be in level 1A or higher Enrolled in H-Computer Engineering , H-Electrical Engineering , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66d9e0513c4aac782c58097e"
+    },
+    {
+      "code": "PHYS 115",
+      "title": "Mechanics",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "2A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Complete 1 of the following Students must be in level 1A Students must be in level 1B Enrolled in a program offered by the Faculty of Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b995bc5c94795c1ce57325"
+    },
+    {
+      "code": "PHYS 121",
+      "title": "Mechanics",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "2A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66db3e18f999f25eebc2eaf6"
+    },
+    {
+      "code": "CS 240",
+      "title": "Data Structures and Data Management",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 212",
+          "CS 241",
+          "STAT 206"
+        ],
+        [
+          "SE 212",
+          "CS 241E",
+          "STAT 206"
+        ],
+        [
+          "SE 212",
+          "CS 247",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS245 - Logic and Computation (0.50) CS245E - Logic and Computation (Enriched) (0.50) SE212 - Logic and Computation (0.50) Must have completed at least 1 of the following: CS241 - Foundations of Sequential Programs (0.50) CS241E - Foundations of Sequential Programs (Enriched) (0.50) CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) CS247 - Software Engineering Principles (0.50) Must have completed at least 1 of the following: STAT206 - Statistics for Software Engineering (0.50) STAT230 - Probability (0.50) STAT240 - Probability (Advanced Level) (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/660daaddbca6567fc24b145c"
+    },
+    {
+      "code": "CS 247",
+      "title": "Software Engineering Principles",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 241"
+        ],
+        [
+          "CS 241E"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS241 - Foundations of Sequential Programs (0.50) CS241E - Foundations of Sequential Programs (Enriched) (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6626b654b4dce0ae892ac57c"
+    },
+    {
+      "code": "CS 348",
+      "title": "Introduction to Database Management",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2B",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d1d87be622222eefb8ba"
+    },
+    {
+      "code": "MATH 239",
+      "title": "Introduction to Combinatorics",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2B",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete 1 of the following Complete all of the following Enrolled in an Honours Mathematics program Complete 1 of the following Earned a minimum grade of 70% in each of the following: MATH106 - Applied Linear Algebra 1 (0.50) Must have completed at least 1 of the following: MATH136 - Linear Algebra 1 for Honours Mathematics (0.50) MATH146 - Linear Algebra 1 (Advanced Level) (0.50) Complete 1 of the following Earned a minimum grade of 60% in each of the following: MATH135 - Algebra for Honours Mathematics (0.50) Must have completed the following: MATH145 - Algebra (Advanced Level) (0.50) Complete all of the following Students must be in level 2A or higher Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b91bf318ca23d8820b6dba"
+    },
+    {
+      "code": "SE 202",
+      "title": "Seminar",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "2B",
+      "units": 0.0,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/664cb9433783eada1570c15c"
+    },
+    {
+      "code": "CS 341",
+      "title": "Algorithms",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 240",
+          "SE 212",
+          "MATH 239",
+          "STAT 206"
+        ],
+        [
+          "CS 240E",
+          "SE 212",
+          "MATH 239",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS240 - Data Structures and Data Management (0.50) CS240E - Data Structures and Data Management (Enriched) (0.50) Must have completed at least 1 of the following: CS245 - Logic and Computation (0.50) CS245E - Logic and Computation (Enriched) (0.50) SE212 - Logic and Computation (0.50) Must have completed at least 1 of the following: MATH239 - Introduction to Combinatorics (0.50) MATH249 - Introduction to Combinatorics (Advanced Level) (0.50) Must have completed at least 1 of the following: STAT206 - Statistics for Software Engineering (0.50) STAT230 - Probability (0.50) STAT240 - Probability (Advanced Level) (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d327126715c17eef80fc"
+    },
+    {
+      "code": "MATH 213",
+      "title": "Signals, Systems, and Differential Equations",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 119"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: MATH118 - Calculus 2 for Engineering (0.50) MATH119 - Calculus 2 for Engineering (0.50) MATH128 - Calculus 2 for the Sciences (0.50) MATH138 - Calculus 2 for Honours Mathematics (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b95a64e0fe83a2173c79"
+    },
+    {
+      "code": "SE 301",
+      "title": "Seminar",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3A",
+      "units": 0.0,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/681b5d0eca3b6007dd62d640"
+    },
+    {
+      "code": "SE 350",
+      "title": "Operating Systems",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "ECE 222",
+          "CS 240",
+          "CS 247"
+        ],
+        [
+          "ECE 222",
+          "CS 240",
+          "CS 246"
+        ],
+        [
+          "ECE 222",
+          "CS 240E",
+          "CS 247"
+        ],
+        [
+          "ECE 222",
+          "CS 240E",
+          "CS 246"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed the following: ECE222 - Digital Computers (0.50) Must have completed at least 1 of the following: CS240 - Data Structures and Data Management (0.50) CS240E - Data Structures and Data Management (Enriched) (0.50) Must have completed at least 1 of the following: CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) CS247 - Software Engineering Principles (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/664cbaf92ed76b55b1d8dab8"
+    },
+    {
+      "code": "SE 464",
+      "title": "Software Design and Architectures",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 247"
+        ],
+        [
+          "CS 246"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) CS247 - Software Engineering Principles (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/662678db219773696dcc412b"
+    },
+    {
+      "code": "SE 465",
+      "title": "Software Testing and Quality Assurance",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 247"
+        ],
+        [
+          "CS 246"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) CS247 - Software Engineering Principles (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6626791721977312d7cc4131"
+    },
+    {
+      "code": "CS 343",
+      "title": "Concurrent and Parallel Programming",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 350"
+        ],
+        [
+          "CS 350"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS350 - Operating Systems (0.50) SE350 - Operating Systems (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d2f5f9d2cd224833988e"
+    },
+    {
+      "code": "ECE 358",
+      "title": "Computer Networks",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: BME213 - Statistics and Experimental Design (0.50) ECE203 - Probability Theory and Statistics 1 (0.50) MTE201 - Experimental Measurement and Statistical Analysis (0.50) NE215 - Probability and Statistics (0.50) STAT206 - Statistics for Software Engineering (0.50) SYDE212 - Probability and Statistics (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b86f3fedfead35ae34093a"
+    },
+    {
+      "code": "SE 302",
+      "title": "Seminar",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3B",
+      "units": 0.0,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/681b5d57878f91c2d9afc254"
+    },
+    {
+      "code": "SE 380",
+      "title": "Introduction to Feedback Control",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 213"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: MATH213 - Signals, Systems, and Differential Equations (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/664cbb492ed76bc0a3d8dabb"
+    },
+    {
+      "code": "SE 463",
+      "title": "Software Project Management, Requirements, and Analysis",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "3B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 247"
+        ],
+        [
+          "CS 246"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Complete 1 of the following Must have completed at least 1 of the following: CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) CS247 - Software Engineering Principles (0.50) ECE250 - Algorithms and Data Structures (0.50) MSE342 - Principles of Software Engineering (0.50) SYDE322 - Software Design (0.50) Must have completed the following: MSCI342 Enrolled in Computer Engineering Option , Computing Option , H-Software Engineering , or Software Engineering Option",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66624b64314dfa91c33efa7c"
+    },
+    {
+      "code": "CS 349",
+      "title": "User Interfaces",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "3B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 241",
+          "MATH 115"
+        ],
+        [
+          "CS 241E",
+          "MATH 115"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS241 - Foundations of Sequential Programs (0.50) CS241E - Foundations of Sequential Programs (Enriched) (0.50) Must have completed at least 1 of the following: MATH115 - Linear Algebra for Engineering (0.50) MATH136 - Linear Algebra 1 for Honours Mathematics (0.50) MATH146 - Linear Algebra 1 (Advanced Level) (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d19cb4dce059152acac9"
+    },
+    {
+      "code": "CS 449",
+      "title": "Human-Computer Interaction",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "3B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 240",
+          "CS 241"
+        ],
+        [
+          "CS 240",
+          "CS 241E"
+        ],
+        [
+          "CS 240E",
+          "CS 241"
+        ],
+        [
+          "CS 240E",
+          "CS 241E"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS240 - Data Structures and Data Management (0.50) CS240E - Data Structures and Data Management (Enriched) (0.50) Must have completed at least 1 of the following: CS241 - Foundations of Sequential Programs (0.50) CS241E - Foundations of Sequential Programs (Enriched) (0.50) Students must be in level 3B or higher Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627bf7c466ac1c9e1cb4ce5"
+    },
+    {
+      "code": "MSE 343",
+      "title": "Human-Computer Interaction",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "3B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 137"
+        ]
+      ],
+      "prerequisiteText": "Complete 1 of the following Complete all of the following Must have completed at least 1 of the following: BME121 - Digital Computation (0.50) CS137 - Programming Principles (0.50) ECE150 - Fundamentals of Programming (0.50) MTE121 - Digital Computation (0.50) SYDE121 - Digital Computation (0.50) Students must be in level 3A or higher Complete 1 of the following Enrolled in H-Software Engineering Enrolled in a BASc program Complete all of the following Students must be in level 3B or higher Enrolled in H-Management Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65e0c0447a54051a2380d63c"
+    },
+    {
+      "code": "SE 401",
+      "title": "Seminar",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "4A",
+      "units": 0.0,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/664cbb8f763e857fa59c786b"
+    },
+    {
+      "code": "GENE 403",
+      "title": "Interdisciplinary Design Project 1",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "4A",
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete all of the following Students must be in level 4A or higher Complete 1 of the following Enrolled in H-Software Engineering Enrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65eb7a99c897cc0298453067"
+    },
+    {
+      "code": "SE 490",
+      "title": "Design Project 1",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "4A",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 390"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed the following: SE390 - Design Project Planning (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b70344778630fecb7ff1a9"
+    },
+    {
+      "code": "SE 402",
+      "title": "Seminar",
+      "group": "Core courses",
+      "required": true,
+      "recommendedTerm": "4B",
+      "units": 0.0,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/681b5da2ca3b6007dd62da4e"
+    },
+    {
+      "code": "GENE 404",
+      "title": "Interdisciplinary Design Project 2",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "4B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "GENE 403"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed the following: GENE403 - Interdisciplinary Design Project 1 (0.50) Students must be in level 4A or higher Complete 1 of the following Enrolled in H-Software Engineering Enrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65eb7aca8b15d81cd8217003"
+    },
+    {
+      "code": "SE 491",
+      "title": "Design Project 2",
+      "group": "Required choices",
+      "required": false,
+      "recommendedTerm": "4B",
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 490"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed the following: SE490 - Design Project 1 (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b703705f44049016f28bab"
+    },
+    {
+      "code": "CS 135",
+      "title": "Designing Functional Programs",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/660d9b8392fd7f4b720e1902"
+    },
+    {
+      "code": "CS 136",
+      "title": "Elementary Algorithm Design and Data Abstraction",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 135"
+        ],
+        [
+          "CS 145"
+        ]
+      ],
+      "prerequisiteText": "Complete 1 of the following Earned a minimum grade of 90% in each of the following: CS115 - Introduction to Computer Science 1 (0.50) Earned a minimum grade of 70% in each of the following: CS116 - Introduction to Computer Science 2 (0.50) Earned a minimum grade of 60% in each of the following: CS135 - Designing Functional Programs (0.50) Must have completed the following: CS145 - Designing Functional Programs (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/67b75730db899d90f349f8b3"
+    },
+    {
+      "code": "CS 145",
+      "title": "Designing Functional Programs (Advanced Level)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b2682e77863038b87fd91c"
+    },
+    {
+      "code": "CS 246",
+      "title": "Object-Oriented Software Development",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 138"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Complete 1 of the following Must have completed the following: CS136L - Tools and Techniques for Software Development (0.25) CS146 - Elementary Algorithm Design and Data Abstraction (Advanced Level) (0.50) Earned a minimum grade of 60% in each of the following: CS138 - Introduction to Data Abstraction and Implementation (0.50) Complete all of the following Must have completed the following: CS136L - Tools and Techniques for Software Development (0.25) Earned a minimum grade of 60% in each of the following: CS136 - Elementary Algorithm Design and Data Abstraction (0.50) Enrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6626b3b7466ac1ff2ccb47a9"
+    },
+    {
+      "code": "CS 251",
+      "title": "Computer Organization and Design",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 136"
+        ],
+        [
+          "CS 138"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS136 - Elementary Algorithm Design and Data Abstraction (0.50) CS138 - Introduction to Data Abstraction and Implementation (0.50) CS146 - Elementary Algorithm Design and Data Abstraction (Advanced Level) (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d5d1a1b5e87658999a7d"
+    },
+    {
+      "code": "CS 350",
+      "title": "Operating Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 240",
+          "CS 241",
+          "CS 246",
+          "CS 251"
+        ],
+        [
+          "CS 240",
+          "CS 241",
+          "CS 246",
+          "ECE 222"
+        ],
+        [
+          "CS 240",
+          "CS 241E",
+          "CS 246",
+          "CS 251"
+        ],
+        [
+          "CS 240",
+          "CS 241E",
+          "CS 246",
+          "ECE 222"
+        ],
+        [
+          "CS 240E",
+          "CS 241",
+          "CS 246",
+          "CS 251"
+        ],
+        [
+          "CS 240E",
+          "CS 241",
+          "CS 246",
+          "ECE 222"
+        ],
+        [
+          "CS 240E",
+          "CS 241E",
+          "CS 246",
+          "CS 251"
+        ],
+        [
+          "CS 240E",
+          "CS 241E",
+          "CS 246",
+          "ECE 222"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed at least 1 of the following: CS240 - Data Structures and Data Management (0.50) CS240E - Data Structures and Data Management (Enriched) (0.50) Must have completed at least 1 of the following: CS241 - Foundations of Sequential Programs (0.50) CS241E - Foundations of Sequential Programs (Enriched) (0.50) Must have completed at least 1 of the following: CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) Must have completed at least 1 of the following: CS251 - Computer Organization and Design (0.50) CS251E - Computer Organization and Design (Enriched) (0.50) ECE222 - Digital Computers (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d146126715a6b9ef80ed"
+    },
+    {
+      "code": "CS 241E",
+      "title": "Foundations of Sequential Programs (Enriched)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 138"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Complete 1 of the following Complete all of the following Must have completed the following: CS136L - Tools and Techniques for Software Development (0.25) Earned a minimum grade of 85% in at least 1 of the following: CS136 - Elementary Algorithm Design and Data Abstraction (0.50) CS146 - Elementary Algorithm Design and Data Abstraction (Advanced Level) (0.50) Earned a minimum grade of 85% in each of the following: CS138 - Introduction to Data Abstraction and Implementation (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627d8fc2197737227cc4903"
+    },
+    {
+      "code": "CS 240E",
+      "title": "Data Structures and Data Management (Enriched)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 138"
+        ],
+        [
+          "CS 136"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Earned a minimum grade of 85% in at least 1 of the following: CS136 - Elementary Algorithm Design and Data Abstraction (0.50) CS138 - Introduction to Data Abstraction and Implementation (0.50) CS146 - Elementary Algorithm Design and Data Abstraction (Advanced Level) (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66104248d66b41cfc855b145"
+    },
+    {
+      "code": "SE 390",
+      "title": "Design Project Planning",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "PD 10",
+          "CS 240",
+          "CS 247"
+        ],
+        [
+          "PD 10",
+          "CS 240",
+          "CS 246"
+        ],
+        [
+          "PD 10",
+          "CS 240E",
+          "CS 247"
+        ],
+        [
+          "PD 10",
+          "CS 240E",
+          "CS 246"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed the following: PD10 - Professional Responsibility in Computing (0.50) Must have completed at least 1 of the following: CS240 - Data Structures and Data Management (0.50) CS240E - Data Structures and Data Management (Enriched) (0.50) Must have completed at least 1 of the following: CS246 - Object-Oriented Software Development (0.50) CS246E - Object-Oriented Software Development (Enriched) (0.50) CS247 - Software Engineering Principles (0.50) Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6626787b466ac112a0cb4651"
+    },
+    {
+      "code": "STAT 230",
+      "title": "Probability",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 117"
+        ],
+        [
+          "MATH 137"
+        ],
+        [
+          "MATH 119"
+        ],
+        [
+          "MATH 138"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Complete 1 of the following Earned a minimum grade of 80% in at least 1 of the following: MATH116 - Calculus 1 for Engineering (0.50) MATH117 - Calculus 1 for Engineering (0.50) MATH137 - Calculus 1 for Honours Mathematics (0.50) MATH147 - Calculus 1 (Advanced Level) (0.50) Earned a minimum grade of 60% in each of the following: MATH128 - Calculus 2 for the Sciences (0.50) Must have completed at least 1 of the following: MATH118 - Calculus 2 for Engineering (0.50) MATH119 - Calculus 2 for Engineering (0.50) MATH138 - Calculus 2 for Honours Mathematics (0.50) MATH148 - Calculus 2 (Advanced Level) (0.50) Complete 1 of the following Enrolled in H-Mathematical Physics (BMath) , or H-Mathematical Physics (BSc) Enrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b7b82bedfead3a4f340417"
+    },
+    {
+      "code": "MATH 137",
+      "title": "Calculus 1 for Honours Mathematics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Must have completed the following: 4U Calculus and Vectors",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65e8b6e47a5405231a8101d2"
+    },
+    {
+      "code": "MATH 138",
+      "title": "Calculus 2 for Honours Mathematics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 117"
+        ],
+        [
+          "MATH 137"
+        ]
+      ],
+      "prerequisiteText": "Complete 1 of the following Must have completed the following: MATH147 - Calculus 1 (Advanced Level) (0.50) Earned a minimum grade of 70% in at least 1 of the following: MATH116 - Calculus 1 for Engineering (0.50) MATH117 - Calculus 1 for Engineering (0.50) MATH127 - Calculus 1 for the Sciences (0.50) Earned a minimum grade of 60% in each of the following: MATH137 - Calculus 1 for Honours Mathematics (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65e8b7c8187f5ef72d91ec88"
+    },
+    {
+      "code": "ENGL 109",
+      "title": "Introduction to Academic Writing",
+      "group": "Electives",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8cd5d75775a9d76c818"
+    },
+    {
+      "code": "ECON 101",
+      "title": "Introduction to Microeconomics",
+      "group": "Electives",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8caec4d1a2a9e6b5136"
+    },
+    {
+      "code": "PSYCH 101",
+      "title": "Introductory Psychology",
+      "group": "Electives",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b6b0845a8cf7775a8a50e9"
+    },
+    {
+      "code": "EARTH 121",
+      "title": "Introductory Earth Sciences",
+      "group": "Electives",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b2870e7786301a127fda15"
+    },
+    {
+      "code": "EARTH 270",
+      "title": "Disasters and Natural Hazards",
+      "group": "Electives",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b863e96cd5895d4fe9014e"
+    },
+    {
+      "code": "CS 480",
+      "title": "Introduction to Machine Learning",
+      "group": "Electives",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 341",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the following Must have completed the following: CS341 - Algorithms (0.50) Must have completed at least 1 of the following: STAT206 - Statistics for Software Engineering (0.50) STAT231 - Statistics (0.50) STAT241 - Statistics (Advanced Level) (0.50) Enrolled in H-BBA & BCS Double Degree , H-Computer Science (BCS) , H-Computer Science (BMath) , JH-Computer Science (BCS) , JH-Computer Science (BMath) , H-Computing & Financial Management , H-Data Science (BCS) , H-Data Science (BMath) , or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/666858ff9c2178648769fe6a"
+    },
+    {
+      "code": "PD 10",
+      "title": "Professional Responsibility in Computing",
+      "group": "Professional development",
+      "required": true,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Complete 1 of the following Enrolled in Experiential Education (EDGE) Certificate Enrolled in a co-operative program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b9a89e76ccb6258490dd",
+      "recommendedTerm": "WT3",
+      "workTermCourse": true
+    },
+    {
+      "code": "PD 11",
+      "title": "Processes for Technical Report Writing",
+      "group": "Professional development",
+      "required": true,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in a co-operative program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b6601aedfead77bf33fca8",
+      "recommendedTerm": "WT4",
+      "workTermCourse": true
+    },
+    {
+      "code": "PD 19",
+      "title": "Tactics for Workplace Success",
+      "group": "Professional development",
+      "required": true,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in a program offered by Faculty of Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66d9da3d2669d005214174fb",
+      "recommendedTerm": "WT1",
+      "workTermCourse": true
+    },
+    {
+      "code": "PD 20",
+      "title": "Strategies for Career Success",
+      "group": "Professional development",
+      "required": true,
+      "units": 0.5,
+      "prerequisiteOptions": [],
+      "prerequisiteText": "Enrolled in a program offered by Faculty of Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66d9dbb6d0407f35d3989b98",
+      "recommendedTerm": "WT2",
+      "workTermCourse": true
+    }
+  ],
+  "choiceRequirements": [
+    {
+      "id": "2A choice",
+      "term": "2A",
+      "count": 1,
+      "courses": [
+        "ECE 105",
+        "PHYS 115",
+        "PHYS 121"
+      ]
+    },
+    {
+      "id": "3B choice",
+      "term": "3B",
+      "count": 1,
+      "courses": [
+        "CS 349",
+        "CS 449",
+        "MSE 343"
+      ]
+    },
+    {
+      "id": "4A choice",
+      "term": "4A",
+      "count": 1,
+      "courses": [
+        "GENE 403",
+        "SE 490"
+      ]
+    },
+    {
+      "id": "4B choice",
+      "term": "4B",
+      "count": 1,
+      "courses": [
+        "GENE 404",
+        "SE 491"
+      ]
+    }
+  ],
+  "degreeRequirements": {
+    "units": 21.5,
+    "approvedElectives": 12,
+    "complementaryStudies": {
+      "List A": 1,
+      "List C": 1
+    },
+    "naturalScience": 3,
+    "technicalElectives": {
+      "total": 4,
+      "List 1": 1,
+      "List 2": 1,
+      "additionalFromLists1To3": 2
+    },
+    "communication": {
+      "count": 1,
+      "minimumGrade": 60,
+      "beforeTerm": "3A"
+    },
+    "unrestrictedElectives": 2,
+    "sustainability": 1,
+    "pdCourses": 5,
+    "creditedWorkTerms": 5
+  },
+  "academicTermCapacity": {
+    "1A": 6,
+    "1B": 7,
+    "2A": 6,
+    "2B": 6,
+    "3A": 7,
+    "3B": 7,
+    "4A": 6,
+    "4B": 6
+  },
+  "initialPlan": {
+    "CS 137": "1A",
+    "CHE 102": "1A",
+    "MATH 115": "1A",
+    "MATH 117": "1A",
+    "MATH 135": "1A",
+    "SE 101": "1A",
+    "CS 138": "1B",
+    "ECE 124": "1B",
+    "ECE 140": "1B",
+    "ECE 192": "1B",
+    "MATH 119": "1B",
+    "SE 102": "1B"
+  },
+  "sequences": {
+    "Stream 8X": [
+      "1A",
+      "1B",
+      "WT1",
+      "2A",
+      "WT2",
+      "2B",
+      "WT3",
+      "3A",
+      "WT4",
+      "3B",
+      "WT5",
+      "WT6",
+      "4A",
+      "4B"
+    ],
+    "Stream 8Y": [
+      "1A",
+      "1B",
+      "WT1",
+      "2A",
+      "WT2",
+      "2B",
+      "WT3",
+      "3A",
+      "WT4",
+      "3B",
+      "4A",
+      "WT5",
+      "WT6",
+      "4B"
+    ]
+  },
+  "requirementSummary": [
+    "21.50 units; five credited work terms.",
+    "12 electives: CSE List A (1), CSE List C (1), natural science (3), technical (4), communication (1), unrestricted (2).",
+    "Technical electives: one List 1, one List 2, and two additional courses from Lists 1\u20133; not before 3A.",
+    "Communication: at least 60% before 3A.",
+    "One sustainability course may overlap another elective.",
+    "Five PD courses: PD 10, PD 11, PD 19, PD 20 and one additional PD course."
+  ]
+}

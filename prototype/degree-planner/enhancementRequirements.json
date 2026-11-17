@@ -1,0 +1,2726 @@
+{
+  "calendar": "2025\u20132026",
+  "plans": [
+    {
+      "id": "ai",
+      "title": "Artificial Intelligence Specialization",
+      "kind": "specialization",
+      "calendar": "2025\u20132026",
+      "units": 3.5,
+      "sourceUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/programs/SkzggyARjh",
+      "rules": [
+        {
+          "id": "core",
+          "label": "Required courses",
+          "count": 2,
+          "courses": [
+            "CS 486",
+            "CS 492"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "ml",
+          "label": "Machine learning",
+          "count": 1,
+          "courses": [
+            "CS 480",
+            "CS 485"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "advanced",
+          "label": "Advanced courses",
+          "count": 4,
+          "courses": [
+            "AMATH 449",
+            "BIOL 487",
+            "CO 367",
+            "CO 456",
+            "CO 463",
+            "CO 466",
+            "CS 452",
+            "CS 479",
+            "CS 480",
+            "CS 484",
+            "CS 485",
+            "ECE 380",
+            "ECE 423",
+            "ECE 457C",
+            "ECE 481",
+            "ECE 486",
+            "ECE 488",
+            "ECE 495",
+            "MTE 544",
+            "SE 380",
+            "STAT 341",
+            "STAT 440",
+            "STAT 441",
+            "STAT 444",
+            "SYDE 552",
+            "SYDE 556",
+            "SYDE 572"
+          ],
+          "minimums": [
+            {
+              "label": "Faculty of Mathematics",
+              "count": 1,
+              "courses": [
+                "AMATH 449",
+                "CO 367",
+                "CO 456",
+                "CO 463",
+                "CO 466",
+                "CS 452",
+                "CS 479",
+                "CS 480",
+                "CS 484",
+                "CS 485",
+                "STAT 341",
+                "STAT 440",
+                "STAT 441",
+                "STAT 444"
+              ]
+            },
+            {
+              "label": "Faculty of Engineering",
+              "count": 1,
+              "courses": [
+                "ECE 380",
+                "ECE 423",
+                "ECE 457C",
+                "ECE 481",
+                "ECE 486",
+                "ECE 488",
+                "ECE 495",
+                "MTE 544",
+                "SE 380",
+                "SYDE 552",
+                "SYDE 556",
+                "SYDE 572"
+              ]
+            }
+          ]
+        }
+      ],
+      "exclusiveGroups": [
+        [
+          "SYDE 552",
+          "BIOL 487"
+        ],
+        [
+          "CS 479",
+          "AMATH 449"
+        ]
+      ],
+      "notes": [
+        "Students may only complete one course from any cross-listed set. No one course may fulfil more than one requirement within the Specialization. For the \"Complete 4 of\" requirement, one course must be from the Faculty of Mathematics and one course must be from the Faculty of Engineering. CS497 may be substituted for CS492, depending on the topic of the course.",
+        "Complete a total of 3.5 units.",
+        "Before declaring this academic plan, see invalid credential combinations."
+      ]
+    },
+    {
+      "id": "business",
+      "title": "Business Specialization",
+      "kind": "specialization",
+      "calendar": "2025\u20132026",
+      "units": 3.5,
+      "sourceUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/programs/B1zex10Ri3",
+      "rules": [
+        {
+          "id": "computing",
+          "label": "Computing and finance",
+          "count": 2,
+          "courses": [
+            "ACTSC 447",
+            "CS 348",
+            "CS 476",
+            "CS 490"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "business",
+          "label": "Approved business courses",
+          "count": 5,
+          "courses": [
+            "ACTSC 231",
+            "ACTSC 372",
+            "AFM 101",
+            "AFM 102",
+            "BUS 121W",
+            "BUS 362W",
+            "BUS 381W",
+            "BUS 491W",
+            "COMM 101",
+            "COMM 400",
+            "COMM 432",
+            "ECON 101",
+            "ECON 102",
+            "HRM 200",
+            "MGMT 220",
+            "MSE 311",
+            "AFM 131",
+            "ARBUS 101",
+            "BUS 111W",
+            "MSE 211",
+            "PSYCH 238"
+          ],
+          "minimums": [
+            {
+              "label": "At least 200-level",
+              "count": 2,
+              "courses": [
+                "ACTSC 231",
+                "ACTSC 372",
+                "BUS 362W",
+                "BUS 381W",
+                "BUS 491W",
+                "COMM 400",
+                "COMM 432",
+                "HRM 200",
+                "MGMT 220",
+                "MSE 311",
+                "MSE 211",
+                "PSYCH 238"
+              ]
+            }
+          ]
+        }
+      ],
+      "exclusiveGroups": [
+        [
+          "AFM 131",
+          "ARBUS 101",
+          "BUS 111W"
+        ],
+        [
+          "MSE 211",
+          "PSYCH 238"
+        ],
+        [
+          "ACTSC 447",
+          "CS 476"
+        ],
+        [
+          "AFM 131",
+          "ARBUS 101"
+        ]
+      ],
+      "notes": [
+        "Students may only complete one course from any cross-listed set.",
+        "Complete a total of 3.5 units.",
+        "Before declaring this academic plan, see invalid credential combinations."
+      ]
+    },
+    {
+      "id": "fine-art",
+      "title": "Computational Fine Art Specialization",
+      "kind": "specialization",
+      "calendar": "2025\u20132026",
+      "units": 3,
+      "sourceUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/programs/HyxlJRCsn",
+      "rules": [
+        {
+          "id": "core",
+          "label": "Required courses",
+          "count": 2,
+          "courses": [
+            "CS 349",
+            "CS 488"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "B",
+          "label": "Digital art studio",
+          "count": 1,
+          "courses": [
+            "CS 383",
+            "FINE 383"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "C",
+          "label": "Studio or digital imaging",
+          "count": 1,
+          "courses": [
+            "FINE 100",
+            "FINE 130"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "D",
+          "label": "Design or interaction",
+          "count": 1,
+          "courses": [
+            "FINE 228",
+            "FINE 247"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "E",
+          "label": "Visual culture",
+          "count": 1,
+          "courses": [
+            "VCULT 200",
+            "VCULT 257"
+          ],
+          "minimums": []
+        }
+      ],
+      "exclusiveGroups": [
+        [
+          "CS 383",
+          "FINE 383"
+        ]
+      ],
+      "notes": [
+        "Complete a total of 3.0 units.",
+        "Before declaring this academic plan, see invalid credential combinations."
+      ]
+    },
+    {
+      "id": "hci",
+      "title": "Human-Computer Interaction Specialization",
+      "kind": "specialization",
+      "calendar": "2025\u20132026",
+      "units": 3.5,
+      "sourceUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/programs/Hk4leJARo3",
+      "rules": [
+        {
+          "id": "core",
+          "label": "Required courses",
+          "count": 2,
+          "courses": [
+            "CS 349",
+            "CS 449"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "society",
+          "label": "Technology and society",
+          "count": 1,
+          "courses": [
+            "BET 360",
+            "CS 492",
+            "GSJ 205",
+            "MSE 442",
+            "PACS 315",
+            "SOC 232",
+            "STV 202",
+            "STV 205",
+            "STV 208",
+            "STV 210",
+            "STV 302",
+            "STV 304",
+            "STV 305",
+            "STV 306"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "breadth",
+          "label": "Design and human factors",
+          "count": 2,
+          "courses": [
+            "ENGL 108D",
+            "ENGL 293",
+            "ENGL 295",
+            "FINE 100",
+            "FINE 150",
+            "INTEG 121",
+            "INTEG 251",
+            "KIN 320",
+            "PSYCH 207",
+            "PSYCH 261",
+            "STAT 332",
+            "STAT 430",
+            "VCULT 257"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "technical",
+          "label": "Technical courses",
+          "count": 2,
+          "courses": [
+            "CS 454",
+            "CS 480",
+            "CS 484",
+            "CS 486",
+            "CS 488",
+            "CS 445",
+            "ECE 451",
+            "SE 463",
+            "CS 446",
+            "ECE 452",
+            "SE 464",
+            "CS 447",
+            "ECE 453",
+            "SE 465",
+            "CS 453",
+            "CS 459"
+          ],
+          "minimums": []
+        }
+      ],
+      "exclusiveGroups": [
+        [
+          "CS 445",
+          "ECE 451",
+          "SE 463"
+        ],
+        [
+          "CS 446",
+          "ECE 452",
+          "SE 464"
+        ],
+        [
+          "CS 447",
+          "ECE 453",
+          "SE 465"
+        ],
+        [
+          "CS 453",
+          "CS 459"
+        ],
+        [
+          "CS 445",
+          "ECE 451"
+        ],
+        [
+          "CS 446",
+          "ECE 452"
+        ],
+        [
+          "ECE 453",
+          "CS 447"
+        ]
+      ],
+      "notes": [
+        "Students may only complete one course from any cross-listed set.",
+        "Complete a total of 3.5 units."
+      ]
+    },
+    {
+      "id": "co-minor",
+      "title": "Combinatorics and Optimization Minor",
+      "kind": "minor",
+      "calendar": "2025\u20132026",
+      "units": 4,
+      "sourceUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/programs/H1D1JR0s2",
+      "rules": [
+        {
+          "id": "D",
+          "label": "Introduction to optimization",
+          "count": 1,
+          "courses": [
+            "CO 250",
+            "CO 255"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "F",
+          "label": "Upper-year CO courses",
+          "count": 3,
+          "courses": [
+            "CO 330",
+            "CO 331",
+            "CO 342",
+            "CO 351",
+            "CO 353",
+            "CO 367",
+            "CO 370",
+            "CO 372",
+            "CO 430",
+            "CO 431",
+            "CO 432",
+            "CO 434",
+            "CO 439",
+            "CO 440",
+            "CO 442",
+            "CO 444",
+            "CO 446",
+            "CO 450",
+            "CO 452",
+            "CO 454",
+            "CO 456",
+            "CO 459",
+            "CO 463",
+            "CO 466",
+            "CO 471",
+            "CO 481",
+            "CO 485",
+            "CO 486",
+            "CO 487",
+            "CS 467",
+            "PHYS 467"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "A",
+          "label": "Linear algebra",
+          "count": 1,
+          "courses": [
+            "MATH 103",
+            "MATH 106",
+            "MATH 114",
+            "MATH 115",
+            "MATH 136",
+            "MATH 146"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "C",
+          "label": "Calculus",
+          "count": 1,
+          "courses": [
+            "MATH 104",
+            "MATH 116",
+            "MATH 117",
+            "MATH 127",
+            "MATH 137",
+            "MATH 147"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "B",
+          "label": "Algebra",
+          "count": 1,
+          "courses": [
+            "MATH 135",
+            "MATH 145"
+          ],
+          "minimums": []
+        },
+        {
+          "id": "E",
+          "label": "Combinatorics",
+          "count": 1,
+          "courses": [
+            "MATH 239",
+            "MATH 249"
+          ],
+          "minimums": []
+        }
+      ],
+      "exclusiveGroups": [
+        [
+          "PHYS 467",
+          "CO 481",
+          "CS 467"
+        ]
+      ],
+      "notes": [
+        "Complete a total of 4.0 units.",
+        "Before declaring this academic plan, see invalid credential combinations."
+      ]
+    }
+  ],
+  "courses": [
+    {
+      "code": "ACTSC 231",
+      "title": "Introductory Financial Mathematics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 137"
+        ],
+        [
+          "MATH 147"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH137 - Calculus 1 for Honours Mathematics (0.50)MATH147 - Calculus 1 (Advanced Level) (0.50)Complete 1 of the followingEarned a minimum grade of 70% in each of the following: STAT220 - Probability (Non-Specialist Level) (0.50)Corequisite (see below)Students must be in level 2A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/689a26296e46caaa6b3f73c3"
+    },
+    {
+      "code": "ACTSC 372",
+      "title": "Investment Science and Corporate Finance",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "ACTSC 231",
+          "MATH 235",
+          "MATH 237"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: ACTSC231 - Introductory Financial Mathematics (0.50)Must have completed at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Must have completed at least 1 of the following: MATH237 - Calculus 3 for Honours Mathematics (0.50)MATH247 - Calculus 3 (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b079415a8cf714cf8a3079"
+    },
+    {
+      "code": "ACTSC 447",
+      "title": "Numerical Computation for Financial Modelling",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AMATH 242",
+          "STAT 206"
+        ],
+        [
+          "CS 370",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: AMATH242 - Introduction to Computational Mathematics (0.50)CS370 - Numerical Computation (0.50)CS371 - Introduction to Computational Mathematics (0.50)Complete 1 of the followingMust have completed at least 1 of the following: STAT231 - Statistics (0.50)STAT241 - Statistics (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: STAT206 - Statistics for Software Engineering (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65e8a447ad8d239ad781b089"
+    },
+    {
+      "code": "AFM 101",
+      "title": "Introduction to Financial Accounting",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6781899a2d4ffc94a1f98195"
+    },
+    {
+      "code": "AFM 102",
+      "title": "Introduction to Managerial Accounting",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AFM 101"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed at least 1 of the following: AFM101 - Introduction to Financial Accounting (0.50)AFM191 - Introduction to Financial Reporting and Managerial Decision Making 1 (0.50)Must have completed at least 1 of the following: BUS127W, BUS227W.",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/67818821dd0186b4915daee9"
+    },
+    {
+      "code": "AFM 131",
+      "title": "Introduction to Business in North America",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5bc763bbc4e656b3ef85c"
+    },
+    {
+      "code": "AMATH 242",
+      "title": "Introduction to Computational Mathematics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 138",
+          "MATH 235",
+          "MATH 237"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: CS116 - Introduction to Computer Science 2 (0.50)CS136 - Elementary Algorithm Design and Data Abstraction (0.50)CS138 - Introduction to Data Abstraction and Implementation (0.50)CS146 - Elementary Algorithm Design and Data Abstraction (Advanced Level) (0.50)Complete all of the followingEarned a minimum grade of 60% in each of the following: CS114 - Principles of Computing for Science (0.50)Must have completed at least 1 of the following: CS115 - Introduction to Computer Science 1 (0.50)CS135 - Designing Functional Programs (0.50)CS145 - Designing Functional Programs (Advanced Level) (0.50)Must have completed at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Must have completed at least 1 of the following: MATH237 - Calculus 3 for Honours Mathematics (0.50)MATH247 - Calculus 3 (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65f88820bca656742d4aa0f7"
+    },
+    {
+      "code": "AMATH 331",
+      "title": "Applied Real Analysis",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 237"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: MATH237 - Calculus 3 for Honours Mathematics (0.50)MATH247 - Calculus 3 (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65cfaa90d88c924a0f17edc8"
+    },
+    {
+      "code": "AMATH 449",
+      "title": "Neural Networks",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed at least 1 of the following: STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: STAT206 - Statistics for Software Engineering (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66fef900bcf5cc4ef17491a4"
+    },
+    {
+      "code": "ARBUS 101",
+      "title": "Introduction to Business in North America",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Enrolled in Arts & Business",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5bc7784500d79ffc8d2d1"
+    },
+    {
+      "code": "BET 360",
+      "title": "Design Frameworks for Social Ventures",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 2A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b7eaebfd7afe51fc086e96"
+    },
+    {
+      "code": "BIOL 487",
+      "title": "Computational Neuroscience",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 135"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS115 - Introduction to Computer Science 1 (0.50)CS135 - Designing Functional Programs (0.50)CS200 - Concepts for Advanced Computer Usage (0.50)Earned at least 1 units from STAT 200 - 299Students must be in level 3B or higherEnrolled in a program offered by Faculty of Science",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b13d56026ebae969bb2ed6"
+    },
+    {
+      "code": "BME 252",
+      "title": "Linear Systems and Signals",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingStudents must be in level 2B or higherEnrolled in H-Biomedical Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65cce97650187743185110be"
+    },
+    {
+      "code": "BUS 111W",
+      "title": "Understanding the Business Environment (WLU)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Enrolled in an undergraduate degree program or MATH/ELAS",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6810caad3983aaf7dbff01bb"
+    },
+    {
+      "code": "BUS 121W",
+      "title": "Critical Thinking and Communication Skills (WLU)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Enrolled in an undergraduate degree program or MATH/ELAS",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/663cd623f2c95f59ecb2f08c"
+    },
+    {
+      "code": "BUS 362W",
+      "title": "Applied Marketing (WLU)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AFM 131"
+        ],
+        [
+          "ARBUS 101"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: BUS121WComplete 1 of the followingMust have completed at least 1 of the following: AFM131 - Introduction to Business in North America (0.50)ARBUS101 - Introduction to Business in North America (0.50)Must have completed the following: BUS111WComplete 1 of the followingMust have completed the following: ARBUS302 - Principles of Marketing (0.50)Must have completed at least 1 of the following: BUS352W, ECON344, MGMT344",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65e9efc5e98bacb05b3fc862"
+    },
+    {
+      "code": "BUS 381W",
+      "title": "Strategic Management I (WLU)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AFM 131"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: BUS121WComplete 1 of the followingMust have completed the following: AFM131 - Introduction to Business in North America (0.50)Must have completed the following: BUS111WComplete 1 of the followingMust have completed at least 1 of the following: ACTSC291 - Global Capital Markets and Financial Analytics (0.50)AFM272 - Global Capital Markets and Financial Analytics (0.50)ECON371 - Business Finance 1 (0.50)MATBUS371 - Introduction to Corporate Finance (0.50)Must have completed at least 1 of the following: ACTSC371, AFM271, BUS383W",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/663e751e3783ea8ffe705480"
+    },
+    {
+      "code": "BUS 491W",
+      "title": "Strategic Management II (WLU)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Must have completed the following: BUS481W",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/663e68d9a8087860cb97d8f5"
+    },
+    {
+      "code": "CO 250",
+      "title": "Introduction to Optimization",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 115"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: MATH136 - Linear Algebra 1 for Honours Mathematics (0.50)MATH146 - Linear Algebra 1 (Advanced Level) (0.50)Earned a minimum grade of 70% in at least 1 of the following: MATH106 - Applied Linear Algebra 1 (0.50)MATH114 - Linear Algebra for Science (0.50)MATH115 - Linear Algebra for Engineering (0.50)Earned a minimum cumulative average of 60",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85d5123cba71d2b47bab9"
+    },
+    {
+      "code": "CO 255",
+      "title": "Introduction to Optimization (Advanced Level)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 235",
+          "MATH 237"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Must have completed at least 1 of the following: MATH237 - Calculus 3 for Honours Mathematics (0.50)MATH247 - Calculus 3 (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b1cdc898f0447f4d100dac"
+    },
+    {
+      "code": "CO 330",
+      "title": "Combinatorial Enumeration",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 239"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: MATH239 - Introduction to Combinatorics (0.50)MATH249 - Introduction to Combinatorics (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85dbd026eba5974bb558d"
+    },
+    {
+      "code": "CO 331",
+      "title": "Coding Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 235"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: MATH225 - Applied Linear Algebra 2 (0.50)MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85de7edfead8a25340899"
+    },
+    {
+      "code": "CO 342",
+      "title": "Introduction to Graph Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 239"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: MATH239 - Introduction to Combinatorics (0.50)MATH249 - Introduction to Combinatorics (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85e0e026ebae722bb5591"
+    },
+    {
+      "code": "CO 351",
+      "title": "Network Flow Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 250"
+        ],
+        [
+          "CO 255"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed at least 1 of the following: CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)Must have completed the following: CO352",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/660c4a45532380c4a1614698"
+    },
+    {
+      "code": "CO 353",
+      "title": "Computational Discrete Optimization",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 250"
+        ],
+        [
+          "CO 255"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed at least 1 of the following: CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)Must have completed the following: CO352",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b9514973969af8a3153d"
+    },
+    {
+      "code": "CO 367",
+      "title": "Nonlinear Optimization",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 250",
+          "MATH 138"
+        ],
+        [
+          "CO 255",
+          "MATH 138"
+        ],
+        [
+          "MATH 138"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)Must have completed the following: CO352Complete 1 of the followingMust have completed at least 1 of the following: MATH138 - Calculus 2 for Honours Mathematics (0.50)MATH148 - Calculus 2 (Advanced Level) (0.50)Earned a minimum grade of 70% in each of the following: MATH128 - Calculus 2 for the Sciences (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85e8e026eba7774bb5595"
+    },
+    {
+      "code": "CO 370",
+      "title": "Deterministic OR Models",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 250"
+        ],
+        [
+          "CO 255"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed at least 1 of the following: CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)Must have completed the following: CO352",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85ebc6cd58974b5e90127"
+    },
+    {
+      "code": "CO 372",
+      "title": "Portfolio Optimization Models",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "ACTSC 372",
+          "CO 250"
+        ],
+        [
+          "ACTSC 372",
+          "CO 255"
+        ],
+        [
+          "ACTSC 372"
+        ],
+        [
+          "CO 250"
+        ],
+        [
+          "CO 255"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: ACTSC291 - Global Capital Markets and Financial Analytics (0.50)ACTSC372 - Investment Science and Corporate Finance (0.50)AFM272 - Global Capital Markets and Financial Analytics (0.50)ECON371 - Business Finance 1 (0.50)Must have completed at least 1 of the following: ACTSC371, BUS393WComplete 1 of the followingEarned a minimum grade of 70% in each of the following: CO227 - Introduction to Optimization (Non-Specialist Level) (0.50)Complete 1 of the followingMust have completed at least 1 of the following: CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)Must have completed the following: CO352",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85f0b026eba4520bb559c"
+    },
+    {
+      "code": "CO 430",
+      "title": "Algebraic Enumeration",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 330"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CO330 - Combinatorial Enumeration (0.50)Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be1731ad164c2ccbd9"
+    },
+    {
+      "code": "CO 431",
+      "title": "Symmetric Functions",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "PMATH 336"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: PMATH336 - Introduction to Group Theory with Applications (0.50)PMATH347 - Groups and Rings (0.50)Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5ba1aec4d1ae3c26b547b"
+    },
+    {
+      "code": "CO 432",
+      "title": "Information Theory and Applications",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 341",
+          "MATH 239",
+          "STAT 230"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)CS231 - Algorithmic Problem Solving (0.50)CS341 - Algorithms (0.50)Must have completed at least 1 of the following: MATH239 - Introduction to Combinatorics (0.50)MATH249 - Introduction to Combinatorics (Advanced Level) (0.50)Must have completed at least 1 of the following: STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)Students must be in level 3A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65f895478fa4dfe1291df741"
+    },
+    {
+      "code": "CO 434",
+      "title": "Combinatorial Designs",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "PMATH 336"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: PMATH336 - Introduction to Group Theory with Applications (0.50)PMATH347 - Groups and Rings (0.50)Must have completed the following: PMATH346Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be9e76cc06f7848ef4"
+    },
+    {
+      "code": "CO 439",
+      "title": "Topics in Combinatorics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be64e0fe821b173b9b"
+    },
+    {
+      "code": "CO 440",
+      "title": "Topics in Graph Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 342"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: CO342 - Introduction to Graph Theory (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be0f5f450be0430b1e"
+    },
+    {
+      "code": "CO 442",
+      "title": "Graph Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 342",
+          "MATH 235"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CO342 - Introduction to Graph Theory (0.50)Must have completed at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85f6a23cba7b18f47baca"
+    },
+    {
+      "code": "CO 444",
+      "title": "Algebraic Graph Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 239",
+          "PMATH 336"
+        ],
+        [
+          "MATH 239"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH239 - Introduction to Combinatorics (0.50)MATH249 - Introduction to Combinatorics (Advanced Level) (0.50)Complete 1 of the followingMust have completed at least 1 of the following: PMATH336 - Introduction to Group Theory with Applications (0.50)PMATH347 - Groups and Rings (0.50)Must have completed the following: PMATH346Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be69e9ee28532ae49c"
+    },
+    {
+      "code": "CO 446",
+      "title": "Matroid Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 342"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CO342 - Introduction to Graph Theory (0.50)Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85fa2edfeadb6dc3408a4"
+    },
+    {
+      "code": "CO 450",
+      "title": "Combinatorial Optimization",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 255"
+        ],
+        [
+          "CO 351"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CO255 - Introduction to Optimization (Advanced Level) (0.50)CO351 - Network Flow Theory (0.50)Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b85fd3026eba34d4bb55a1"
+    },
+    {
+      "code": "CO 452",
+      "title": "Integer Programming",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 255"
+        ],
+        [
+          "CO 351"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CO255 - Introduction to Optimization (Advanced Level) (0.50)CO351 - Network Flow Theory (0.50)Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be84500d8e89c8cfed"
+    },
+    {
+      "code": "CO 454",
+      "title": "Scheduling",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 239",
+          "CO 250"
+        ],
+        [
+          "MATH 239",
+          "CO 255"
+        ],
+        [
+          "MATH 239"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH229 - Introduction to Combinatorics (Non-Specialist Level) (0.50)MATH239 - Introduction to Combinatorics (0.50)MATH249 - Introduction to Combinatorics (Advanced Level) (0.50)Complete 1 of the followingMust have completed at least 1 of the following: CO227 - Introduction to Optimization (Non-Specialist Level) (0.50)CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)Must have completed the following: CO352",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b8601a5f4404f147f29384"
+    },
+    {
+      "code": "CO 456",
+      "title": "Introduction to Game Theory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 239",
+          "CO 250"
+        ],
+        [
+          "MATH 239",
+          "CO 255"
+        ],
+        [
+          "MATH 239"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH229 - Introduction to Combinatorics (Non-Specialist Level) (0.50)MATH239 - Introduction to Combinatorics (0.50)MATH249 - Introduction to Combinatorics (Advanced Level) (0.50)Complete 1 of the followingMust have completed at least 1 of the following: CO227 - Introduction to Optimization (Non-Specialist Level) (0.50)CO250 - Introduction to Optimization (0.50)CO255 - Introduction to Optimization (Advanced Level) (0.50)Must have completed the following: CO352",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be69e9ee551c2ae49d"
+    },
+    {
+      "code": "CO 459",
+      "title": "Topics in Optimization",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b9401731ad17342cccf1"
+    },
+    {
+      "code": "CO 463",
+      "title": "Convex Optimization and Analysis",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AMATH 331",
+          "CO 255"
+        ],
+        [
+          "AMATH 331",
+          "CO 367"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: AMATH331 - Applied Real Analysis (0.50)PMATH331 - Applied Real Analysis (0.50)PMATH333 - Introduction to Real Analysis (0.50)PMATH351 - Real Analysis (0.50)Must have completed at least 1 of the following: CO255 - Introduction to Optimization (Advanced Level) (0.50)CO367 - Nonlinear Optimization (0.50)Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65cface0caf2eb2ac03d97da"
+    },
+    {
+      "code": "CO 466",
+      "title": "Continuous Optimization",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CO 255"
+        ],
+        [
+          "CO 367",
+          "CO 250"
+        ],
+        [
+          "CO 367"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed the following: CO255 - Introduction to Optimization (Advanced Level) (0.50)Complete all of the followingMust have completed the following: CO367 - Nonlinear Optimization (0.50)Complete 1 of the followingMust have completed the following: CO250 - Introduction to Optimization (0.50)Must have completed the following: CO352Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8be5d7577ef4e76c7f5"
+    },
+    {
+      "code": "CO 471",
+      "title": "Semidefinite Optimization",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AMATH 331",
+          "CO 255",
+          "MATH 239"
+        ],
+        [
+          "AMATH 331",
+          "CO 367",
+          "MATH 239"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: AMATH331 - Applied Real Analysis (0.50)PMATH331 - Applied Real Analysis (0.50)PMATH333 - Introduction to Real Analysis (0.50)PMATH351 - Real Analysis (0.50)Must have completed at least 1 of the following: CO255 - Introduction to Optimization (Advanced Level) (0.50)CO367 - Nonlinear Optimization (0.50)Must have completed at least 1 of the following: MATH239 - Introduction to Combinatorics (0.50)MATH249 - Introduction to Combinatorics (Advanced Level) (0.50)Earned a minimum cumulative average of 80.0",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65cfad4cb40640550ddde8f0"
+    },
+    {
+      "code": "CO 481",
+      "title": "Introduction to Quantum Information Processing",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 235"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingEarned a minimum grade of 80% in at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Students must be in level 3A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5bcd39e76cc133784920f"
+    },
+    {
+      "code": "CO 485",
+      "title": "The Mathematics of Public-Key Cryptography",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "PMATH 336"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: PMATH334 - Introduction to Rings and Fields with Applications (0.50)PMATH336 - Introduction to Group Theory with Applications (0.50)PMATH347 - Groups and Rings (0.50)PMATH348 - Fields and Galois Theory (0.50)Must have completed at least 1 of the following: PMATH345, PMATH346Earned a minimum cumulative average of 80",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65cfadaaf34cd41e2c7a2bb7"
+    },
+    {
+      "code": "CO 486",
+      "title": "Topics in Quantum Information",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65f8967e69f31d9298dd6280"
+    },
+    {
+      "code": "CO 487",
+      "title": "Applied Cryptography",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 138",
+          "MATH 135",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS116 - Introduction to Computer Science 2 (0.50)CS136 - Elementary Algorithm Design and Data Abstraction (0.50)CS138 - Introduction to Data Abstraction and Implementation (0.50)CS146 - Elementary Algorithm Design and Data Abstraction (Advanced Level) (0.50)Must have completed at least 1 of the following: MATH135 - Algebra for Honours Mathematics (0.50)MATH145 - Algebra (Advanced Level) (0.50)Must have completed at least 1 of the following: STAT206 - Statistics for Software Engineering (0.50)STAT220 - Probability (Non-Specialist Level) (0.50)STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)Students must be in level 3A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b860f023cba74d8c47badd"
+    },
+    {
+      "code": "COMM 101",
+      "title": "Introduction to Financial Markets",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b981b9ada2520c1af2b7"
+    },
+    {
+      "code": "COMM 400",
+      "title": "Entrepreneurship, Technology and the Emerging Information Economy",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 3A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/666094ab4e2380f10c985269"
+    },
+    {
+      "code": "COMM 432",
+      "title": "Electronic Business",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 490"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: ARBUS302 - Principles of Marketing (0.50)MGMT244 - Principles of Marketing (0.50)Must have completed the following: BUS352WMust have completed at least 1 of the following: CS330 - Management Information Systems (0.50)CS490 - Information Systems Management (0.50)Students must be in level 3A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6660c81f314dfa38243ef324"
+    },
+    {
+      "code": "CS 100",
+      "title": "Introduction to Computing Through Applications",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b86175fd7afe09090871f3"
+    },
+    {
+      "code": "CS 105",
+      "title": "Introduction to Computer Programming 1",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6610265da62eba41fe38270e"
+    },
+    {
+      "code": "CS 106",
+      "title": "Introduction to Computer Programming 2",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 105"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: CS105 - Introduction to Computer Programming 1 (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/660d94fe0e65be059e2bdbe2"
+    },
+    {
+      "code": "CS 370",
+      "title": "Numerical Computation",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 115",
+          "MATH 119",
+          "CS 241"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH106 - Applied Linear Algebra 1 (0.50)MATH114 - Linear Algebra for Science (0.50)MATH115 - Linear Algebra for Engineering (0.50)MATH136 - Linear Algebra 1 for Honours Mathematics (0.50)MATH146 - Linear Algebra 1 (Advanced Level) (0.50)Must have completed at least 1 of the following: MATH118 - Calculus 2 for Engineering (0.50)MATH119 - Calculus 2 for Engineering (0.50)MATH128 - Calculus 2 for the Sciences (0.50)MATH138 - Calculus 2 for Honours Mathematics (0.50)MATH148 - Calculus 2 (Advanced Level) (0.50)Must have completed at least 1 of the following: CS231 - Algorithmic Problem Solving (0.50)CS234 - Data Types and Structures (0.50)CS241 - Foundations of Sequential Programs (0.50)CS241E - Foundations of Sequential Programs (Enriched) (0.50)CS246 - Object-Oriented Software Development (0.50)CS246E - Object-Oriented Software Development (Enriched) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b2709ab44f4336f569c2c4"
+    },
+    {
+      "code": "CS 383",
+      "title": "Computational Digital Art Studio",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 240",
+          "CS 240E",
+          "FINE 228"
+        ],
+        [
+          "CS 240",
+          "CS 240E",
+          "FINE 247"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CS240 - Data Structures and Data Management (0.50)CS240E - Data Structures and Data Management (Enriched) (0.50)Must have completed at least 1 of the following: FINE228 - Design and Imaging (0.50)FINE247 - Expanded Media: Interaction (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/662665ec3fe4b2b0b134318a"
+    },
+    {
+      "code": "CS 445",
+      "title": "Software Requirements Specification and Analysis",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 341"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS341 - Algorithms (0.50)CS350 - Operating Systems (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/67854aaec80049e7ba2340a8"
+    },
+    {
+      "code": "CS 446",
+      "title": "Software Design and Architectures",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 350"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CS350 - Operating Systems (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627c06ae513b36082f30400"
+    },
+    {
+      "code": "CS 447",
+      "title": "Software Testing, Quality Assurance, and Maintenance",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 350"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CS350 - Operating Systems (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627c033e513b34380f303fd"
+    },
+    {
+      "code": "CS 452",
+      "title": "Real-Time Programming",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 350"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS350 - Operating Systems (0.50)SE350 - Operating Systems (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627be64b4dce0e1b82aca6a"
+    },
+    {
+      "code": "CS 453",
+      "title": "Software and Systems Security",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 350"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS350 - Operating Systems (0.50)SE350 - Operating Systems (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6669bfe9d7e38da0ff4aee96"
+    },
+    {
+      "code": "CS 454",
+      "title": "Distributed Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 350"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS350 - Operating Systems (0.50)SE350 - Operating Systems (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66269b7f466ac136a3cb4735"
+    },
+    {
+      "code": "CS 459",
+      "title": "Privacy, Cryptography, Network and Data Security",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 350",
+          "MATH 135"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS350 - Operating Systems (0.50)SE350 - Operating Systems (0.50)Must have completed at least 1 of the following: MATH135 - Algebra for Honours Mathematics (0.50)MATH145 - Algebra (Advanced Level) (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6669c0d5aee3363925c7f125"
+    },
+    {
+      "code": "CS 467",
+      "title": "Introduction to Quantum Information Processing",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 235"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingEarned a minimum grade of 80% in at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Students must be in level 3A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5bcd3af75ce31a5abb0da"
+    },
+    {
+      "code": "CS 476",
+      "title": "Numerical Computation for Financial Modelling",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AMATH 242",
+          "STAT 206"
+        ],
+        [
+          "CS 370",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: AMATH242 - Introduction to Computational Mathematics (0.50)CS370 - Numerical Computation (0.50)CS371 - Introduction to Computational Mathematics (0.50)Complete 1 of the followingMust have completed at least 1 of the following: STAT231 - Statistics (0.50)STAT241 - Statistics (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: STAT206 - Statistics for Software Engineering (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65e8ade8d88c92819d18a22f"
+    },
+    {
+      "code": "CS 479",
+      "title": "Neural Networks",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed at least 1 of the following: STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: STAT206 - Statistics for Software Engineering (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66f18bcf88e1c8753b9107d3"
+    },
+    {
+      "code": "CS 484",
+      "title": "Computational Vision",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "AMATH 242",
+          "STAT 206"
+        ],
+        [
+          "CS 370",
+          "STAT 206"
+        ],
+        [
+          "MATH 235",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: AMATH242 - Introduction to Computational Mathematics (0.50)CS370 - Numerical Computation (0.50)CS371 - Introduction to Computational Mathematics (0.50)MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Must have completed at least 1 of the following: STAT206 - Statistics for Software Engineering (0.50)STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), H-Data Science (BMath), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627bb297e8d73a067710019"
+    },
+    {
+      "code": "CS 485",
+      "title": "Statistical and Computational Foundations of Machine Learning",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 341",
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CS341 - Algorithms (0.50)Must have completed at least 1 of the following: STAT206 - Statistics for Software Engineering (0.50)STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), H-Data Science (BMath), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627ba77b4dce02a752aca55"
+    },
+    {
+      "code": "CS 486",
+      "title": "Introduction to Artificial Intelligence",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 341"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CS341 - Algorithms (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), H-Data Science (BMath), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/666856feb1cda97031284d4f"
+    },
+    {
+      "code": "CS 488",
+      "title": "Introduction to Computer Graphics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 341",
+          "SE 350",
+          "CS 370"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CS341 - Algorithms (0.50)Must have completed at least 1 of the following: CS350 - Operating Systems (0.50)SE350 - Operating Systems (0.50)Must have completed at least 1 of the following: CS370 - Numerical Computation (0.50)CS371 - Introduction to Computational Mathematics (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6627b7c9b4dce04d272aca44"
+    },
+    {
+      "code": "CS 490",
+      "title": "Information Systems Management",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 350"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS350 - Operating Systems (0.50)SE350 - Operating Systems (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/662688bd466ac1a130cb46a6"
+    },
+    {
+      "code": "CS 492",
+      "title": "The Social Implications of Computing",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 240"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS240 - Data Structures and Data Management (0.50)CS240E - Data Structures and Data Management (Enriched) (0.50)Enrolled in H-BBA & BCS Double Degree, H-Computer Science (BCS), H-Computer Science (BMath), JH-Computer Science (BCS), JH-Computer Science (BMath), H-Computing & Financial Management, H-Data Science (BCS), or H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66268801b4dce0bca32ac47b"
+    },
+    {
+      "code": "ECE 224",
+      "title": "Embedded Microprocessor Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "ECE 222",
+          "ECE 124"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: ECE222 - Digital Computers (0.50)Must have completed at least 1 of the following: BME393 - Digital Systems (0.50)ECE124 - Digital Circuits and Systems (0.50)MTE262 - Introduction to Digital Logic (0.50)SYDE192 - Digital Systems (0.50)Students must be in level 2B or higherComplete 1 of the followingEnrolled in CS-Digital Hardware Specialization, or H-Software EngineeringEnrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/689a291170fe4ce648d15e3d"
+    },
+    {
+      "code": "ECE 380",
+      "title": "Analog Control Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 213"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingStudents must be in level 3A or higherComplete 1 of the followingComplete all of the followingMust have completed the following: ECE207 - Signals and Systems (0.50)Enrolled in H-Computer Engineering, or H-Electrical EngineeringComplete all of the followingMust have completed the following: MATH213 - Signals, Systems, and Differential Equations (0.50)Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b870096cd589f3a9e901c1"
+    },
+    {
+      "code": "ECE 423",
+      "title": "Embedded Computer Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 350",
+          "ECE 224"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: CS350 - Operating Systems (0.50)ECE252 - Systems Programming and Concurrency (0.50)MTE241 - Introduction to Computer Structures and Real-Time Systems (0.50)SE350 - Operating Systems (0.50)Must have completed at least 1 of the following: ECE224 - Embedded Microprocessor Systems (0.50)MTE325 - Microprocessor Systems and Interfacing for Mechatronics Engineering (0.50)Students must be in level 4A or higherComplete 1 of the followingEnrolled in H-Software EngineeringEnrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b8720a5a8cf77ba28a5bf3"
+    },
+    {
+      "code": "ECE 451",
+      "title": "Software Requirements Specification and Analysis",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: BME122 - Data Structures and Algorithms (0.50)ECE250 - Algorithms and Data Structures (0.50)MSE240 - Algorithms and Data Structures (0.50)MTE140 - Algorithms and Data Structures (0.50)SYDE223 - Data Structures and Algorithms (0.50)Must have completed the following: MSCi240Students must be in level 3A or higherComplete 1 of the followingEnrolled in H-Electrical EngineeringEnrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/67854a70d6dec791c1b04800"
+    },
+    {
+      "code": "ECE 452",
+      "title": "Software Design and Architectures",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: BME122 - Data Structures and Algorithms (0.50)ECE250 - Algorithms and Data Structures (0.50)MSE240 - Algorithms and Data Structures (0.50)MTE140 - Algorithms and Data Structures (0.50)SYDE223 - Data Structures and Algorithms (0.50)Must have completed the following: MSCI240Students must be in level 3A or higherComplete 1 of the followingEnrolled in H-Software EngineeringEnrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65ce3964caf2eb62db3d9053"
+    },
+    {
+      "code": "ECE 453",
+      "title": "Software Testing, Quality Assurance, and Maintenance",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed at least 1 of the following: BME122 - Data Structures and Algorithms (0.50)ECE250 - Algorithms and Data Structures (0.50)MSE240 - Algorithms and Data Structures (0.50)MTE140 - Algorithms and Data Structures (0.50)SYDE223 - Data Structures and Algorithms (0.50)Must have completed the following: MSCI240Students must be in level 3A or higherComplete 1 of the followingEnrolled in H-Software EngineeringEnrolled in a BASc program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65ce39a9f40b277f6626cdf4"
+    },
+    {
+      "code": "ECE 457C",
+      "title": "Reinforcement Learning",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 206"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: BME213 - Statistics and Experimental Design (0.50)ECE203 - Probability Theory and Statistics 1 (0.50)MTE201 - Experimental Measurement and Statistical Analysis (0.50)STAT206 - Statistics for Software Engineering (0.50)STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)SYDE212 - Probability and Statistics (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b876f998f04442dc1031f1"
+    },
+    {
+      "code": "ECE 481",
+      "title": "Digital Control Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "ECE 380"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingStudents must be in level 4A or higherComplete 1 of the followingComplete all of the followingMust have completed at least 1 of the following: ECE380 - Analog Control Systems (0.50)MTE360 - Automatic Control Systems (0.50)SYDE352 - Introduction to Control Systems (0.50)Enrolled in H-Computer Engineering, H-Electrical Engineering, or H-Systems Design EngineeringComplete all of the followingMust have completed the following: ECE207 - Signals and Systems (0.50)SE380 - Introduction to Feedback Control (0.50)Enrolled in H-Software Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b8752a6cd58998d9e901e4"
+    },
+    {
+      "code": "ECE 486",
+      "title": "Robot Dynamics and Control",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 380"
+        ]
+      ],
+      "prerequisiteText": "Complete 1 of the followingComplete all of the followingMust have completed the following: ECE380 - Analog Control Systems (0.50)Students must be in level 4A or higherEnrolled in H-Computer Engineering, or H-Electrical EngineeringComplete all of the followingMust have completed the following: ME360 - Introduction to Control Systems (0.50)Students must be in level 4A or higherEnrolled in H-Mechanical Engineering, or Mechatronics OptionComplete all of the followingMust have completed the following: MTE360 - Automatic Control Systems (0.50)Students must be in level 4A or higherEnrolled in H-Mechatronics EngineeringComplete all of the followingMust have completed the following: SE380 - Introduction to Feedback Control (0.50)Students must be in level 4A or higherEnrolled in H-Software EngineeringComplete all of the followingMust have completed the following: SYDE352 - Introduction to Control Systems (0.50)Students must be in level 4A or higherEnrolled in H-Systems Design Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b875b798f04407171031e1"
+    },
+    {
+      "code": "ECE 488",
+      "title": "Multivariable Control Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SE 380"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingStudents must be in level 4A or higherComplete 1 of the followingComplete all of the followingMust have completed the following: ECE380 - Analog Control Systems (0.50)Enrolled in H-Computer Engineering, or H-Electrical EngineeringComplete all of the followingMust have completed the following: ME360 - Introduction to Control Systems (0.50)Enrolled in H-Mechanical Engineering, or Mechatronics OptionComplete all of the followingMust have completed the following: MTE360 - Automatic Control Systems (0.50)Enrolled in H-Mechatronics EngineeringComplete all of the followingMust have completed the following: SE380 - Introduction to Feedback Control (0.50)Enrolled in H-Software EngineeringComplete all of the followingMust have completed the following: SYDE352 - Introduction to Control Systems (0.50)Enrolled in H-Systems Design Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b8761b5c947972e1e56c07"
+    },
+    {
+      "code": "ECE 495",
+      "title": "Autonomous Vehicles",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingStudents must be in level 3B or higherEnrolled in H-Computer Engineering, or H-Electrical Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b876546cd589b6e2e901eb"
+    },
+    {
+      "code": "ECON 102",
+      "title": "Introduction to Macroeconomics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8ca1731ad80ff2ccc06"
+    },
+    {
+      "code": "ENGL 108D",
+      "title": "Digital Lives",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b9811731ade2942cce20"
+    },
+    {
+      "code": "ENGL 293",
+      "title": "Introduction to Digital Media Studies",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/659eba235c94790e05e4eab1"
+    },
+    {
+      "code": "ENGL 295",
+      "title": "Social Media",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/659ebb33fd7afe52d607ed7e"
+    },
+    {
+      "code": "FINE 100",
+      "title": "Studio Fundamentals",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b3b9a8026ebac39fbb3c01"
+    },
+    {
+      "code": "FINE 130",
+      "title": "Introduction to Digital Imaging",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b3bb46edfeade73433ef73"
+    },
+    {
+      "code": "FINE 150",
+      "title": "Appreciation and Expression",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b3bbf723cba7811847a1ad"
+    },
+    {
+      "code": "FINE 228",
+      "title": "Design and Imaging",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "FINE 100"
+        ],
+        [
+          "FINE 130"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: FINE100 - Studio Fundamentals (0.50)FINE130 - Introduction to Digital Imaging (0.50)Obtained all of the following milestones: Fine Arts Health and Safety Milestone and Fine Arts Woodshop Workshop Milestone",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b3df8dedfead536033f022"
+    },
+    {
+      "code": "FINE 247",
+      "title": "Expanded Media: Interaction",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "FINE 100"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: FINE100 - Studio Fundamentals (0.50)Obtained all of the following milestones: Fine Arts Health and Safety Milestone and Fine Arts Woodshop Workshop Milestone",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b3e118026eba1c1ebb3cc6"
+    },
+    {
+      "code": "FINE 383",
+      "title": "Computational Digital Art Studio",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "CS 105",
+          "CS 106",
+          "CS 100",
+          "FINE 228"
+        ],
+        [
+          "CS 105",
+          "CS 106",
+          "CS 100",
+          "FINE 247"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: CS105 - Introduction to Computer Programming 1 (0.50)CS106 - Introduction to Computer Programming 2 (0.50)Must have completed at least 1 of the following: CS100 - Introduction to Computing Through Applications (0.50)CS200 - Concepts for Advanced Computer Usage (0.50)CS230 - Introduction to Computers and Computer Systems (0.50)Must have completed at least 1 of the following: FINE228 - Design and Imaging (0.50)FINE247 - Expanded Media: Interaction (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/659ebe76edfead2af8338871"
+    },
+    {
+      "code": "GSJ 205",
+      "title": "Technology, Gender, and Social Justice",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b95684500d49a4c8d0ef"
+    },
+    {
+      "code": "HRM 200",
+      "title": "Basic Human Resources Management",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 2A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9c86fec4e64d509e24b62"
+    },
+    {
+      "code": "INTEG 121",
+      "title": "Collaboration, Design Thinking, and Problem Solving",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/68c2c27b0e3dbaf2af3a330a"
+    },
+    {
+      "code": "INTEG 251",
+      "title": "Creativity and Innovation",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/68c2c54c0543262b15856bd0"
+    },
+    {
+      "code": "KIN 104L",
+      "title": "Fundamentals of Kinesiology Laboratory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.25,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8de69e9ee3b242ae519"
+    },
+    {
+      "code": "KIN 121",
+      "title": "Biomechanics of Human Movement",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "PHYS 111",
+          "MATH 127"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: PHYS111 - Physics 1 (0.50)Must have completed at least 1 of the following: MATH124 - Calculus and Vector Algebra for Kinesiology (0.50)MATH127 - Calculus 1 for the Sciences (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/67e171f470216942309d8f8e"
+    },
+    {
+      "code": "KIN 121L",
+      "title": "Biomechanics of Human Movement Laboratory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.25,
+      "prerequisiteOptions": [
+        [
+          "KIN 104L",
+          "PHYS 111",
+          "MATH 127"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: KIN104L - Fundamentals of Kinesiology Laboratory (0.25)PHYS111 - Physics 1 (0.50)Must have completed at least 1 of the following: MATH124 - Calculus and Vector Algebra for Kinesiology (0.50)MATH127 - Calculus 1 for the Sciences (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b52b2277863076d37fe83d"
+    },
+    {
+      "code": "KIN 221",
+      "title": "Advanced Biomechanics of Human Movement",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "KIN 121",
+          "KIN 121L"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: KIN121 - Biomechanics of Human Movement (0.50)KIN121L - Biomechanics of Human Movement Laboratory (0.25)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b900ec4d1a4ae76b51ed"
+    },
+    {
+      "code": "KIN 221L",
+      "title": "Advanced Biomechanics of Human Movement Laboratory",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.25,
+      "prerequisiteOptions": [
+        [
+          "KIN 121",
+          "KIN 121L"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: KIN121 - Biomechanics of Human Movement (0.50)KIN121L - Biomechanics of Human Movement Laboratory (0.25)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b52c17b44f43103469d14d"
+    },
+    {
+      "code": "KIN 320",
+      "title": "Task Analysis",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "KIN 221",
+          "KIN 221L"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: KIN221 - Advanced Biomechanics of Human Movement (0.50)KIN221L - Advanced Biomechanics of Human Movement Laboratory (0.25)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b95c84500d0788c8d10a"
+    },
+    {
+      "code": "MATH 103",
+      "title": "Introductory Algebra for Arts and Social Science",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Enrolled in a program offered by the Faculties of Arts, Environment, or Health",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b904aff81cd8c588131679"
+    },
+    {
+      "code": "MATH 104",
+      "title": "Introductory Calculus for Arts and Social Science",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Enrolled in a program offered by the Faculties of Arts, Environment, Health, or Science",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b904fb23cba701f747be4f"
+    },
+    {
+      "code": "MATH 106",
+      "title": "Applied Linear Algebra 1",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 103"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed the following: MATH103 - Introductory Algebra for Arts and Social Science (0.50)Must have completed the following: 4U Calculus and Vectors",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b90528f81cd8a84113167d"
+    },
+    {
+      "code": "MATH 114",
+      "title": "Linear Algebra for Science",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: 4U Calculus and VectorsComplete 1 of the followingEnrolled in H-Geomatics, or JH-GeomaticsEnrolled in a program offered by Faculty of Science",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b905a35f44041eaff296d1"
+    },
+    {
+      "code": "MATH 116",
+      "title": "Calculus 1 for Engineering",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: 4U Calculus and VectorsEnrolled in H-Architectural Engineering, H-Biomedical Engineering, H-Chemical Engineering, H-Civil Engineering, H-Environmental Engineering, H-Geological Engineering, H-Management Engineering, H-Mechanical Engineering, or H-Mechatronics Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9067d6cd589bd51e9048f"
+    },
+    {
+      "code": "MATH 127",
+      "title": "Calculus 1 for the Sciences",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 104"
+        ],
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed the following: MATH104 - Introductory Calculus for Arts and Social Science (0.50)Must have completed the following: 4U Calculus and Vectors",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b90f2afd7afe6a9208757c"
+    },
+    {
+      "code": "MATH 136",
+      "title": "Linear Algebra 1 for Honours Mathematics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 135"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed the following: MATH145 - Algebra (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: MATH135 - Algebra for Honours Mathematics (0.50)Complete 1 of the followingEnrolled in H-Mathematical Physics (BSc)Enrolled in an Honours Mathematics program or Mathematics/BASE",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66eda9af415235a3711518c9"
+    },
+    {
+      "code": "MATH 145",
+      "title": "Algebra (Advanced Level)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed 1 of the following: 4U Calculus and Vectors or 4U Mathematics of Data ManagementEnrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b532596cd5890a50e8ef1e"
+    },
+    {
+      "code": "MATH 146",
+      "title": "Linear Algebra 1 (Advanced Level)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 145"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: MATH145 - Algebra (Advanced Level) (0.50)Enrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b5329e98f0445a65101f57"
+    },
+    {
+      "code": "MATH 147",
+      "title": "Calculus 1 (Advanced Level)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed: 4U Calculus and VectorsEnrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b5331a778630cb4a7fe872"
+    },
+    {
+      "code": "MATH 235",
+      "title": "Linear Algebra 2 for Honours Mathematics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 115"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingEnrolled in H-Mathematical Physics (BSc)Enrolled in an Honours Mathematics programComplete 1 of the followingMust have completed the following: MATH146 - Linear Algebra 1 (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: MATH136 - Linear Algebra 1 for Honours Mathematics (0.50)Earned a minimum grade of 70% in at least 1 of the following: MATH106 - Applied Linear Algebra 1 (0.50)MATH114 - Linear Algebra for Science (0.50)MATH115 - Linear Algebra for Engineering (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/6657301f69b8796c9d9d9432"
+    },
+    {
+      "code": "MATH 237",
+      "title": "Calculus 3 for Honours Mathematics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 115",
+          "MATH 138"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH106 - Applied Linear Algebra 1 (0.50)MATH114 - Linear Algebra for Science (0.50)MATH115 - Linear Algebra for Engineering (0.50)MATH136 - Linear Algebra 1 for Honours Mathematics (0.50)MATH146 - Linear Algebra 1 (Advanced Level) (0.50)Complete 1 of the followingMust have completed the following: MATH148 - Calculus 2 (Advanced Level) (0.50)Earned a minimum grade of 70% in each of the following: MATH128 - Calculus 2 for the Sciences (0.50)Earned a minimum grade of 60% in each of the following: MATH138 - Calculus 2 for Honours Mathematics (0.50)Complete 1 of the followingEnrolled in H-Mathematical Physics (BSc)Enrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65f993288fa4df89441e0e6e"
+    },
+    {
+      "code": "MATH 249",
+      "title": "Introduction to Combinatorics (Advanced Level)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 135",
+          "MATH 136"
+        ],
+        [
+          "MATH 135",
+          "MATH 146"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingComplete 1 of the followingMust have completed the following: MATH145 - Algebra (Advanced Level) (0.50)Earned a minimum grade of 80% in each of the following: MATH135 - Algebra for Honours Mathematics (0.50)Must have completed at least 1 of the following: MATH136 - Linear Algebra 1 for Honours Mathematics (0.50)MATH146 - Linear Algebra 1 (Advanced Level) (0.50)Enrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b53589edfead1fbf33f6fa"
+    },
+    {
+      "code": "MGMT 220",
+      "title": "Entrepreneurship and the Creative Workplace",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 2A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b5668598f0443ea810204d"
+    },
+    {
+      "code": "MSE 211",
+      "title": "Organizational Behaviour",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65ce2d447a5405b19a8056d9"
+    },
+    {
+      "code": "MSE 311",
+      "title": "Organizational Design and Technology",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65ce42383c5b4482211d7635"
+    },
+    {
+      "code": "MSE 442",
+      "title": "Impact of Information Systems on Organizations and Society",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65ce797cd3ef754bfeb082d5"
+    },
+    {
+      "code": "MTE 544",
+      "title": "Autonomous Mobile Robots",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete all of the followingStudents must be in level 3B or higherEnrolled in H-Biomedical Engineering, H-Computer Engineering, H-Electrical Engineering, H-Mechanical Engineering, H-Mechatronics Engineering, or H-Systems Design Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b944e318ca2318600b6f4d"
+    },
+    {
+      "code": "PACS 315",
+      "title": "Engineering and Peace",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingStudents must be in level 2A or higherEnrolled in Peace & Conflict Studies Diploma",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5ba000f5f45b5b0430e34"
+    },
+    {
+      "code": "PHYS 111",
+      "title": "Physics 1",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b995802ce9d32495ecafd6"
+    },
+    {
+      "code": "PHYS 467",
+      "title": "Introduction to Quantum Information Processing",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 115"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH114 - Linear Algebra for Science (0.50)MATH115 - Linear Algebra for Engineering (0.50)MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)PHYS334 - Quantum Physics 2 (0.50)Students must be in level 3A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5bcd31731ad0c3b2cd01e"
+    },
+    {
+      "code": "PMATH 336",
+      "title": "Introduction to Group Theory with Applications",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 235"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65cfb122b406406144dde905"
+    },
+    {
+      "code": "PSYCH 207",
+      "title": "Cognitive Processes",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 1B or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8ef64e0fe7c73173c0e"
+    },
+    {
+      "code": "PSYCH 238",
+      "title": "Organizational Psychology",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 1B or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/689a2d8870fe4ce648d16eac"
+    },
+    {
+      "code": "PSYCH 261",
+      "title": "Physiological Psychology",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 1B or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8ef4973966f49a314de"
+    },
+    {
+      "code": "SOC 101",
+      "title": "Introduction to Sociology",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b7112677863049ac7ff1f4"
+    },
+    {
+      "code": "SOC 232",
+      "title": "Technology and Social Change",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "SOC 101"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: SOC101 - Introduction to Sociology (0.50)SOC101R - Introduction to Sociology (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/662697993fe4b21f3a3432f0"
+    },
+    {
+      "code": "STAT 241",
+      "title": "Statistics (Advanced Level)",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 138",
+          "STAT 230"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH138 - Calculus 2 for Honours Mathematics (0.50)MATH148 - Calculus 2 (Advanced Level) (0.50)Must have completed at least 1 of the following: STAT230 - Probability (0.50)STAT240 - Probability (Advanced Level) (0.50)Enrolled in an Honours Mathematics program",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b7b93d23cba7435647b6d2"
+    },
+    {
+      "code": "STAT 330",
+      "title": "Mathematical Statistics",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 237",
+          "STAT 230",
+          "STAT 241"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH237 - Calculus 3 for Honours Mathematics (0.50)MATH247 - Calculus 3 (Advanced Level) (0.50)Complete 1 of the followingEarned a minimum grade of 60% in each of the following: STAT230 - Probability (0.50)Must have completed the following: STAT240 - Probability (Advanced Level) (0.50)Must have completed at least 1 of the following: STAT231 - Statistics (0.50)STAT241 - Statistics (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b7b9ff6cd58934fee8fc63"
+    },
+    {
+      "code": "STAT 331",
+      "title": "Applied Linear Models",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 235",
+          "STAT 241"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH235 - Linear Algebra 2 for Honours Mathematics (0.50)MATH245 - Linear Algebra 2 (Advanced Level) (0.50)Complete 1 of the followingMust have completed the following: STAT241 - Statistics (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: STAT231 - Statistics (0.50)Earned a minimum grade of 70% in each of the following: SYDE212 - Probability and Statistics (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b5972ce9d3cfaaecb0d4"
+    },
+    {
+      "code": "STAT 332",
+      "title": "Sampling and Experimental Design",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 241"
+        ]
+      ],
+      "prerequisiteText": "Complete 1 of the followingMust have completed the following: STAT241 - Statistics (Advanced Level) (0.50)Earned a minimum grade of 60% in each of the following: STAT231 - Statistics (0.50)Earned a minimum grade of 70% in each of the following: SYDE212 - Probability and Statistics (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b5e0fd7afeb449087a16"
+    },
+    {
+      "code": "STAT 341",
+      "title": "Computational Statistics and Data Analysis",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "MATH 237",
+          "STAT 241",
+          "STAT 230"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: MATH237 - Calculus 3 for Honours Mathematics (0.50)MATH247 - Calculus 3 (Advanced Level) (0.50)Must have completed at least 1 of the following: STAT231 - Statistics (0.50)STAT241 - Statistics (Advanced Level) (0.50)Complete 1 of the followingEarned a minimum grade of 60% in each of the following: STAT230 - Probability (0.50)Must have completed the following: STAT240 - Probability (Advanced Level) (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b73d7405c4e693ac5dc6"
+    },
+    {
+      "code": "STAT 430",
+      "title": "Experimental Design",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 331",
+          "STAT 332"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed at least 1 of the following: STAT331 - Applied Linear Models (0.50)STAT371 - Applied Linear Models and Process Improvement for Business (0.50)Must have completed at least 1 of the following: STAT332 - Sampling and Experimental Design (0.50)STAT372 - Survey Sampling and Experimental Design Techniques for Business (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9b91b5c94797960e57429"
+    },
+    {
+      "code": "STAT 440",
+      "title": "Computational Inference",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 330",
+          "STAT 341"
+        ]
+      ],
+      "prerequisiteText": "Must have completed the following: STAT330 - Mathematical Statistics (0.50)STAT341 - Computational Statistics and Data Analysis (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9ba17778630c8c0800233"
+    },
+    {
+      "code": "STAT 441",
+      "title": "Statistical Learning - Classification",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 341",
+          "STAT 331"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: STAT341 - Computational Statistics and Data Analysis (0.50)Must have completed at least 1 of the following: STAT331 - Applied Linear Models (0.50)STAT371 - Applied Linear Models and Process Improvement for Business (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9ba42b44f43018b69ec8d"
+    },
+    {
+      "code": "STAT 444",
+      "title": "Statistical Learning - Advanced Regression",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "STAT 341",
+          "STAT 331"
+        ]
+      ],
+      "prerequisiteText": "Complete all of the followingMust have completed the following: STAT341 - Computational Statistics and Data Analysis (0.50)Must have completed at least 1 of the following: STAT331 - Applied Linear Models (0.50)STAT371 - Applied Linear Models and Process Improvement for Business (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9bab698f0443584103928"
+    },
+    {
+      "code": "STV 202",
+      "title": "Design and Society",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66c6591ecd008829792e9a58"
+    },
+    {
+      "code": "STV 205",
+      "title": "Cybernetics and Society",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b955ec4d1a17e46b525b"
+    },
+    {
+      "code": "STV 208",
+      "title": "Artificial Intelligence and Society: Impact, Ethics, and Equity",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b7b984edfead6aea34041f"
+    },
+    {
+      "code": "STV 210",
+      "title": "The Computing Society",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5bd2a84500d399dc8d378"
+    },
+    {
+      "code": "STV 302",
+      "title": "Information Technology and Society",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingEarned at least 0.50 units from STV 100 - 299Students must be in level 3A",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8f63bbc4e41b93ef5f2"
+    },
+    {
+      "code": "STV 304",
+      "title": "Technology in Canadian Society",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingEarned at least 0.50 units from STV 100 - 299Students must be in level 3A",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b94f1731ad15b42ccd35"
+    },
+    {
+      "code": "STV 305",
+      "title": "Technology, Society and the Modern City",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingEarned at least 0.50 units from STV 100 - 299Students must be in level 3A",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b9fdaf75ce5106abb018"
+    },
+    {
+      "code": "STV 306",
+      "title": "Biotechnology and Society",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingEarned at least 0.50 units from STV 100 - 299Students must be in level 3A",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b8f61731ad53dd2cccaf"
+    },
+    {
+      "code": "SYDE 552",
+      "title": "Computational Neuroscience",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingComplete all of the followingStudents must be in level 3A or higherEnrolled in H-Biomedical EngineeringComplete all of the followingStudents must be in level 3B or higherEnrolled in H-Systems Design Engineering",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b7beac6cd589936be8fc8c"
+    },
+    {
+      "code": "SYDE 556",
+      "title": "Simulating Neurobiological Systems",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        [
+          "BME 252"
+        ]
+      ],
+      "prerequisiteText": "Must have completed at least 1 of the following: BME252 - Linear Systems and Signals (0.50)SYDE252 - Linear Systems and Signals (0.50)",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9c3f723cba71ac647c3bc"
+    },
+    {
+      "code": "SYDE 572",
+      "title": "Introduction to Pattern Recognition",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Complete 1 of the followingComplete all of the followingStudents must be in level 3A or higherEnrolled in H-Biomedical EngineeringComplete all of the followingStudents must be in level 3B or higherEnrolled in H-Systems Design EngineeringComplete all of the followingStudents must be in level 4A or higherEnrolled in H-Mechatronics EngineeringEnrolled in Biomechanics Option, or Mechatronics Option",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/65b9c41e5d504386011742c7"
+    },
+    {
+      "code": "VCULT 200",
+      "title": "Visual Studies Across the Discipline",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "Students must be in level 2A or higher",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/64a5b984ec4d1a54776b530b"
+    },
+    {
+      "code": "VCULT 257",
+      "title": "Video, New Media and the Digital Turn",
+      "group": "Other courses",
+      "required": false,
+      "units": 0.5,
+      "prerequisiteOptions": [
+        []
+      ],
+      "prerequisiteText": "",
+      "calendarUrl": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2025-2026#/courses/view/66eada265893e11aec7daaa4"
+    }
+  ],
+  "prerequisiteScope": "Course-only Software Engineering routes, preferring existing SE core equivalents. Full official prerequisite, grade, standing and corequisite rules remain in the source snapshot and course details."
+}

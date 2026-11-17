@@ -8,6 +8,7 @@ import { Bounce, ToastContainer } from 'react-toastify';
 import {
   LoadableAboutPage,
   LoadableCoursePage,
+  LoadableDegreePlannerPage,
   LoadableDesignSystemPage,
   LoadableExplorePage,
   LoadableLandingPage,
@@ -22,6 +23,7 @@ import {
 import {
   ABOUT_PAGE_ROUTE,
   COURSE_PAGE_ROUTE,
+  DEGREE_PLANNER_PAGE_ROUTE,
   DESIGN_SYSTEM_PAGE_ROUTE,
   EXPLORE_PAGE_ROUTE,
   LANDING_PAGE_ROUTE,
@@ -62,7 +64,9 @@ initAnalytics();
 const App = () => {
   const isLoggedIn = useSelector((state: RootState) => state.auth.loggedIn);
   const location = useLocation();
-  const isDesignSystemPage = location.pathname === DESIGN_SYSTEM_PAGE_ROUTE;
+  const isDesignSystemPage =
+    location.pathname === DESIGN_SYSTEM_PAGE_ROUTE ||
+    location.pathname === DEGREE_PLANNER_PAGE_ROUTE;
 
   // Refresh auth token if logged in
   useEffect(() => {
@@ -134,6 +138,11 @@ const App = () => {
       </Helmet>
       {!isDesignSystemPage && <AnnouncementBanner />}
       <Switch>
+        <SentryRoute
+          exact
+          path={DEGREE_PLANNER_PAGE_ROUTE}
+          component={() => <LoadableDegreePlannerPage />}
+        />
         <SentryRoute
           exact
           path={LANDING_PAGE_ROUTE}
