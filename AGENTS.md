@@ -14,7 +14,7 @@ area review before opening a PR.
 | Area | Entry point |
 | --- | --- |
 | React and frontend tooling | [frontend/AGENTS.md](frontend/AGENTS.md) |
-| React degree planner prototype | [prototype/degree-planner/AGENTS.md](prototype/degree-planner/AGENTS.md) |
+| React degree planner prototype | [prototype/v2/AGENTS.md](prototype/v2/AGENTS.md) |
 | API, importer, email, shared Go | [flow/AGENTS.md](flow/AGENTS.md) |
 | Schema and GraphQL permissions | [hasura/AGENTS.md](hasura/AGENTS.md) |
 | Build, deploy, nginx, staging | [General guide](styleguide/general.md), [runtime review](styleguide/review.md#runtime-and-deployment) |

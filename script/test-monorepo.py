@@ -117,9 +117,9 @@ if os.getenv("FAIL_COMMAND") in sys.argv[1:]:
     def test_prototype_make_targets_do_not_read_backend_environment(self):
         shutil.copy(ROOT / "Makefile", self.directory / "Makefile")
         (self.directory / ".env").write_text("this is not valid Make syntax\n")
-        result = self.run_command(["make", "-n", "prototype-planner", "prototype-original", "prototype-check"])
-        self.assertIn("cd prototype/original && node server.mjs", result.stdout)
-        self.assertIn("cd prototype/original && node --test model.test.mjs", result.stdout)
+        result = self.run_command(["make", "-n", "prototype-install", "prototype-v2", "prototype-v1", "prototype-check", "prototype-build"])
+        self.assertIn("cd prototype/v1 && node server.mjs", result.stdout)
+        self.assertIn("cd prototype/v1 && node --test model.test.mjs", result.stdout)
         self.assertEqual(self.calls(), [])
 
     def test_hook_lints_frontend_without_modifying_staged_work(self):
@@ -149,6 +149,38 @@ if os.getenv("FAIL_COMMAND") in sys.argv[1:]:
         self.run_command(["git", "-c", "commit.gpgsign=false", "-c", "user.name=Migration Test",
                           "-c", "user.email=migration-test@example.invalid", "commit", "-m", "Hook test"])
         self.assertEqual(self.calls()[0]["args"], ["run", "lint-nofix"])
+
+    def test_hook_lints_prototype_without_frontend_dependencies(self):
+        self.run_command(["git", "init", "--quiet"])
+        package = self.directory / "prototype/v2"
+        package.mkdir(parents=True)
+        (package / "example.ts").write_text("const staged = 1;\n")
+        self.run_command(["git", "add", "prototype/v2/example.ts"])
+        self.run_command([str(ROOT / ".githooks/pre-commit")])
+        self.assertEqual(len(self.calls()), 1)
+        self.assertEqual(self.calls()[0]["cwd"], str(package))
+        self.assertEqual(self.calls()[0]["args"], ["run", "lint-nofix"])
+
+    def test_hook_finds_bun_outside_gui_path_and_checks_both_packages(self):
+        self.run_command(["git", "init", "--quiet"])
+        for package in ("frontend", "prototype/v2"):
+            folder = self.directory / package
+            folder.mkdir(parents=True)
+            (folder / "example.ts").write_text("const staged = 1;\n")
+        self.run_command(["git", "add", "frontend", "prototype"])
+        install = self.directory / "bun installation"
+        (install / "bin").mkdir(parents=True)
+        shutil.move(self.bin / "bun", install / "bin/bun")
+        self.env["BUN_INSTALL"] = str(install)
+        self.env["PATH"] = f"{self.bin}:/usr/bin:/bin"
+        self.run_command([str(ROOT / ".githooks/pre-commit")])
+        self.assertEqual([call["cwd"] for call in self.calls()], [
+            str(self.directory / "frontend"),
+            str(self.directory / "prototype/v2"),
+        ])
+        self.assertTrue(all(call["args"] == ["run", "lint-nofix"] for call in self.calls()))
+        self.env["FAIL_COMMAND"] = "lint-nofix"
+        self.run_command([str(ROOT / ".githooks/pre-commit")], expected=17)
 
     def test_hook_skips_backend_only_work(self):
         self.run_command(["git", "init", "--quiet"])

@@ -313,8 +313,12 @@ module.exports = function(webpackEnv) {
         // Adds support for installing with Plug'n'Play, leading to faster installs and adding
         // guards against forgotten dependencies and such.
         PnpWebpackPlugin,
-        // Compile only the app and the shared-component prototype source.
-        new ModuleScopePlugin([paths.appSrc, paths.appPrototypeSrc], [paths.appPackageJson]),
+        // Prevents users from importing files from outside of src/ (or node_modules/).
+        // This often causes confusion because we only process files within src/ with babel.
+        // To fix this, we prevent you from importing files out of src/ -- if you'd like to,
+        // please link the files into your node_modules/ and let module-resolution kick in.
+        // Make sure your source files are compiled, as they will not be processed in any way.
+        new ModuleScopePlugin(paths.appSrc, [paths.appPackageJson]),
       ],
     },
     resolveLoader: {
@@ -351,14 +355,13 @@ module.exports = function(webpackEnv) {
                 cache: true,
                 formatter: require.resolve('react-dev-utils/eslintFormatter'),
                 eslintPath: require.resolve('eslint'),
-                configFile: path.resolve(paths.appPath, '.eslintrc.js'),
                 resolvePluginsRelativeTo: __dirname,
                 
               },
               loader: require.resolve('eslint-loader'),
             },
           ],
-          include: [paths.appSrc, paths.appPrototypeSrc],
+          include: paths.appSrc,
         },
         {
           // "oneOf" will traverse all following loaders until one will
@@ -380,18 +383,14 @@ module.exports = function(webpackEnv) {
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
             {
               test: /\.(js|mjs|jsx|ts|tsx)$/,
-              include: [paths.appSrc, paths.appPrototypeSrc],
+              include: paths.appSrc,
               loader: require.resolve('babel-loader'),
               options: {
                 customize: require.resolve(
                   'babel-preset-react-app/webpack-overrides'
                 ),
-                babelrc: false,
-                configFile: false,
-                presets: [require.resolve('babel-preset-react-app')],
                 
                 plugins: [
-                  require.resolve('babel-plugin-styled-components'),
                   [
                     require.resolve('babel-plugin-named-asset-import'),
                     {
@@ -561,11 +560,6 @@ module.exports = function(webpackEnv) {
             : undefined
         )
       ),
-      new HtmlWebpackPlugin({
-        filename: 'planner-comparison.html',
-        template: paths.appPrototypeComparison,
-        inject: false,
-      }),
       // Inlines the webpack runtime script. This script is too small to warrant
       // a network request.
       // https://github.com/facebook/create-react-app/issues/5358

@@ -2,12 +2,7 @@
   "compilerOptions": {
     "target": "es5",
     "sourceMap": true,
-    "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext",
-      "WebWorker"
-    ],
+    "lib": ["dom", "dom.iterable", "esnext", "WebWorker"],
     "allowJs": true,
     "baseUrl": "./src",
     "skipLibCheck": true,
@@ -20,40 +15,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react",
-    "paths": {
-      "react": [
-        "../node_modules/@types/react"
-      ],
-      "react-dom": [
-        "../node_modules/@types/react-dom"
-      ],
-      "react-dom/*": [
-        "../node_modules/@types/react-dom/*"
-      ],
-      "react-helmet": [
-        "../node_modules/@types/react-helmet"
-      ],
-      "react-modal": [
-        "../node_modules/@types/react-modal"
-      ],
-      "react-router-dom": [
-        "../node_modules/@types/react-router-dom"
-      ],
-      "@apollo/client": [
-        "../node_modules/@apollo/client"
-      ],
-      "react-feather": [
-        "../node_modules/react-feather"
-      ]
-    },
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "jsx": "react"
   },
-  "include": [
-    "src",
-    "codegen.js",
-    "../prototype/degree-planner"
-  ]
+  "include": ["src", "codegen.js"]
 }

@@ -153,12 +153,24 @@ migration-test: ## Test build/deploy commands without touching Docker or product
 frontend-container-test: ## Check the built frontend image with Nginx and disposable upstreams
 	python3 script/test-frontend-container.py
 
-.PHONY: prototype-planner prototype-original prototype-check
+.PHONY: prototype-install prototype-v1 prototype-v2 prototype-planner prototype-original prototype-check prototype-build
 
-prototype-planner: frontend-start ## Run the React degree planner prototype on port 3000
+prototype-install: ## Install only the React prototype dependencies
+	cd prototype/v2 && bun install --frozen-lockfile
 
-prototype-original: ## Run the original degree planner prototype on port 5173
-	cd prototype/original && node server.mjs
+prototype-v2: ## Run V2 (course palette and degree previewer) on port 3000
+	cd prototype/v2 && bun run start
 
-prototype-check: frontend-check ## Validate both degree planner prototypes without a backend
-	cd prototype/original && node --test model.test.mjs
+prototype-v1: ## Run V1 (roadmap and planner) on port 5173
+	cd prototype/v1 && node server.mjs
+
+prototype-build: ## Build the standalone React degree planner
+	cd prototype/v2 && bun run build
+
+prototype-check: ## Validate both degree planner prototypes without the frontend or backend
+	cd prototype/v2 && bun run check
+	cd prototype/v1 && node --test model.test.mjs
+
+# Retain existing run commands as aliases.
+prototype-planner: prototype-v2
+prototype-original: prototype-v1

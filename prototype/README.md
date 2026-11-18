@@ -1,32 +1,32 @@
 # Degree planner prototypes
 
-Both prototypes live here and run without a backend.
+Both prototypes run independently of the UWFlow frontend and backend.
 
 | Directory | Prototype | Runtime |
 | --- | --- | --- |
-| `original/` | Original roadmap, planner, and wishlist | Node.js 20+, no installation |
-| `degree-planner/` | React course palette, term preview, wishlist, calendar rules, minors and specializations | Existing `frontend/` Bun dependencies |
-| `comparison.html` | Side-by-side view of both prototypes | Emitted by the frontend build |
+| `v1/` | V1: roadmap, planner, and wishlist | Node.js 20+, no installation |
+| `v2/` | V2: React course palette, term preview, wishlist, calendar rules, minors and specializations | Bun and its own dependencies |
 
 From the repository root, use two terminals:
 
 ```sh
-make prototype-planner     # http://localhost:3000/degree-planner
-make prototype-original    # http://localhost:5173
+make prototype-install    # one-time installation for the React prototype
+make prototype-v2         # http://localhost:3000/degree-planner
+make prototype-v1         # http://localhost:5173, in a second terminal
 ```
 
-Compare them at http://localhost:3000/planner-comparison.html. If frontend
-dependencies are missing, run `make frontend-install` first.
+Compare them at http://localhost:3000/planner-comparison.html. The comparison
+page lives in `v2/public/` and is served by the React prototype.
 
 ```sh
-make prototype-check       # frontend lint, types and tests; original model tests
-make frontend-build        # production assets, including the comparison page
+make prototype-check      # React lint, types and tests; V1 model tests
+make prototype-build      # production assets in v2/dist/
 ```
 
-The React prototype reuses UWFlow components, generated GraphQL types and the
-frontend build tools. Its source and tests are in `degree-planner/`; the app
-contains only its route, lazy import, and shared CSS integration. Do not install
-a second set of React dependencies here.
+The React prototype has its own package manifest, lockfile, Vite build, tests,
+styles and API snapshots. It can be copied outside this repository and run with
+`bun install --frozen-lockfile` and `bun run start`. No files or installed
+packages from `frontend/` are needed.
 
-See [the React prototype guide](degree-planner/README.md) for calendar sources
-and planning behavior, or [the original guide](original/README.md).
+See [the V2 guide](v2/README.md) for calendar sources
+and planning behavior, or [the V1 guide](v1/README.md).

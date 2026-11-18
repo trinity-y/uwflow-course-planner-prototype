@@ -3,7 +3,7 @@ const plugin = require('tailwindcss/plugin');
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
-  content: ['./src/**/*.{js,jsx,ts,tsx}', '../prototype/degree-planner/**/*.{ts,tsx}', './public/index.html'],
+  content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
   // The app ships its own CSS reset in public/index.css
   // (`* { box-sizing: border-box; margin: 0; padding: 0 }`, button/anchor
   // resets, etc.), so Tailwind's preflight is disabled to avoid double-

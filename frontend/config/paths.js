@@ -58,8 +58,6 @@ module.exports = {
   appIndexJs: resolveModule(resolveApp, 'src/index'),
   appPackageJson: resolveApp('package.json'),
   appSrc: resolveApp('src'),
-  appPrototypeSrc: resolveApp('../prototype/degree-planner'),
-  appPrototypeComparison: resolveApp('../prototype/comparison.html'),
   appTsConfig: resolveApp('tsconfig.json'),
   appJsConfig: resolveApp('jsconfig.json'),
   yarnLockFile: resolveApp('yarn.lock'),

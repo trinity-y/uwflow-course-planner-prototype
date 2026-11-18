@@ -6,7 +6,7 @@ and deployment configuration. A single branch or PR can update the entire stack.
 | Directory | Contents |
 | --- | --- |
 | `frontend/` | React application, Bun lockfile, frontend Dockerfile, Vercel configuration |
-| `prototype/` | Original and React degree planner prototypes, comparison page, calendar fixtures |
+| `prototype/` | V1 and V2 degree planner prototypes, comparison page, calendar fixtures |
 | `flow/` | Go API, email worker, and UW importer |
 | `hasura/` | Database migrations and GraphQL metadata |
 | `nginx/` | Production frontend and API reverse proxy |
@@ -35,7 +35,10 @@ make frontend-generate  # requires a matching local Hasura schema
 make migration-test     # build/deployment command tests; no Docker required
 ```
 
-The root Git hook runs non-mutating frontend lint when frontend or React prototype files are staged.
+The root Git hook runs non-mutating lint in the frontend or standalone prototype
+when files in that package are staged. For Git apps with a limited PATH, the
+hook also checks `$BUN_INSTALL/bin` (default `~/.bun/bin`) and the standard
+Homebrew installation paths.
 `make hooks` replaces this clone's `core.hooksPath`; it applies to linked worktrees
 sharing that Git configuration. Existing standalone frontend clones should be
 replaced by a fresh monorepo clone. See [frontend documentation](frontend/README.md).
@@ -43,10 +46,11 @@ replaced by a fresh monorepo clone. See [frontend documentation](frontend/README
 ## Degree planner prototypes
 
 Both prototypes are grouped under [`prototype/`](prototype/README.md). From the
-repository root, run `make prototype-planner` for the React planner on port 3000
-and `make prototype-original` in another terminal for the original on port 5173.
+repository root, run `make prototype-install`, then `make prototype-v2` for V2 on port 3000
+and `make prototype-v1` in another terminal for V1 on port 5173.
 Compare them at `http://localhost:3000/planner-comparison.html`.
-`make prototype-check` validates both prototypes without a backend.
+`make prototype-check` validates both prototypes; `make prototype-build` builds
+V2. Neither requires the frontend or backend.
 
 ## Builds and deployment
 

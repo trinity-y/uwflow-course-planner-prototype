@@ -3,7 +3,29 @@ set -eu
 
 # Git runs hooks from the repository root. Frontend config resolves against cwd.
 # Never rewrite or stage files: partially staged work must remain untouched.
-if git diff --cached --name-only --diff-filter=ACMR -- frontend/ prototype/degree-planner/ | grep -q .; then
-    cd frontend
-    bun run lint-nofix
+
+# GUI Git clients may not inherit the login shell's Bun PATH.
+lint_package() {
+    hook_bun=$(command -v bun || true)
+    if [ -z "$hook_bun" ]; then
+        for hook_candidate in "${BUN_INSTALL:-"$HOME/.bun"}/bin/bun" /opt/homebrew/bin/bun /usr/local/bin/bun; do
+            if [ -x "$hook_candidate" ]; then
+                hook_bun=$hook_candidate
+                break
+            fi
+        done
+    fi
+    if [ -z "$hook_bun" ]; then
+        echo "pre-commit: Bun was not found. Install Bun or set BUN_INSTALL to its installation directory." >&2
+        return 1
+    fi
+    (cd "$1" && "$hook_bun" run lint-nofix)
+}
+
+if git diff --cached --name-only --diff-filter=ACMR -- frontend/ | grep -q .; then
+    lint_package frontend
+fi
+
+if git diff --cached --name-only --diff-filter=ACMR -- prototype/v2/ | grep -q .; then
+    lint_package prototype/v2
 fi
