@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import archive from './calendar-courses.json' with { type: 'json' };
 import requirements from './degree-requirements.json' with { type: 'json' };
 import { initialPlan } from './calendar.mjs';
-import { evaluateDegree } from './degree.mjs';
+import { degreeCourseSets, evaluateDegree } from './degree.mjs';
 import { indexPlan, placeCourse, readPlan } from './model.mjs';
 
 const report = (plan) => evaluateDegree(requirements, archive, indexPlan(plan));
@@ -39,6 +39,18 @@ test('cross-listed courses and science pairs each count as a single elective', (
   assert.deepEqual(check(withLab, 'science').matched, ['CHEM 123', 'CHEM 123L']);
   assert.equal(check(withLab, 'science').current, 1);
   assert.equal(check(withLab, 'elective-total').current, 2);
+});
+
+test('degree choices preserve published lists and paired lab requirements', () => {
+  const degree = report(blank());
+  const setsFor = (id) => degreeCourseSets(requirements, archive, check(degree, id));
+  const science = setsFor('science').flatMap(({ options }) => options);
+  assert.deepEqual(science.find(([code]) => code === 'CHEM 123'), ['CHEM 123', 'CHEM 123L']);
+  assert.deepEqual(setsFor('technical-additional').map(({ title }) => title), ['CS list', 'ECE list', 'Extended list']);
+  const [published, other] = setsFor('elective-total');
+  assert.ok(published.options.some(([code]) => code === 'CS 448'));
+  assert.ok(other.options.some(([code]) => code === 'FR 255'));
+  assert.equal(other.options.some(([code]) => ['CS 137', 'CHEM 123L', 'PD 3', 'COOP 1'].includes(code)), false);
 });
 
 test('communication and technical electives use the calendar timing boundaries', () => {

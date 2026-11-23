@@ -10,6 +10,7 @@ import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
 const storageKey = 'uwflow-webflow-planner-v1';
+const favoritesKey = 'uwflow-webflow-planner-favorites-v1';
 const pageSize = 30;
 const byId = (id) => document.getElementById(id);
 const dialog = byId('course-dialog');
@@ -17,6 +18,7 @@ const degreeDialog = byId('degree-dialog');
 const degreeButton = byId('open-degree-check');
 const search = byId('course-search');
 const courseList = byId('catalog-list');
+const favoritesList = byId('favorites-list');
 const board = byId('term-board');
 const termsById = new Map(terms.map((term) => [term.id, term]));
 const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term' };
@@ -32,14 +34,29 @@ const degreeCourseGroups = [
 const liveDetails = new Map();
 const inFlight = new Map();
 let saved;
+let savedFavorites;
 try {
   saved = JSON.parse(localStorage.getItem(storageKey));
 } catch {
   saved = null;
 }
+try {
+  savedFavorites = JSON.parse(localStorage.getItem(favoritesKey));
+} catch {
+  savedFavorites = null;
+}
 for (const course of Array.isArray(saved?.courses) ? saved.courses : []) {
   if (typeof course?.code === 'string' && typeof course.name === 'string' && !catalog.has(course.code)) {
     catalog.set(course.code, { code: course.code, name: course.name });
+  }
+}
+const favorites = new Set(['CS 448']);
+if (Array.isArray(savedFavorites)) {
+  favorites.clear();
+  for (const course of savedFavorites) {
+    if (typeof course?.code !== 'string' || !/^[A-Z]+ \d{1,4}[A-Z]*$/.test(course.code)) continue;
+    favorites.add(course.code);
+    if (typeof course.name === 'string' && !catalog.has(course.code)) catalog.set(course.code, course);
   }
 }
 
@@ -48,6 +65,7 @@ let targets = readTermTargets(saved?.targets);
 let scheduled = indexPlan(plan);
 let warningList = [];
 let degreeReport;
+let refreshDegreeReport;
 let selectedCode;
 let graphView;
 let dialogTrigger;
@@ -85,7 +103,7 @@ function savePlan() {
 function makeDraggable(card, code) {
   card.dataset.course = code;
   card.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0 || !event.isPrimary || event.target.closest('.catalog-add, .warning-trigger')) return;
+    if (event.button !== 0 || !event.isPrimary || event.target.closest('.catalog-add, .warning-trigger, .favorite-star')) return;
     suppressClick = null;
     const { pointerId, clientX, clientY } = event;
     drag = { pointerId, code, card, startX: clientX, startY: clientY, x: clientX, y: clientY };
@@ -176,11 +194,52 @@ function makeButton(className, label, content) {
   return node;
 }
 
+function updateFavoriteStar(star, code) {
+  const favorite = favorites.has(code);
+  star.setAttribute('aria-pressed', String(favorite));
+  star.textContent = favorite ? '★' : '☆';
+  star.title = favorite ? `Remove ${code} from favorites` : `Add ${code} to favorites`;
+}
+
+function favoriteStar(code) {
+  const star = makeButton('favorite-star', `Favorite ${code}`);
+  star.dataset.favoriteCode = code;
+  updateFavoriteStar(star, code);
+  star.addEventListener('click', () => {
+    const position = [...favorites].indexOf(code);
+    if (position >= 0) favorites.delete(code);
+    else favorites.add(code);
+    try {
+      const courses = [...favorites].map((code) => ({ code, name: getCourse(code).name }));
+      localStorage.setItem(favoritesKey, JSON.stringify(courses));
+    } catch {
+      // Keep the current favorites available when browser storage is disabled.
+    }
+    const restoreFocus = favoritesList.contains(star) && star === document.activeElement;
+    renderFavorites();
+    const copies = document.querySelectorAll(`[data-favorite-code="${CSS.escape(code)}"]`);
+    copies.forEach((copy) => updateFavoriteStar(copy, code));
+    if (restoreFocus) {
+      const stars = favoritesList.querySelectorAll('.favorite-star');
+      (stars[Math.min(position, stars.length - 1)] ?? byId('favorites-title')).focus({ preventScroll: true });
+    }
+    announce(position < 0 ? `${code} added to favorites.` : `${code} removed from favorites.`);
+  });
+  return star;
+}
+
+function withFavorite(control, code) {
+  const row = element('span', 'course-with-star');
+  row.append(control, favoriteStar(code));
+  return row;
+}
+
 function showCourse(code, trigger, focusPlacement = false) {
   selectedCode = code;
   graphView = { course: code, slot: null };
   dialogTrigger = trigger;
   const currentTerm = scheduled.get(code);
+  byId('detail-favorite').replaceChildren(favoriteStar(code));
   const select = byId('target-term');
   select.replaceChildren(...termOptions('Choose a term', true));
   select.value = currentTerm ?? '';
@@ -241,7 +300,9 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     ? { left: previous.scrollLeft, top: previous.scrollTop }
     : null;
   graphCleanup();
-  graphCleanup = renderGraph(graph, code, getCourse, scheduled, changeGraphTerm, graphView);
+  graphCleanup = renderGraph(graph, code, getCourse, scheduled, {
+    onPlacementChange: changeGraphTerm, view: graphView, favoriteStar,
+  });
   graph.dataset.course = code;
   const viewport = graph.querySelector('.graph-scroll');
   byId('placement-form').hidden = Boolean(viewport);
@@ -326,10 +387,12 @@ function termCourse(code, term, groups) {
   const grip = element('span', 'drag-handle');
   grip.setAttribute('aria-hidden', 'true');
   const open = makeButton('term-course-open', `View ${code} prerequisites in ${term.label}`);
-  open.append(element('span', 'course-code', code), element('span', 'term-course-name', course.name));
+  open.append(element('span', 'course-code', code));
   open.title = course.name;
   open.addEventListener('click', () => showCourse(code, open));
-  card.append(grip, open);
+  const name = element('span', 'term-course-name', course.name);
+  name.addEventListener('click', () => showCourse(code, open));
+  card.append(grip, withFavorite(open, code), name);
   if (groups.length) card.append(warningBadge(code, term, groups));
   return card;
 }
@@ -473,7 +536,7 @@ function renderBuckets() {
     const label = makeButton('bucket-course', `View ${code} prerequisites`, code);
     const header = element('header', 'bucket-heading');
     label.addEventListener('click', () => showCourse(code, label));
-    header.append(label, element('span', '', term.label));
+    header.append(withFavorite(label, code), element('span', '', term.label));
     bucket.append(header);
     for (const group of groups) {
       const { outstanding, remaining } = groupProgress(group, term.id, scheduled);
@@ -490,7 +553,7 @@ function renderBuckets() {
         chip.title = status === 'late' ? `${course.name} · Needs an earlier term` : course.name;
         makeDraggable(chip, option);
         chip.addEventListener('click', () => showCourse(option, chip, true));
-        chips.append(chip);
+        chips.append(withFavorite(chip, option));
       }
       options.append(chips);
       bucket.append(options);
@@ -501,27 +564,27 @@ function renderBuckets() {
 }
 
 function renderDegreeCourses() {
-  const groups = degreeCourseGroups.map(([title, codes]) => {
+  const fixedRules = degreeReport.rules.filter(({ type }) => type === 'required');
+  const missing = new Set(fixedRules.flatMap((rule) => rule.missing));
+  const groups = [];
+  for (const [title, codes] of degreeCourseGroups) {
+    const remaining = codes.filter((code) => missing.has(code));
+    if (!remaining.length) continue;
     const group = element('section', 'degree-course-group');
     const chips = element('div', 'bucket-chips');
-    for (const code of codes) {
+    for (const code of remaining) {
       const { name } = getCourse(code);
-      const term = termsById.get(scheduled.get(code));
-      const chip = makeButton('bucket-chip required-course', `${code}, ${name}, ${term ? `planned for ${term.label}` : 'unscheduled'}`, code);
-      chip.title = term ? `${name} · ${term.label}` : name;
-      if (term) chip.classList.add('in-plan');
+      const chip = makeButton('bucket-chip', `${code}, ${name}, unscheduled`, code);
+      chip.title = name;
       makeDraggable(chip, code);
       chip.addEventListener('click', () => showCourse(code, chip, true));
-      chips.append(chip);
+      chips.append(withFavorite(chip, code));
     }
     group.append(element('h4', '', title), chips);
-    return group;
-  });
-  byId('degree-course-list').replaceChildren(...groups);
-  const fixedRules = degreeReport.rules.filter(({ type }) => type === 'required');
-  const current = fixedRules.reduce((sum, rule) => sum + rule.current, 0);
-  const total = fixedRules.reduce((sum, rule) => sum + rule.target, 0);
-  byId('degree-course-count').textContent = `${current}/${total} planned`;
+    groups.push(group);
+  }
+  byId('degree-course-list').replaceChildren(...(groups.length ? groups : [element('p', 'quiet-message', 'All required courses are in the plan.')]));
+  byId('degree-course-count').textContent = `${missing.size} left`;
 }
 
 function updateDegree() {
@@ -532,6 +595,7 @@ function updateDegree() {
   byId('degree-status').textContent = met ? 'Passes modeled requirements' : 'Degree requirements incomplete';
   byId('degree-rule-count').textContent = `${degreeReport.met} of ${degreeReport.total} rules met`;
   renderDegreeCourses();
+  refreshDegreeReport?.(degreeReport);
 }
 
 function catalogCard(course) {
@@ -541,13 +605,25 @@ function catalogCard(course) {
   const grip = element('span', 'drag-handle');
   grip.setAttribute('aria-hidden', 'true');
   const open = makeButton('catalog-open', `View ${code} prerequisites`);
-  open.append(element('span', 'course-code', code), element('span', 'catalog-course-name', name));
+  open.append(element('span', 'course-code', code));
   open.addEventListener('click', () => showCourse(code, open));
-  const add = makeButton('icon-button catalog-add', `Schedule ${code}`, '+');
-  add.title = `Schedule ${code}`;
+  const info = element('div', 'catalog-info');
+  const title = element('span', 'catalog-course-name', name);
+  title.addEventListener('click', () => showCourse(code, open));
+  info.append(withFavorite(open, code), title);
+  const term = termsById.get(scheduled.get(code));
+  const action = term ? 'Move' : 'Schedule';
+  const add = makeButton('icon-button catalog-add', `${action} ${code}`, term ? '✓' : '+');
+  add.title = term ? `Planned for ${term.label}` : `Schedule ${code}`;
   add.addEventListener('click', () => showCourse(code, add, true));
-  card.append(grip, open, add);
+  card.append(grip, info, add);
   return card;
+}
+
+function renderFavorites() {
+  const cards = [...favorites].map((code) => catalogCard(getCourse(code)));
+  byId('favorite-count').textContent = favorites.size;
+  favoritesList.replaceChildren(...(cards.length ? cards : [element('p', 'quiet-message', 'Star a course to save it here.')]));
 }
 
 function renderCatalog() {
@@ -591,6 +667,7 @@ function renderPlan() {
   renderBoard();
   updateDegree();
   renderBuckets();
+  renderFavorites();
   renderCatalog();
   if (focusCode && focusLabel && !focused.isConnected) {
     const targets = [...document.querySelectorAll(`[data-course="${CSS.escape(focusCode)}"] button, button[data-course="${CSS.escape(focusCode)}"]`)];
@@ -626,13 +703,16 @@ byId('clear-plan').addEventListener('click', () => {
 });
 degreeButton.addEventListener('click', () => {
   const report = byId('degree-report');
-  renderDegreeReport(report, degreeReport, requirements);
+  refreshDegreeReport = renderDegreeReport(report, degreeReport, requirements, archive, {
+    favoriteStar, getCourse, showCourse,
+  });
   report.scrollTop = 0;
   degreeDialog.showModal();
   setHoveredCourse(undefined);
 });
 byId('close-degree-check').addEventListener('click', () => degreeDialog.close());
 degreeDialog.addEventListener('close', () => {
+  refreshDegreeReport = undefined;
   degreeButton.focus({ preventScroll: true });
 });
 byId('close-dialog').addEventListener('click', () => dialog.close());
@@ -646,9 +726,10 @@ byId('placement-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const code = selectedCode;
   const target = byId('target-term').value;
-  dialogTrigger = null;
+  if (!degreeDialog.open) dialogTrigger = null;
   dialog.close();
   addOrMove(code, target);
+  if (degreeDialog.open) return;
   const cell = document.querySelector(`[data-term="${target}"]`);
   const card = cell?.querySelector(`[data-course="${CSS.escape(code)}"] .term-course-open`);
   card?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -656,10 +737,10 @@ byId('placement-form').addEventListener('submit', (event) => {
 });
 byId('remove-course').addEventListener('click', () => {
   const code = selectedCode;
-  dialogTrigger = null;
+  if (!degreeDialog.open) dialogTrigger = null;
   dialog.close();
   removeFromPlan(code);
-  search.focus({ preventScroll: true });
+  if (!degreeDialog.open) search.focus({ preventScroll: true });
 });
 
 renderPlan();
@@ -671,6 +752,7 @@ request('./api/catalog').then((rows) => {
   }
   liveCatalog = true;
   renderCatalog();
+  renderFavorites();
 }).catch(() => {});
 const restored = [...scheduled.keys()].filter((code) => !sampleCatalog.has(code));
 for (let i = 0; i < restored.length; i += 50) loadDetails(restored.slice(i, i + 50));

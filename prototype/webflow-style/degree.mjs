@@ -4,6 +4,50 @@ const termOrder = new Map(terms.map(({ id }, index) => [id, index]));
 const termsByLevel = new Map(terms.filter(({ level }) => level).map(({ level, id }) => [level, id]));
 const workTerms = new Set(terms.filter(({ work }) => work).map(({ id }) => id));
 
+const requiredCodes = (requirements, rule) => rule.codes ?? rule.levels.flatMap((level) => requirements.coreByLevel[level]);
+const fixedCourses = (requirements) => requirements.rules.filter(({ type }) => type === 'required')
+  .flatMap((rule) => requiredCodes(requirements, rule));
+const creditForCode = (archive, code) => archive[code]?.[2] ?? code;
+const isHalfCreditElective = (archive, code) => archive[code]?.[1] === 0.5 && !/^(COOP|PD|WKRPT) /.test(code);
+
+export function degreeCourseSets(requirements, archive, rule) {
+  const { lists } = requirements;
+  if (rule.type === 'required') {
+    if (rule.levels) return rule.levels.map((level) => ({
+      title: level, options: requirements.coreByLevel[level].map((code) => [code]),
+    }));
+    return [{ options: rule.codes.map((code) => [code]) }];
+  }
+  if (rule.id === 'technical-additional') {
+    const primary = new Set([...lists['technical-cs'], ...lists['technical-ece']].map(([code]) => code));
+    return [
+      { title: 'CS list', options: lists['technical-cs'] },
+      { title: 'ECE list', options: lists['technical-ece'] },
+      { title: 'Extended list', options: lists[rule.list].filter(([code]) => !primary.has(code)) },
+    ];
+  }
+  if (rule.list) return [{ options: lists[rule.list] }];
+
+  const approved = new Map();
+  const reserved = new Set(fixedCourses(requirements).map((code) => creditForCode(archive, code)));
+  const known = new Set();
+  for (const elective of requirements.rules.filter(({ type }) => type === 'elective')) {
+    for (const choice of lists[elective.list]) {
+      if (reserved.has(creditForCode(archive, choice[0]))) continue;
+      approved.set(choice.join('|'), choice);
+      choice.forEach((code) => known.add(creditForCode(archive, code)));
+    }
+  }
+  const halfCredit = Object.keys(archive).filter((code) => {
+    const credit = creditForCode(archive, code);
+    return isHalfCreditElective(archive, code) && !reserved.has(credit) && !known.has(credit);
+  }).map((code) => [code]);
+  return [
+    { title: 'Published elective lists', options: [...approved.values()] },
+    { title: 'Other 0.50-unit courses', options: halfCredit },
+  ];
+}
+
 function assignElectiveSlots(rules, candidatesByRule) {
   const creditsToSlots = new Map();
   const slots = rules.flatMap((rule) =>
@@ -34,7 +78,7 @@ function assignElectiveSlots(rules, candidatesByRule) {
 }
 
 export function evaluateDegree(requirements, archive, scheduled) {
-  const creditFor = (code) => archive[code]?.[2] ?? code;
+  const creditFor = (code) => creditForCode(archive, code);
   const placements = new Map();
   for (const [code, term] of scheduled) {
     const credit = creditFor(code);
@@ -42,9 +86,7 @@ export function evaluateDegree(requirements, archive, scheduled) {
     placements.get(credit).push({ code, term });
   }
 
-  const requiredCodes = (rule) => rule.codes ?? rule.levels.flatMap((level) => requirements.coreByLevel[level]);
-  const required = requirements.rules.filter(({ type }) => type === 'required').flatMap(requiredCodes);
-  const reserved = new Set(required.map(creditFor));
+  const reserved = new Set(fixedCourses(requirements).map(creditFor));
   const electiveRules = requirements.rules.filter(({ type }) => type === 'elective');
 
   function optionsFor(list, eligible = () => true) {
@@ -79,9 +121,7 @@ export function evaluateDegree(requirements, archive, scheduled) {
     for (const [credit, placement] of optionsFor(rule.list)) electiveCredits.set(credit, placement);
   }
   for (const [credit, choices] of placements) {
-    const elective = choices.find(({ code }) =>
-      archive[code]?.[1] === 0.5 && !/^(COOP|PD|WKRPT) /.test(code),
-    );
+    const elective = choices.find(({ code }) => isHalfCreditElective(archive, code));
     if (elective && !reserved.has(credit) && !associatedCredits.has(credit) && !electiveCredits.has(credit)) {
       electiveCredits.set(credit, { ...elective, codes: [elective.code] });
     }
@@ -89,7 +129,7 @@ export function evaluateDegree(requirements, archive, scheduled) {
 
   const evaluations = requirements.rules.map((rule) => {
     if (rule.type === 'required') {
-      const codes = requiredCodes(rule);
+      const codes = requiredCodes(requirements, rule);
       const matched = [];
       const missing = [];
       for (const code of codes) {

@@ -49,6 +49,13 @@
           </div>
           <div class="prereq-list" id="prereq-list"></div>
         </section>
+        <section class="favorites-section" aria-labelledby="favorites-title">
+          <div class="section-heading">
+            <h3 id="favorites-title" tabindex="-1">Favorites</h3>
+            <span class="count" id="favorite-count"></span>
+          </div>
+          <div class="favorites-list" id="favorites-list"></div>
+        </section>
         <section class="catalog-section" aria-labelledby="find-title">
           <div class="catalog-search">
             <h3 id="find-title">Find courses</h3>
@@ -94,7 +101,7 @@
   <dialog class="details" id="course-dialog" aria-labelledby="detail-title">
     <header class="detail-header">
       <div>
-        <div class="detail-code" id="detail-code"></div>
+        <div class="detail-code course-with-star"><span id="detail-code"></span><span id="detail-favorite"></span></div>
         <h2 id="detail-title"></h2>
       </div>
       <button type="button" class="icon-button close-dialog" id="close-dialog" aria-label="Close course details" autofocus>×</button>

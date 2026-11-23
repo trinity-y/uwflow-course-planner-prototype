@@ -31,7 +31,7 @@ function graphButton(className, content, control, label) {
   return button;
 }
 
-export function renderGraph(container, code, getCourse, scheduled, onPlacementChange, view) {
+export function renderGraph(container, code, getCourse, scheduled, { onPlacementChange, view, favoriteStar }) {
   const { depth, edges } = buildGraph(code, getCourse);
   if (depth.size === 1) {
     container.replaceChildren();
@@ -164,9 +164,13 @@ export function renderGraph(container, code, getCourse, scheduled, onPlacementCh
       for (const option of group.options) {
         const link = graphButton('direct-option', option, `option:${course}:${index}:${option}`,
           `Show ${option} in the prerequisite graph`);
+        const star = favoriteStar(option);
+        star.dataset.graphControl = `favorite:option:${course}:${index}:${option}`;
+        const choice = element('span', 'course-with-star');
         bindPreview(link, () => ({ group, option }));
         link.addEventListener('click', () => cards.get(option).node.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
-        options.append(link);
+        choice.append(link, star);
+        options.append(choice);
       }
       item.append(button, options);
       list.append(item);
@@ -216,14 +220,18 @@ export function renderGraph(container, code, getCourse, scheduled, onPlacementCh
       const button = graphButton('graph-inspect', undefined, `course:${course}`, `Show prerequisite slots for ${course}`);
       button.addEventListener('click', () => inspect(course));
       const heading = element('span', 'graph-node-heading');
-      heading.append(element('strong', '', course));
+      const codeLabel = element('strong', '', course);
+      const star = favoriteStar(course);
+      star.dataset.graphControl = `favorite:course:${course}`;
+      button.append(codeLabel);
+      heading.append(button, star);
       const groupCount = getCourse(course)?.groups?.length ?? 0;
       node.style.setProperty('--slot-count', groupCount);
       if (groupCount) {
         heading.append(element('span', 'graph-all', `${groupCount} ${groupCount === 1 ? 'slot' : 'slots'}`));
       }
-      button.append(heading, courseName);
-      node.append(button, select);
+      courseName.addEventListener('click', () => inspect(course));
+      node.append(heading, courseName, select);
       if (status === 'late') node.append(element('span', 'graph-node-caption', `${term} is too late`));
       bindPreview(node, () => {
         const pinned = selectedSlot();

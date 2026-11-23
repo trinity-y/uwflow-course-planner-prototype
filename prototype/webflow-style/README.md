@@ -15,6 +15,8 @@ The sample starts in Fall 2023 and follows the study and co-op sequence in
 Each term has an editable course target. Initial study targets include the
 calendar’s elective and communication course slots. Targets count courses.
 The schedule header opens a degree report with per-rule status and progress.
+Expand **Eligible courses** within a rule to browse its choices. Use a course
+code to open its planner and the star to save it under **Favorites**.
 [The JSON rules](degree-requirements.json) contain calendar links and the
 course, elective, and work-term requirements. The checker uses archived course
 IDs to count a cross-listed course once and requires both courses in a listed
