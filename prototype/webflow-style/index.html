@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7f8fc">
+  <title>Course planner | UW Flow</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="site-header-inner">
+      <div class="brand"><span class="brand-icon" aria-hidden="true"><i></i><i></i><i></i></span>UW Flow</div>
+      <span class="header-divider"></span>
+      <span class="header-page">Planner</span>
+      <a class="calendar-link" id="calendar-link" target="_blank" rel="noopener">Academic calendar <span aria-hidden="true">↗</span></a>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <header class="page-heading">
+      <div>
+        <h1>Course planner</h1>
+        <p>Software Engineering <span aria-hidden="true">·</span> Fall 2023 entry</p>
+      </div>
+      <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
+    </header>
+
+    <div class="workspace-grid">
+      <aside class="sidebar" aria-labelledby="catalog-title">
+        <div class="sidebar-heading">
+          <h2 id="catalog-title">Find courses</h2>
+          <label class="search-field">
+            <span class="search-icon" aria-hidden="true"></span>
+            <input id="course-search" type="search" aria-label="Search courses by code or name" placeholder="Code or name" autocomplete="off" spellcheck="false">
+          </label>
+        </div>
+        <section class="prereq-section" id="prereq-section" aria-labelledby="prereq-title">
+          <div class="section-heading">
+            <h3 id="prereq-title">Missing prerequisites</h3>
+            <span class="count" id="bucket-count"></span>
+          </div>
+          <div class="prereq-list" id="prereq-list"></div>
+        </section>
+        <section class="catalog-section" aria-label="Course search results">
+          <div class="section-heading">
+            <h3 id="results-title">All courses</h3>
+            <span class="catalog-source" id="catalog-source">Sample catalog</span>
+          </div>
+          <div class="catalog-list" id="catalog-list"></div>
+        </section>
+      </aside>
+
+      <section class="board" aria-labelledby="board-title">
+        <header class="board-heading">
+          <div>
+            <h2 id="board-title">Academic schedule</h2>
+            <p>Drag a course into a term to add or move it.</p>
+          </div>
+          <div class="board-summary">
+            <span class="course-count" id="planned-count"></span>
+            <button class="warning-summary" id="warning-summary" type="button" hidden></button>
+          </div>
+        </header>
+        <div class="board-scroll" tabindex="0" role="region" aria-label="Schedule by year and term">
+          <div class="term-board" id="term-board"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <dialog class="details" id="course-dialog" aria-labelledby="detail-title">
+    <header class="detail-header">
+      <div>
+        <div class="detail-code" id="detail-code"></div>
+        <h2 id="detail-title"></h2>
+      </div>
+      <button type="button" class="icon-button close-dialog" id="close-dialog" aria-label="Close course details" autofocus>×</button>
+    </header>
+    <div class="detail-body">
+      <div class="graph-heading">
+        <h3>Prerequisite graph</h3>
+        <div class="graph-legend" aria-label="Graph legend">
+          <span><i class="planned"></i> In plan</span><span><i class="missing"></i> Unscheduled</span><span><i class="late"></i> Too late</span>
+        </div>
+      </div>
+      <p class="detail-status" id="detail-status"></p>
+      <div id="detail-graph"></div>
+      <p class="live-detail" id="live-detail"></p>
+    </div>
+    <footer class="detail-footer">
+      <div class="detail-links">
+        <a id="flow-link" target="_blank" rel="noopener">View on UW Flow <span aria-hidden="true">↗</span></a>
+        <button type="button" class="button remove-course" id="remove-course" hidden>Remove</button>
+      </div>
+      <form id="placement-form" class="placement-form">
+        <label for="target-term">Schedule in</label>
+        <select id="target-term" required></select>
+        <button class="button primary" type="submit" id="place-course">Add course</button>
+      </form>
+    </footer>
+  </dialog>
+
+  <div class="sr-only" id="announcement" role="status"></div>
+</body>
+</html>
