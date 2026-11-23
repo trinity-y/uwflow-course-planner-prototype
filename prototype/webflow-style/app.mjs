@@ -4,17 +4,31 @@ import {
   normalizeCode, parseLivePrerequisites, placeCourse, readPlan, readTermTargets,
 } from './model.mjs';
 import { element, renderGraph, termOptions } from './graph.mjs';
+import { evaluateDegree } from './degree.mjs';
+import { renderDegreeReport } from './degree-view.mjs';
+import requirements from './degree-requirements.json' with { type: 'json' };
+import archive from './calendar-courses.json' with { type: 'json' };
 
 const storageKey = 'uwflow-webflow-planner-v1';
 const pageSize = 30;
 const byId = (id) => document.getElementById(id);
 const dialog = byId('course-dialog');
+const degreeDialog = byId('degree-dialog');
+const degreeButton = byId('open-degree-check');
 const search = byId('course-search');
 const courseList = byId('catalog-list');
 const board = byId('term-board');
 const termsById = new Map(terms.map((term) => [term.id, term]));
 const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term' };
-const catalog = new Map(sampleCatalog);
+const catalog = new Map([
+  ...sampleCatalog,
+  ...Object.entries(archive).filter(([code]) => !sampleCatalog.has(code))
+    .map(([code, [name]]) => [code, { code, name }]),
+]);
+const degreeCourseGroups = [
+  ...Object.entries(requirements.coreByLevel),
+  ['Professional development', requirements.rules.find(({ id }) => id === 'pd-core').codes],
+];
 const liveDetails = new Map();
 const inFlight = new Map();
 let saved;
@@ -33,6 +47,7 @@ let plan = readPlan(saved?.plan);
 let targets = readTermTargets(saved?.targets);
 let scheduled = indexPlan(plan);
 let warningList = [];
+let degreeReport;
 let selectedCode;
 let graphView;
 let dialogTrigger;
@@ -323,7 +338,7 @@ function updateScheduleHighlight(focus = document.activeElement) {
   const focused = focus instanceof Element && focus.matches(':focus-visible')
     ? focus.closest('.term-course')?.dataset.course
     : undefined;
-  const selected = dialog.open || drag?.ghost ? undefined : hoveredCourse ?? focused;
+  const selected = dialog.open || degreeDialog.open || drag?.ghost ? undefined : hoveredCourse ?? focused;
   const prerequisites = new Set(getCourse(selected).groups?.flatMap(({ options }) => options));
   const target = scheduled.get(selected);
   for (const card of board.querySelectorAll('.term-course')) {
@@ -344,7 +359,7 @@ function setHoveredCourse(code) {
 }
 
 board.addEventListener('pointerover', (event) => {
-  if (event.pointerType === 'touch' || dialog.open || drag?.ghost) return;
+  if (event.pointerType === 'touch' || dialog.open || degreeDialog.open || drag?.ghost) return;
   setHoveredCourse(event.target.closest('.term-course')?.dataset.course);
 });
 board.addEventListener('pointerleave', () => setHoveredCourse(undefined));
@@ -485,6 +500,40 @@ function renderBuckets() {
   section.replaceChildren(...buckets);
 }
 
+function renderDegreeCourses() {
+  const groups = degreeCourseGroups.map(([title, codes]) => {
+    const group = element('section', 'degree-course-group');
+    const chips = element('div', 'bucket-chips');
+    for (const code of codes) {
+      const { name } = getCourse(code);
+      const term = termsById.get(scheduled.get(code));
+      const chip = makeButton('bucket-chip required-course', `${code}, ${name}, ${term ? `planned for ${term.label}` : 'unscheduled'}`, code);
+      chip.title = term ? `${name} · ${term.label}` : name;
+      if (term) chip.classList.add('in-plan');
+      makeDraggable(chip, code);
+      chip.addEventListener('click', () => showCourse(code, chip, true));
+      chips.append(chip);
+    }
+    group.append(element('h4', '', title), chips);
+    return group;
+  });
+  byId('degree-course-list').replaceChildren(...groups);
+  const fixedRules = degreeReport.rules.filter(({ type }) => type === 'required');
+  const current = fixedRules.reduce((sum, rule) => sum + rule.current, 0);
+  const total = fixedRules.reduce((sum, rule) => sum + rule.target, 0);
+  byId('degree-course-count').textContent = `${current}/${total} planned`;
+}
+
+function updateDegree() {
+  degreeReport = evaluateDegree(requirements, archive, scheduled);
+  const met = degreeReport.met === degreeReport.total;
+  degreeButton.classList.toggle('met', met);
+  byId('degree-percent').textContent = `${degreeReport.percent}%`;
+  byId('degree-status').textContent = met ? 'Passes modeled requirements' : 'Degree requirements incomplete';
+  byId('degree-rule-count').textContent = `${degreeReport.met} of ${degreeReport.total} rules met`;
+  renderDegreeCourses();
+}
+
 function catalogCard(course) {
   const { code, name } = course;
   const card = element('div', 'catalog-card');
@@ -494,9 +543,8 @@ function catalogCard(course) {
   const open = makeButton('catalog-open', `View ${code} prerequisites`);
   open.append(element('span', 'course-code', code), element('span', 'catalog-course-name', name));
   open.addEventListener('click', () => showCourse(code, open));
-  const alreadyPlanned = scheduled.has(code);
-  const add = makeButton('icon-button catalog-add', `${alreadyPlanned ? 'Move' : 'Schedule'} ${code}`, alreadyPlanned ? '✓' : '+');
-  add.title = alreadyPlanned ? `In ${termsById.get(scheduled.get(code)).label}` : `Schedule ${code}`;
+  const add = makeButton('icon-button catalog-add', `Schedule ${code}`, '+');
+  add.title = `Schedule ${code}`;
   add.addEventListener('click', () => showCourse(code, add, true));
   card.append(grip, open, add);
   return card;
@@ -507,15 +555,16 @@ function renderCatalog() {
   const simplify = (value) => value.toLowerCase().replace(/\s/g, '');
   const searchTerms = query.split(/\s+/);
   const matches = [...catalog.values()].filter(({ code, name, aliases = [] }) => {
+    if (scheduled.has(code)) return false;
     const codes = [code, ...aliases].map(simplify);
     const haystack = `${code} ${name} ${aliases.join(' ')}`.toLowerCase();
     return codes.some((value) => value.startsWith(simplify(query))) ||
       searchTerms.every((word) => haystack.includes(word));
   });
   byId('results-title').textContent = query ? 'Search results' : 'All courses';
-  byId('catalog-source').textContent = query ? `${matches.length} found` : liveCatalog ? 'UW Flow catalog' : 'Sample catalog';
+  byId('catalog-source').textContent = query ? `${matches.length} found` : liveCatalog ? 'UW Flow catalog' : '2023–24 catalog';
   if (!matches.length) {
-    courseList.replaceChildren(element('p', 'quiet-message', 'No courses match your search.'));
+    courseList.replaceChildren(element('p', 'quiet-message', 'No unscheduled courses match your search.'));
     return;
   }
 
@@ -540,6 +589,7 @@ function renderPlan() {
   const focusLabel = focused.getAttribute('aria-label');
   scheduled = indexPlan(plan);
   renderBoard();
+  updateDegree();
   renderBuckets();
   renderCatalog();
   if (focusCode && focusLabel && !focused.isConnected) {
@@ -559,13 +609,31 @@ byId('warning-summary').addEventListener('click', () => {
   first?.scrollIntoView({ block: 'center', inline: 'center' });
   first?.focus({ preventScroll: true });
 });
-byId('reset-plan').addEventListener('click', () => {
-  if (!window.confirm('Replace your edits with the sample plan?')) return;
-  plan = initialPlan();
+function replacePlan(next, message) {
+  plan = next;
   targets = readTermTargets();
   renderPlan();
   savePlan();
-  announce('Sample plan restored.');
+  announce(message);
+}
+byId('reset-plan').addEventListener('click', () => {
+  if (window.confirm('Replace your edits with the sample plan?')) replacePlan(initialPlan(), 'Sample plan restored.');
+});
+byId('clear-plan').addEventListener('click', () => {
+  if (!window.confirm('Start a blank plan? This clears all scheduled courses and restores the calendar term targets.')) return;
+  const blank = Object.fromEntries(terms.map(({ id }) => [id, []]));
+  replacePlan(blank, 'Blank plan started.');
+});
+degreeButton.addEventListener('click', () => {
+  const report = byId('degree-report');
+  renderDegreeReport(report, degreeReport, requirements);
+  report.scrollTop = 0;
+  degreeDialog.showModal();
+  setHoveredCourse(undefined);
+});
+byId('close-degree-check').addEventListener('click', () => degreeDialog.close());
+degreeDialog.addEventListener('close', () => {
+  degreeButton.focus({ preventScroll: true });
 });
 byId('close-dialog').addEventListener('click', () => dialog.close());
 dialog.addEventListener('close', () => {

@@ -1,15 +1,16 @@
-export const calendarUrl =
-  'https://academic-calendar-archive.uwaterloo.ca/undergraduate-studies/2023-2024/page/ENG-Software-Engineering.html';
+import requirements from './degree-requirements.json' with { type: 'json' };
 
-const studyTerms = {
-  '2023-fall': ['1A', 'CS 137', 'ECE 105', 'MATH 115', 'MATH 117', 'MATH 135', 'SE 101'],
-  '2024-winter': ['1B', 'CS 138', 'ECE 106', 'ECE 124', 'ECE 140', 'MATH 119', 'SE 102'],
-  '2024-fall': ['2A', 'CHE 102', 'CS 241', 'ECE 222', 'SE 201', 'SE 212', 'STAT 206'],
-  '2025-spring': ['2B', 'CS 240', 'CS 247', 'CS 348', 'ECE 192', 'MATH 239', 'SE 202'],
-  '2026-winter': ['3A', 'CS 341', 'CS 349', 'MATH 213', 'SE 301', 'SE 350', 'SE 465'],
-  '2026-fall': ['3B', 'CS 343', 'ECE 358', 'SE 302', 'SE 380', 'SE 390', 'SE 464'],
-  '2027-spring': ['4A', 'SE 401', 'SE 463', 'SE 490'],
-  '2028-winter': ['4B', 'SE 402', 'SE 491'],
+export const calendarUrl = requirements.sources.program;
+
+const studyLevels = {
+  '2023-fall': '1A',
+  '2024-winter': '1B',
+  '2024-fall': '2A',
+  '2025-spring': '2B',
+  '2026-winter': '3A',
+  '2026-fall': '3B',
+  '2027-spring': '4A',
+  '2028-winter': '4B',
 };
 
 const additionalSlots = { '2A': 1, '2B': 1, '3A': 1, '3B': 1, '4A': 3, '4B': 4 };
@@ -21,7 +22,8 @@ export const years = [2023, 2024, 2025, 2026, 2027, 2028];
 export const terms = years.flatMap((year) =>
   seasons.map((season) => {
     const id = `${year}-${season.toLowerCase()}`;
-    const [level, ...coreCourses] = studyTerms[id] ?? [];
+    const level = studyLevels[id];
+    const coreCourses = requirements.coreByLevel[level] ?? [];
     const beforeEntry = year === 2023 && season !== 'Fall';
     const afterSequence = year === 2028 && season !== 'Winter';
     const target = coreCourses.length + (additionalSlots[level] ?? 0);

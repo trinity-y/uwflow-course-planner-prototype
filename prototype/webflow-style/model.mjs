@@ -19,7 +19,7 @@ export function readPlan(raw) {
   for (const term of terms) {
     const codes = Array.isArray(raw[term.id]) ? raw[term.id] : plan[term.id];
     plan[term.id] = term.beforeEntry ? [] : codes.filter((code) => {
-      if (typeof code !== 'string' || !/^[A-Z]+ \d{2,4}[A-Z]*$/.test(code) || seen.has(code)) return false;
+      if (typeof code !== 'string' || !/^[A-Z]+ \d{1,4}[A-Z]*$/.test(code) || seen.has(code)) return false;
       seen.add(code);
       return true;
     });

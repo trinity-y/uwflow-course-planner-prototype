@@ -8,11 +8,20 @@ node prototype/webflow-style/server.mjs
 
 Open [the local planner](http://127.0.0.1:5173). Set `PORT` to use a different port.
 The browser stores changes locally. **Reset sample plan** restores the original schedule.
+**Start blank** clears scheduled courses and restores the calendar term targets.
 
 The sample starts in Fall 2023 and follows the study and co-op sequence in
 [Waterloo’s 2023–24 Software Engineering calendar](https://academic-calendar-archive.uwaterloo.ca/undergraduate-studies/2023-2024/page/ENG-Software-Engineering.html).
 Each term has an editable course target. Initial study targets include the
 calendar’s elective and communication course slots. Targets count courses.
+The schedule header opens a degree report with per-rule status and progress.
+[The JSON rules](degree-requirements.json) contain calendar links and the
+course, elective, and work-term requirements. The checker uses archived course
+IDs to count a cross-listed course once and requires both courses in a listed
+science lecture/lab pair. Distinct electives fill overlapping category slots
+without counting a course twice. Schedule a `COOP` card in a co-op term to
+include it in the plan. Grades, work-term evaluations, and approved exceptions
+appear as separate checks.
 CS 488 is a sample elective with a missing prerequisite. Try dropping CS 370 into an
 earlier term to satisfy it, or drop CS 371 to see its own missing courses appear.
 Click a course to open its graph. Every course in the graph has a term picker

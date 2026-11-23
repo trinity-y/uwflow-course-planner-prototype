@@ -8,8 +8,11 @@ const files = new Map([
   ['/', ['index.html', 'text/html']],
   ['/index.html', ['index.html', 'text/html']],
   ['/styles.css', ['styles.css', 'text/css']],
-  ...['app', 'calendar', 'model', 'graph'].map((name) => [
+  ...['app', 'calendar', 'model', 'graph', 'degree', 'degree-view'].map((name) => [
     `/${name}.mjs`, [`${name}.mjs`, 'text/javascript'],
+  ]),
+  ...['degree-requirements', 'calendar-courses'].map((name) => [
+    `/${name}.json`, [`${name}.json`, 'application/json'],
   ]),
 ]);
 
@@ -71,7 +74,7 @@ const server = createServer(async (req, res) => {
         json(res, 200, await getCatalog());
       } else {
         const codes = [...new Set(url.searchParams.getAll('code'))];
-        if (!codes.length || codes.length > 50 || codes.some((code) => !/^[a-z]{2,12}\d{2,4}[a-z]?$/.test(code))) {
+        if (!codes.length || codes.length > 50 || codes.some((code) => !/^[a-z]{2,12}\d{1,4}[a-z]?$/.test(code))) {
           json(res, 400, { error: 'Invalid course codes' });
         } else {
           json(res, 200, await getPrerequisites(codes));

@@ -24,18 +24,24 @@
         <h1>Course planner</h1>
         <p>Software Engineering <span aria-hidden="true">·</span> Fall 2023 entry</p>
       </div>
-      <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
+      <div class="plan-actions">
+        <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
+        <button class="button clear-plan" id="clear-plan" type="button">Start blank</button>
+      </div>
     </header>
 
     <div class="workspace-grid">
       <aside class="sidebar" aria-labelledby="catalog-title">
         <div class="sidebar-heading">
-          <h2 id="catalog-title">Find courses</h2>
-          <label class="search-field">
-            <span class="search-icon" aria-hidden="true"></span>
-            <input id="course-search" type="search" aria-label="Search courses by code or name" placeholder="Code or name" autocomplete="off" spellcheck="false">
-          </label>
+          <h2 id="catalog-title">Courses</h2>
         </div>
+        <section class="degree-section" aria-labelledby="degree-courses-title">
+          <div class="section-heading">
+            <h3 id="degree-courses-title">Degree requirements</h3>
+            <span class="count" id="degree-course-count"></span>
+          </div>
+          <div class="degree-course-list" id="degree-course-list" tabindex="0" role="region" aria-label="Required courses by term"></div>
+        </section>
         <section class="prereq-section" id="prereq-section" aria-labelledby="prereq-title">
           <div class="section-heading">
             <h3 id="prereq-title">Missing prerequisites</h3>
@@ -43,10 +49,17 @@
           </div>
           <div class="prereq-list" id="prereq-list"></div>
         </section>
-        <section class="catalog-section" aria-label="Course search results">
+        <section class="catalog-section" aria-labelledby="find-title">
+          <div class="catalog-search">
+            <h3 id="find-title">Find courses</h3>
+            <label class="search-field">
+              <span class="search-icon" aria-hidden="true"></span>
+              <input id="course-search" type="search" aria-label="Search courses by code or name" placeholder="Code or name" autocomplete="off" spellcheck="false">
+            </label>
+          </div>
           <div class="section-heading">
-            <h3 id="results-title">All courses</h3>
-            <span class="catalog-source" id="catalog-source">Sample catalog</span>
+            <h4 id="results-title">All courses</h4>
+            <span class="catalog-source" id="catalog-source">2023–24 catalog</span>
           </div>
           <div class="catalog-list" id="catalog-list"></div>
         </section>
@@ -61,6 +74,14 @@
           <div class="board-summary">
             <span class="course-count" id="planned-count"></span>
             <button class="warning-summary" id="warning-summary" type="button" hidden></button>
+            <button class="degree-check" id="open-degree-check" type="button" aria-haspopup="dialog">
+              <strong class="degree-percent" id="degree-percent"></strong>
+              <span class="degree-check-copy">
+                <strong id="degree-status"></strong>
+                <span id="degree-rule-count"></span>
+              </span>
+              <span class="degree-chevron" aria-hidden="true">›</span>
+            </button>
           </div>
         </header>
         <div class="board-scroll" tabindex="0" role="region" aria-label="Schedule by year and term">
@@ -100,6 +121,17 @@
         <button class="button primary" type="submit" id="place-course">Add course</button>
       </form>
     </footer>
+  </dialog>
+
+  <dialog class="details degree-dialog" id="degree-dialog" aria-labelledby="degree-title">
+    <header class="detail-header">
+      <div>
+        <div class="detail-code">Software Engineering · 2023–24</div>
+        <h2 id="degree-title">Degree requirements</h2>
+      </div>
+      <button type="button" class="icon-button close-dialog" id="close-degree-check" aria-label="Close degree requirements" autofocus>×</button>
+    </header>
+    <div class="detail-body" id="degree-report"></div>
   </dialog>
 
   <div class="sr-only" id="announcement" role="status"></div>
