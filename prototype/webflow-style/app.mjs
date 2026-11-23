@@ -1,7 +1,8 @@
-import { calendarUrl, initialPlan, sampleCatalog, seasons, terms, years } from './calendar.mjs';
+import { calendarUrl, initialPlan, sampleCatalog, seasons, terms as defaultTerms, years } from './calendar.mjs';
 import {
-  courseStatus, explainMissing, groupProgress, indexPlan, maxTermTarget, missingGroups,
-  normalizeCode, parseLivePrerequisites, placeCourse, readPlan, readTermTargets,
+  countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isPinned,
+  maxTermTarget, missingGroups, normalizeCode, outcomeLabels, parseLivePrerequisites,
+  placeCourse, readOutcomes, readPlan, readTermTargets, removeCourse,
 } from './model.mjs';
 import { element, renderGraph, termOptions } from './graph.mjs';
 import { evaluateDegree } from './degree.mjs';
@@ -9,24 +10,35 @@ import { renderDegreeReport, renderDegreeSidebar } from './degree-view.mjs';
 import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
-const storageKey = 'uwflow-webflow-planner-v1';
-const favoritesKey = 'uwflow-webflow-planner-favorites-v1';
+const personal = location.pathname === '/personal';
+const profile = personal
+  ? await fetch('./api/profile').then((response) => response.ok ? response.json() : null).catch(() => null)
+  : null;
+const scope = personal ? '-alex' : '';
+const storageKey = `uwflow-webflow-planner-v1${scope}`;
+const favoritesKey = `uwflow-webflow-planner-favorites-v1${scope}`;
+const terms = defaultTerms.map((term) => ({ ...term, ...profile?.terms?.[term.id] }));
+const equivalents = profile?.equivalents ?? {};
 const pageSize = 30;
 const byId = (id) => document.getElementById(id);
 const dialog = byId('course-dialog');
 const degreeDialog = byId('degree-dialog');
+const outcomeDialog = byId('outcome-dialog');
 const degreeButton = byId('open-degree-check');
 const search = byId('course-search');
 const courseList = byId('catalog-list');
 const favoritesList = byId('favorites-list');
 const board = byId('term-board');
 const termsById = new Map(terms.map((term) => [term.id, term]));
-const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term' };
+const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term', failed: 'Failed' };
 const catalog = new Map([
   ...sampleCatalog,
   ...Object.entries(archive).filter(([code]) => !sampleCatalog.has(code))
     .map(([code, [name]]) => [code, { code, name }]),
 ]);
+for (const course of profile?.courses ?? []) {
+  catalog.set(course.code, { ...catalog.get(course.code), ...course });
+}
 const liveDetails = new Map();
 const inFlight = new Map();
 let saved;
@@ -46,19 +58,24 @@ for (const course of Array.isArray(saved?.courses) ? saved.courses : []) {
     catalog.set(course.code, { code: course.code, name: course.name });
   }
 }
-const favorites = new Set(['CS 448']);
-if (Array.isArray(savedFavorites)) {
+const favorites = new Set(personal ? [] : ['CS 448']);
+const startingFavorites = savedFavorites ?? profile?.favorites;
+if (Array.isArray(startingFavorites)) {
   favorites.clear();
-  for (const course of savedFavorites) {
+  for (const course of startingFavorites) {
     if (typeof course?.code !== 'string' || !/^[A-Z]+ \d{1,4}[A-Z]*$/.test(course.code)) continue;
     favorites.add(course.code);
     if (typeof course.name === 'string' && !catalog.has(course.code)) catalog.set(course.code, course);
   }
 }
 
-let plan = readPlan(saved?.plan);
-let targets = readTermTargets(saved?.targets);
+let plan = readPlan(saved?.plan ?? profile?.plan);
+let targets = readTermTargets(saved?.targets ?? profile?.targets);
 let scheduled = indexPlan(plan);
+let outcomes = readOutcomes(saved?.outcomes ?? profile?.outcomes, scheduled);
+let equivalentPlacements = new Map();
+let counted;
+let prerequisites;
 let warningList = [];
 let degreeReport;
 let refreshDegreeReport;
@@ -71,8 +88,19 @@ let liveCatalog = false;
 let drag;
 let suppressClick;
 let hoveredCourse;
+let outcomeCode;
 
 const getCourse = (code) => catalog.get(code) ?? { code, name: code };
+const actualCode = (code) => scheduled.has(code) ? code : equivalentPlacements.get(code) ?? code;
+const outcomeFor = (code) => outcomes[actualCode(code)];
+const pinned = (code) => isPinned(outcomeFor(code));
+function withEquivalents(placements) {
+  const result = new Map(placements);
+  for (const [required, actual] of equivalentPlacements) {
+    if (placements.has(actual) && !result.has(required)) result.set(required, placements.get(actual));
+  }
+  return result;
+}
 const flowCode = (code) => code.toLowerCase().replace(/\s/g, '');
 const request = async (path) => {
   const response = await fetch(new URL(path, import.meta.url), {
@@ -90,7 +118,7 @@ function savePlan() {
     return { code, name };
   });
   try {
-    localStorage.setItem(storageKey, JSON.stringify({ plan, targets, courses }));
+    localStorage.setItem(storageKey, JSON.stringify({ plan, targets, outcomes, courses }));
   } catch {
     // A browser can deny storage while still allowing the current plan to be edited.
   }
@@ -99,7 +127,8 @@ function savePlan() {
 function makeDraggable(card, code) {
   card.dataset.course = code;
   card.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0 || !event.isPrimary || event.target.closest('.catalog-add, .warning-trigger, .favorite-star')) return;
+    if (event.button !== 0 || !event.isPrimary || pinned(code) ||
+      event.target.closest('.catalog-add, .warning-trigger, .favorite-star, .course-outcome-menu')) return;
     suppressClick = null;
     const { pointerId, clientX, clientY } = event;
     drag = { pointerId, code, card, startX: clientX, startY: clientY, x: clientX, y: clientY };
@@ -231,6 +260,7 @@ function withFavorite(control, code) {
 }
 
 function showCourse(code, trigger, focusPlacement = false) {
+  code = actualCode(code);
   selectedCode = code;
   graphView = { course: code, slot: null };
   dialogTrigger = trigger;
@@ -251,16 +281,19 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
   if (!dialog.open || !code) return;
   const course = getCourse(code);
   const atTerm = scheduled.get(code);
-  byId('remove-course').hidden = !atTerm;
+  const locked = pinned(code);
+  byId('remove-course').hidden = !atTerm || locked;
   byId('place-course').textContent = atTerm ? 'Move course' : 'Add course';
-  const groups = missingGroups(course, atTerm, scheduled);
+  const groups = locked ? [] : missingGroups(course, atTerm, prerequisites);
   const status = byId('detail-status');
   byId('detail-code').textContent = code;
   byId('detail-title').textContent = course.name;
   status.classList.toggle('needs-attention', groups.length > 0);
-  if (groups.length) {
+  if (locked) {
+    status.textContent = `${outcomeLabels[outcomeFor(code)]} · Locked to ${termsById.get(atTerm).label}`;
+  } else if (groups.length) {
     const timing = atTerm ? `Before ${termsById.get(atTerm).label}: ` : '';
-    status.textContent = timing + explainMissing(groups, atTerm, scheduled);
+    status.textContent = timing + explainMissing(groups, atTerm, prerequisites);
   } else if (course.groups?.length) {
     status.textContent = atTerm
       ? 'Every direct prerequisite group has a course in an earlier term.'
@@ -283,6 +316,8 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     note.append(element('span', '', 'UW Flow lists no prerequisites.'));
   } else if (inFlight.has(code)) {
     note.append(element('span', '', 'Looking up prerequisites on UW Flow…'));
+  } else if (personal) {
+    note.append(element('span', '', 'This personal plan uses the local course catalog.'));
   } else {
     note.append(element('span', '', 'Live prerequisites are unavailable.'));
   }
@@ -296,23 +331,24 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     ? { left: previous.scrollLeft, top: previous.scrollTop }
     : null;
   graphCleanup();
-  graphCleanup = renderGraph(graph, code, getCourse, scheduled, {
-    onPlacementChange: changeGraphTerm, view: graphView, favoriteStar,
+  graphCleanup = renderGraph(graph, code, getCourse, withEquivalents(scheduled), {
+    onPlacementChange: changeGraphTerm, view: graphView, favoriteStar, prerequisites, outcomeFor,
   });
   graph.dataset.course = code;
   const viewport = graph.querySelector('.graph-scroll');
-  byId('placement-form').hidden = Boolean(viewport);
+  byId('placement-form').hidden = Boolean(viewport) || locked;
   if (viewport) viewport.scrollTo(scroll ?? { left: viewport.scrollWidth });
   if (focusCourse) {
     const select = graph.querySelector(`[data-graph-term="${CSS.escape(focusCourse)}"]`);
-    if (select) select.focus();
-    else if (!viewport) byId('target-term').focus();
+    if (select && !select.disabled) select.focus();
+    else if (!viewport && !locked) byId('target-term').focus();
   } else if (graphControl) {
     graph.querySelector(`[data-graph-control="${CSS.escape(graphControl)}"]`)?.focus({ preventScroll: true });
   }
 }
 
 function loadDetails(codes) {
+  if (personal) return;
   const pending = codes.filter((code) => !liveDetails.has(code) && !inFlight.has(code));
   if (!pending.length) return;
   const params = new URLSearchParams(pending.map((code) => ['code', flowCode(code)]));
@@ -338,7 +374,8 @@ function loadDetails(codes) {
 }
 
 function addOrMove(code, target) {
-  const next = placeCourse(plan, code, target);
+  code = actualCode(code);
+  const next = placeCourse(plan, code, target, outcomes);
   if (next === plan) return;
   const moved = scheduled.has(code);
   plan = next;
@@ -349,9 +386,11 @@ function addOrMove(code, target) {
 }
 
 function removeFromPlan(code) {
-  const term = scheduled.get(code);
-  if (!term) return;
-  plan = { ...plan, [term]: plan[term].filter((item) => item !== code) };
+  code = actualCode(code);
+  const next = removeCourse(plan, code, outcomes);
+  if (next === plan) return;
+  plan = next;
+  delete outcomes[code];
   renderPlan();
   savePlan();
   announce(`${code} removed from the plan.`);
@@ -364,7 +403,7 @@ function changeGraphTerm(code, target) {
 }
 
 function warningBadge(code, term, groups) {
-  const reason = explainMissing(groups, term.id, scheduled);
+  const reason = explainMissing(groups, term.id, prerequisites);
   const container = element('div', 'warning-badge');
   const button = makeButton('warning-trigger', `Prerequisite warning for ${code}`, '!');
   const tip = element('span', 'warning-tip', reason);
@@ -376,20 +415,55 @@ function warningBadge(code, term, groups) {
   return container;
 }
 
+function showOutcomeMenu(code) {
+  outcomeCode = code;
+  const term = termsById.get(scheduled.get(code));
+  byId('outcome-code').textContent = `${code} · ${term.label}`;
+  const choices = Object.entries({ planned: 'Planned', ...outcomeLabels }).map(([outcome, label]) => {
+    const button = makeButton('button outcome-option', null, label);
+    button.setAttribute('aria-pressed', String((outcomes[code] ?? 'planned') === outcome));
+    button.addEventListener('click', () => {
+      if (outcome === 'planned') delete outcomes[code];
+      else outcomes[code] = outcome;
+      outcomeDialog.close();
+      renderPlan();
+      savePlan();
+      announce(`${code} marked ${label.toLowerCase()}.`);
+    });
+    return button;
+  });
+  byId('outcome-options').replaceChildren(...choices);
+  outcomeDialog.showModal();
+  setHoveredCourse(undefined);
+}
+
 function termCourse(code, term, groups) {
   const course = getCourse(code);
   const card = element('div', 'term-course');
   makeDraggable(card, code);
   const grip = element('span', 'drag-handle');
   grip.setAttribute('aria-hidden', 'true');
+  if (pinned(code)) card.classList.add('course-pinned');
   const open = makeButton('term-course-open', `View ${code} prerequisites in ${term.label}`);
   open.append(element('span', 'course-code', code));
   open.title = course.name;
   open.addEventListener('click', () => showCourse(code, open));
   const name = element('span', 'term-course-name', course.name);
   name.addEventListener('click', () => showCourse(code, open));
-  card.append(grip, withFavorite(open, code), name);
+  if (!pinned(code)) card.append(grip);
+  card.append(withFavorite(open, code), name);
   if (groups.length) card.append(warningBadge(code, term, groups));
+  const outcome = outcomeFor(code);
+  if (outcome) {
+    const label = element('span', `course-outcome ${outcome}`, outcomeLabels[outcome]);
+    card.classList.add(`outcome-${outcome}`);
+    if (pinned(code)) label.title = 'Locked to this term';
+    card.append(label);
+  }
+  const menu = makeButton('course-outcome-menu', `Change status for ${code} in ${term.label}`, '⋯');
+  menu.setAttribute('aria-haspopup', 'dialog');
+  menu.addEventListener('click', () => showOutcomeMenu(code));
+  card.append(menu);
   return card;
 }
 
@@ -397,13 +471,13 @@ function updateScheduleHighlight(focus = document.activeElement) {
   const focused = focus instanceof Element && focus.matches(':focus-visible')
     ? focus.closest('.term-course')?.dataset.course
     : undefined;
-  const selected = dialog.open || degreeDialog.open || drag?.ghost ? undefined : hoveredCourse ?? focused;
-  const prerequisites = new Set(getCourse(selected).groups?.flatMap(({ options }) => options));
+  const selected = dialog.open || degreeDialog.open || outcomeDialog.open || drag?.ghost ? undefined : hoveredCourse ?? focused;
+  const required = new Set(getCourse(selected).groups?.flatMap(({ options }) => options.map(actualCode)));
   const target = scheduled.get(selected);
   for (const card of board.querySelectorAll('.term-course')) {
     const { course } = card.dataset;
     const active = course === selected;
-    const status = !active && prerequisites.has(course) ? courseStatus(course, target, scheduled) : undefined;
+    const status = !active && required.has(course) ? courseStatus(course, target, counted) : undefined;
     card.classList.toggle('schedule-selected', active);
     card.classList.toggle('schedule-prerequisite', status === 'planned');
     card.classList.toggle('schedule-prerequisite-late', status === 'late');
@@ -418,7 +492,7 @@ function setHoveredCourse(code) {
 }
 
 board.addEventListener('pointerover', (event) => {
-  if (event.pointerType === 'touch' || dialog.open || degreeDialog.open || drag?.ghost) return;
+  if (event.pointerType === 'touch' || dialog.open || degreeDialog.open || outcomeDialog.open || drag?.ghost) return;
   setHoveredCourse(event.target.closest('.term-course')?.dataset.course);
 });
 board.addEventListener('pointerleave', () => setHoveredCourse(undefined));
@@ -473,10 +547,11 @@ function renderTerm(term) {
   targetLabel.append(element('span', '', 'Target'), target);
   heading.append(element('span', 'term-type', label), targetLabel);
   cell.append(heading);
+  if (term.note) cell.append(element('p', 'term-note', term.note));
   if (plan[term.id].length) {
     const list = element('div', 'term-courses');
     for (const code of plan[term.id]) {
-      const groups = missingGroups(getCourse(code), term.id, scheduled);
+      const groups = pinned(code) ? [] : missingGroups(getCourse(code), term.id, prerequisites);
       if (groups.length) warningList.push({ code, term, groups });
       list.append(termCourse(code, term, groups));
     }
@@ -512,7 +587,7 @@ function renderBoard() {
   board.replaceChildren(grid);
   hoveredCourse = board.querySelector('.term-course:hover')?.dataset.course;
   updateScheduleHighlight();
-  byId('planned-count').textContent = `${scheduled.size} planned`;
+  byId('planned-count').textContent = `${scheduled.size} ${Object.keys(outcomes).length ? 'courses' : 'planned'}`;
   const warning = byId('warning-summary');
   const count = warningList.length;
   warning.hidden = count === 0;
@@ -535,7 +610,7 @@ function renderBuckets() {
     header.append(withFavorite(label, code), element('span', '', term.label));
     bucket.append(header);
     for (const group of groups) {
-      const { outstanding, remaining } = groupProgress(group, term.id, scheduled);
+      const { outstanding, remaining } = groupProgress(group, term.id, prerequisites);
       const options = element('div', 'bucket-options');
       const caption = group.options.length === 1
         ? 'Required course'
@@ -544,7 +619,7 @@ function renderBuckets() {
       const chips = element('div', 'bucket-chips');
       for (const option of outstanding) {
         const course = getCourse(option);
-        const status = courseStatus(option, term.id, scheduled);
+        const status = outcomeFor(option) === 'failed' ? 'failed' : courseStatus(option, term.id, prerequisites);
         const chip = makeButton('bucket-chip', `${option}, ${course.name}, ${statusText[status]}`, option);
         chip.title = status === 'late' ? `${course.name} · Needs an earlier term` : course.name;
         makeDraggable(chip, option);
@@ -560,7 +635,7 @@ function renderBuckets() {
 }
 
 function updateDegree() {
-  degreeReport = evaluateDegree(requirements, archive, scheduled);
+  degreeReport = evaluateDegree(requirements, archive, counted, { timeline: terms, equivalents });
   const met = degreeReport.met === degreeReport.total;
   degreeButton.classList.toggle('met', met);
   byId('degree-percent').textContent = `${degreeReport.percent}%`;
@@ -584,10 +659,10 @@ function catalogCard(course) {
   const title = element('span', 'catalog-course-name', name);
   title.addEventListener('click', () => showCourse(code, open));
   info.append(withFavorite(open, code), title);
-  const term = termsById.get(scheduled.get(code));
-  const action = term ? 'Move' : 'Schedule';
+  const term = termsById.get(scheduled.get(actualCode(code)));
+  const action = pinned(code) ? 'View' : term ? 'Move' : 'Schedule';
   const add = makeButton('icon-button catalog-add', `${action} ${code}`, term ? '✓' : '+');
-  add.title = term ? `Planned for ${term.label}` : `Schedule ${code}`;
+  add.title = pinned(code) ? `Locked to ${term.label}` : term ? `Planned for ${term.label}` : `Schedule ${code}`;
   add.addEventListener('click', () => showCourse(code, add, true));
   card.append(grip, info, add);
   return card;
@@ -604,7 +679,7 @@ function renderCatalog() {
   const simplify = (value) => value.toLowerCase().replace(/\s/g, '');
   const searchTerms = query.split(/\s+/);
   const matches = [...catalog.values()].filter(({ code, name, aliases = [] }) => {
-    if (scheduled.has(code)) return false;
+    if (scheduled.has(actualCode(code))) return false;
     const codes = [code, ...aliases].map(simplify);
     const haystack = `${code} ${name} ${aliases.join(' ')}`.toLowerCase();
     return codes.some((value) => value.startsWith(simplify(query))) ||
@@ -637,6 +712,11 @@ function renderPlan() {
   const focusCode = card?.dataset.course;
   const focusLabel = focused.getAttribute('aria-label');
   scheduled = indexPlan(plan);
+  equivalentPlacements = new Map(Object.entries(equivalents)
+    .filter(([actual]) => scheduled.has(actual))
+    .map(([actual, required]) => [required, actual]));
+  counted = countableSchedule(scheduled, outcomes);
+  prerequisites = withEquivalents(counted);
   renderBoard();
   updateDegree();
   renderBuckets();
@@ -659,18 +739,25 @@ byId('warning-summary').addEventListener('click', () => {
   first?.scrollIntoView({ block: 'center', inline: 'center' });
   first?.focus({ preventScroll: true });
 });
-function replacePlan(next, message) {
+function replacePlan(next, message, nextOutcomes = {}) {
   plan = next;
-  targets = readTermTargets();
+  targets = readTermTargets(profile?.targets);
+  outcomes = readOutcomes(nextOutcomes, indexPlan(plan));
   renderPlan();
   savePlan();
   announce(message);
 }
 byId('reset-plan').addEventListener('click', () => {
-  if (window.confirm('Replace your edits with the sample plan?')) replacePlan(initialPlan(), 'Sample plan restored.');
+  if (personal) {
+    if (profile && window.confirm('Replace your edits with the imported course plan?')) {
+      replacePlan(readPlan(profile.plan), 'Imported plan restored.', profile.outcomes);
+    }
+  } else if (window.confirm('Replace your edits with the sample plan?')) {
+    replacePlan(initialPlan(), 'Sample plan restored.');
+  }
 });
 byId('clear-plan').addEventListener('click', () => {
-  if (!window.confirm('Start a blank plan? This clears all scheduled courses and restores the calendar term targets.')) return;
+  if (!window.confirm('Start a blank plan? This clears scheduled courses and recorded outcomes.')) return;
   const blank = Object.fromEntries(terms.map(({ id }) => [id, []]));
   replacePlan(blank, 'Blank plan started.');
 });
@@ -684,6 +771,10 @@ degreeButton.addEventListener('click', () => {
   setHoveredCourse(undefined);
 });
 byId('close-degree-check').addEventListener('click', () => degreeDialog.close());
+byId('close-outcome').addEventListener('click', () => outcomeDialog.close());
+outcomeDialog.addEventListener('close', () => {
+  board.querySelector(`[data-course="${CSS.escape(outcomeCode)}"] .course-outcome-menu`)?.focus({ preventScroll: true });
+});
 degreeDialog.addEventListener('close', () => {
   refreshDegreeReport = undefined;
   degreeButton.focus({ preventScroll: true });
@@ -722,16 +813,27 @@ byId('remove-course').addEventListener('click', () => {
 const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, {
   favoriteStar, getCourse, makeDraggable, showCourse,
 });
+if (personal) {
+  byId('planner-title').textContent = profile ? 'Alex’s course plan' : 'Personal plan unavailable';
+  byId('open-sample-plan').hidden = false;
+  byId('reset-plan').textContent = 'Restore Alex’s plan';
+  byId('reset-plan').hidden = !profile;
+}
 renderPlan();
-request('./api/catalog').then((rows) => {
-  if (!Array.isArray(rows) || !rows.length) return;
-  for (const { code: rawCode, name, aliases } of rows) {
-    const code = normalizeCode(rawCode);
-    catalog.set(code, { ...getCourse(code), code, name, aliases: aliases ?? [] });
-  }
-  liveCatalog = true;
-  renderCatalog();
-  renderFavorites();
-}).catch(() => {});
-const restored = [...scheduled.keys()].filter((code) => !sampleCatalog.has(code));
-for (let i = 0; i < restored.length; i += 50) loadDetails(restored.slice(i, i + 50));
+if (!personal) {
+  request('./api/profile-status').then(({ available }) => {
+    byId('open-personal-plan').hidden = !available;
+  }).catch(() => {});
+  request('./api/catalog').then((rows) => {
+    if (!Array.isArray(rows) || !rows.length) return;
+    for (const { code: rawCode, name, aliases } of rows) {
+      const code = normalizeCode(rawCode);
+      catalog.set(code, { ...getCourse(code), code, name, aliases: aliases ?? [] });
+    }
+    liveCatalog = true;
+    renderCatalog();
+    renderFavorites();
+  }).catch(() => {});
+  const restored = [...scheduled.keys()].filter((code) => !sampleCatalog.has(code));
+  for (let i = 0; i < restored.length; i += 50) loadDetails(restored.slice(i, i + 50));
+}

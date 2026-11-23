@@ -1,5 +1,5 @@
 import { terms } from './calendar.mjs';
-import { buildGraph, courseStatus, groupLabel, groupProgress } from './model.mjs';
+import { buildGraph, courseStatus, groupLabel, groupProgress, isPinned, outcomeLabels } from './model.mjs';
 
 export function element(tag, className, content) {
   const node = document.createElement(tag);
@@ -31,7 +31,7 @@ function graphButton(className, content, control, label) {
   return button;
 }
 
-export function renderGraph(container, code, getCourse, scheduled, { onPlacementChange, view, favoriteStar }) {
+export function renderGraph(container, code, getCourse, scheduled, { onPlacementChange, view, favoriteStar, prerequisites, outcomeFor }) {
   const { depth, edges } = buildGraph(code, getCourse);
   if (depth.size === 1) {
     container.replaceChildren();
@@ -149,7 +149,7 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
     const list = element('ul', 'graph-slot-list');
     for (const [index, group] of edges.get(course).entries()) {
       if (group.count === null) continue;
-      const { remaining } = groupProgress(group, scheduled.get(course), scheduled);
+      const { remaining } = groupProgress(group, scheduled.get(course), prerequisites);
       const label = slotLabel(group);
       const item = element('li', `graph-slot ${remaining ? 'unmet' : 'met'}`);
       const button = graphButton('graph-slot-button', undefined, `slot:${course}:${index}`,
@@ -185,7 +185,7 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
       if (group.count === null) continue;
       slotTargets.set(group, to);
       const label = slotLabel(group);
-      const { remaining } = groupProgress(group, scheduled.get(to), scheduled);
+      const { remaining } = groupProgress(group, scheduled.get(to), prerequisites);
       const gate = graphButton(`graph-gate ${remaining ? 'unmet' : 'met'}`, label, `gate:${to}:${index}`,
         `Highlight ${label.toLowerCase()} branch ${index + 1} for ${to}`);
       gate.tabIndex = -1;
@@ -205,7 +205,8 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
     const stack = element('div', 'graph-stack');
     for (const [course, courseDepth] of depth) {
       if (courseDepth !== level) continue;
-      const status = level === 0 ? 'goal' : courseStatus(course, target, scheduled);
+      const outcome = outcomeFor(course);
+      const status = outcome === 'failed' ? 'failed' : level === 0 ? 'goal' : courseStatus(course, target, prerequisites);
       const node = element('div', `graph-node ${status}`);
       const term = termLabels.get(scheduled.get(course));
       const name = getCourse(course)?.name;
@@ -216,6 +217,7 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
       select.setAttribute('aria-label', `Term for ${course}`);
       select.replaceChildren(...termOptions('Unscheduled'));
       select.value = scheduled.get(course) ?? '';
+      select.disabled = isPinned(outcome);
       select.addEventListener('change', () => onPlacementChange(course, select.value));
       const button = graphButton('graph-inspect', undefined, `course:${course}`, `Show prerequisite slots for ${course}`);
       button.addEventListener('click', () => inspect(course));
@@ -232,7 +234,8 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
       }
       courseName.addEventListener('click', () => inspect(course));
       node.append(heading, courseName, select);
-      if (status === 'late') node.append(element('span', 'graph-node-caption', `${term} is too late`));
+      if (select.disabled) node.append(element('span', 'graph-node-caption', `${outcomeLabels[outcome]} · Locked`));
+      else if (status === 'late') node.append(element('span', 'graph-node-caption', `${term} is too late`));
       bindPreview(node, () => {
         const pinned = selectedSlot();
         const slots = edges.get(view.course);
@@ -305,7 +308,7 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
           const path = new Path2D();
           path.moveTo(x, y);
           path.bezierCurveTo(middle, y, middle, destinationY, destinationX, destinationY);
-          const color = courseStatus(from, target, scheduled) === 'planned' ? '#8296df' : '#a8b2cc';
+          const color = courseStatus(from, target, prerequisites) === 'planned' ? '#8296df' : '#a8b2cc';
           links.push({ group, path, color, dashed: group.count === null });
         }
       }

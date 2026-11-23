@@ -3,6 +3,15 @@ import { initialPlan, terms } from './calendar.mjs';
 const termIndex = new Map(terms.map(({ id }, index) => [id, index]));
 export const normalizeCode = (code) => code.trim().toUpperCase().replace(/^([A-Z]+)\s*(\d)/, '$1 $2');
 export const maxTermTarget = 20;
+export const outcomeLabels = { enrolled: 'Enrolled', passed: 'Passed', failed: 'Failed' };
+export const isPinned = (outcome) => outcome === 'passed' || outcome === 'failed';
+
+export function readOutcomes(raw, scheduled) {
+  return Object.fromEntries([...scheduled.keys()].flatMap((code) => {
+    const outcome = raw?.[code];
+    return Object.hasOwn(outcomeLabels, outcome) ? [[code, outcome]] : [];
+  }));
+}
 
 export function readTermTargets(raw) {
   return Object.fromEntries(terms.map(({ id, target }) => {
@@ -27,8 +36,8 @@ export function readPlan(raw) {
   return plan;
 }
 
-export function placeCourse(plan, code, target) {
-  if (!terms.some((term) => term.id === target && !term.beforeEntry) || plan[target].includes(code)) {
+export function placeCourse(plan, code, target, outcomes = {}) {
+  if (isPinned(outcomes[code]) || !terms.some((term) => term.id === target && !term.beforeEntry) || plan[target].includes(code)) {
     return plan;
   }
   return Object.fromEntries(Object.entries(plan).map(([id, courses]) => [
@@ -36,8 +45,20 @@ export function placeCourse(plan, code, target) {
   ]));
 }
 
+export function removeCourse(plan, code, outcomes = {}) {
+  if (isPinned(outcomes[code])) return plan;
+  const entry = Object.entries(plan).find(([, courses]) => courses.includes(code));
+  if (!entry) return plan;
+  const [term, courses] = entry;
+  return { ...plan, [term]: courses.filter((item) => item !== code) };
+}
+
 export function indexPlan(plan) {
   return new Map(Object.entries(plan).flatMap(([id, codes]) => codes.map((code) => [code, id])));
+}
+
+export function countableSchedule(scheduled, outcomes) {
+  return new Map([...scheduled].filter(([code]) => outcomes[code] !== 'failed'));
 }
 
 export function courseStatus(code, target, scheduled) {

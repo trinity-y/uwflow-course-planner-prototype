@@ -21,10 +21,12 @@
   <main class="workspace">
     <header class="page-heading">
       <div>
-        <h1>Course planner</h1>
+        <h1 id="planner-title">Course planner</h1>
         <p>Software Engineering <span aria-hidden="true">·</span> Fall 2023 entry</p>
       </div>
       <div class="plan-actions">
+        <a class="button primary" id="open-personal-plan" href="./personal" hidden>Load Alex’s plan</a>
+        <a class="button subtle" id="open-sample-plan" href="./" hidden>Sample planner</a>
         <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
         <button class="button clear-plan" id="clear-plan" type="button">Start blank</button>
       </div>
@@ -139,6 +141,20 @@
       <button type="button" class="icon-button close-dialog" id="close-degree-check" aria-label="Close degree requirements" autofocus>×</button>
     </header>
     <div class="detail-body" id="degree-report"></div>
+  </dialog>
+
+  <dialog class="details outcome-dialog" id="outcome-dialog" aria-labelledby="outcome-title">
+    <header class="detail-header">
+      <div>
+        <div class="detail-code" id="outcome-code"></div>
+        <h2 id="outcome-title">Course status</h2>
+      </div>
+      <button type="button" class="icon-button close-dialog" id="close-outcome" aria-label="Close course status" autofocus>×</button>
+    </header>
+    <div class="detail-body">
+      <p class="quiet-message">Passed and failed courses are locked to their term.</p>
+      <div class="outcome-options" id="outcome-options"></div>
+    </div>
   </dialog>
 
   <div class="sr-only" id="announcement" role="status"></div>

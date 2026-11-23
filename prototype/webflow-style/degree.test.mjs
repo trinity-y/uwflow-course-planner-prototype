@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import archive from './calendar-courses.json' with { type: 'json' };
 import requirements from './degree-requirements.json' with { type: 'json' };
-import { initialPlan } from './calendar.mjs';
+import { initialPlan, terms } from './calendar.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
 import { indexPlan, placeCourse, readPlan } from './model.mjs';
 
@@ -79,6 +79,24 @@ test('co-op credit counts once per work term and course codes survive reload', (
   plan = add(plan, ['COOP 3'], '2024-fall');
   plan = add(plan, ['COOP 4'], '2025-winter');
   assert.equal(check(report(readPlan(plan)), 'coop').current, 2);
+});
+
+test('a custom sequence and approved course equivalents apply to degree checks', () => {
+  const scheduled = new Map([
+    ['CS 241E', '2024-fall'], ['COOP 1', '2027-spring'],
+    ['CS 370', '2027-spring'], ['CS 454', '2027-fall'],
+  ]);
+  const timeline = terms.map((term) => {
+    if (term.id === '2027-spring') return { ...term, level: null, work: true };
+    if (term.id === '2027-fall') return { ...term, level: '4A', work: false };
+    return term;
+  });
+  const result = evaluateDegree(requirements, archive, scheduled, {
+    timeline, equivalents: { 'CS 241E': 'CS 241' },
+  });
+  assert.deepEqual(check(result, 'core').matched, ['CS 241E']);
+  assert.equal(check(result, 'coop').current, 1);
+  assert.deepEqual(check(result, 'fourth-year').matched, ['CS 454']);
 });
 
 test('a plan can pass all modeled rules and an uneven fourth year fails its distribution rule', () => {

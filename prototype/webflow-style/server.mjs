@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 
 const port = Number(process.env.PORT || 5173);
+const profileFile = process.env.PLANNER_PROFILE_FILE;
 const offline = process.env.PLANNER_OFFLINE === '1';
 const upstream = 'https://uwflow.com';
 const files = new Map([
@@ -67,6 +68,14 @@ const server = createServer(async (req, res) => {
     return;
   }
   try {
+    if (url.pathname === '/api/profile-status') {
+      json(res, 200, { available: Boolean(profileFile) });
+      return;
+    }
+    if (url.pathname === '/api/profile' && profileFile) {
+      json(res, 200, JSON.parse(await readFile(profileFile, 'utf8')));
+      return;
+    }
     if (url.pathname === '/api/catalog' || url.pathname === '/api/prerequisites') {
       if (offline) {
         json(res, 503, { error: 'Sample mode' });
@@ -83,7 +92,7 @@ const server = createServer(async (req, res) => {
       return;
     }
 
-    const file = files.get(url.pathname);
+    const file = files.get(url.pathname === '/personal' && profileFile ? '/' : url.pathname);
     if (!file) {
       res.writeHead(404).end();
       return;

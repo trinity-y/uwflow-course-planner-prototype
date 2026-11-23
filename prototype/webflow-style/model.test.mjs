@@ -3,8 +3,8 @@ import { test } from 'node:test';
 
 import { initialPlan, sampleCatalog } from './calendar.mjs';
 import {
-  buildGraph, explainMissing, groupProgress, indexPlan, missingGroups,
-  parseLivePrerequisites, placeCourse, readTermTargets,
+  buildGraph, countableSchedule, explainMissing, groupProgress, indexPlan, missingGroups,
+  parseLivePrerequisites, placeCourse, readOutcomes, readTermTargets, removeCourse,
 } from './model.mjs';
 
 const required = (plan, code) => {
@@ -20,6 +20,23 @@ test('initial term targets include calendar electives and preserve saved edits',
   assert.equal(targets['2025-spring'], 7);
   assert.equal(targets['2027-spring'] - initialPlan()['2027-spring'].length, 2);
   assert.equal(targets['2028-winter'] - initialPlan()['2028-winter'].length, 4);
+});
+
+test('passed and failed placements are locked and failed courses do not satisfy prerequisites', () => {
+  const plan = initialPlan();
+  const scheduled = indexPlan(plan);
+  const outcomes = readOutcomes({
+    'CS 137': 'failed', 'CS 138': 'enrolled', 'SE 101': 'passed',
+    'CS 999': 'passed', 'ECE 105': 'unrecognized',
+  }, scheduled);
+  assert.deepEqual(outcomes, { 'CS 137': 'failed', 'SE 101': 'passed', 'CS 138': 'enrolled' });
+  assert.equal(placeCourse(plan, 'CS 137', '2024-fall', outcomes), plan);
+  assert.equal(removeCourse(plan, 'SE 101', outcomes), plan);
+  assert.notEqual(placeCourse(plan, 'CS 138', '2024-fall', outcomes), plan);
+  assert.deepEqual(
+    missingGroups(sampleCatalog.get('CS 138'), '2024-winter', countableSchedule(scheduled, outcomes)),
+    [oneOf('CS 137')],
+  );
 });
 
 test('adding either alternative replaces the original bucket with only that course’s direct prerequisites', () => {

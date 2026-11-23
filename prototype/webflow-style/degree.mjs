@@ -1,8 +1,6 @@
 import { terms } from './calendar.mjs';
 
 const termOrder = new Map(terms.map(({ id }, index) => [id, index]));
-const termsByLevel = new Map(terms.filter(({ level }) => level).map(({ level, id }) => [level, id]));
-const workTerms = new Set(terms.filter(({ work }) => work).map(({ id }) => id));
 
 const requiredCodes = (requirements, rule) => rule.codes ?? rule.levels.flatMap((level) => requirements.coreByLevel[level]);
 const fixedCourses = (requirements) => requirements.rules.filter(({ type }) => type === 'required')
@@ -89,8 +87,10 @@ function assignElectiveSlots(rules, candidatesByRule) {
   return byRule;
 }
 
-export function evaluateDegree(requirements, archive, scheduled) {
-  const creditFor = (code) => creditForCode(archive, code);
+export function evaluateDegree(requirements, archive, scheduled, { timeline = terms, equivalents = {} } = {}) {
+  const termsByLevel = new Map(timeline.filter(({ level }) => level).map(({ level, id }) => [level, id]));
+  const workTerms = new Set(timeline.filter(({ work }) => work).map(({ id }) => id));
+  const creditFor = (code) => creditForCode(archive, equivalents[code] ?? code);
   const placements = new Map();
   for (const [code, term] of scheduled) {
     const credit = creditFor(code);

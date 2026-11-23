@@ -9,6 +9,13 @@ node prototype/webflow-style/server.mjs
 Open [the local planner](http://127.0.0.1:5173). Set `PORT` to use a different port.
 The browser stores changes locally. **Reset sample plan** restores the original schedule.
 **Start blank** clears scheduled courses and restores the calendar term targets.
+Use a scheduled course’s **⋯** menu to record its status. Passed and failed
+courses stay in their recorded term. Choose **Planned** to unlock a course for editing.
+
+To enable **Load Alex’s plan** for a private profile, set
+`PLANNER_PROFILE_FILE` to the absolute path of its JSON file when starting the
+server. The `.local/` directory is ignored by Git. The personal page uses its
+own browser storage and local catalog.
 
 The sample starts in Fall 2023 and follows the study and co-op sequence in
 [Waterloo’s 2023–24 Software Engineering calendar](https://academic-calendar-archive.uwaterloo.ca/undergraduate-studies/2023-2024/page/ENG-Software-Engineering.html).
