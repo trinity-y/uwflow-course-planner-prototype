@@ -2,7 +2,7 @@ import { calendarUrl, createTerms, firstPlanYear, initialPlan, lastPlanYear, sam
 import {
   countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isAcademicCourse, isPinned,
   maxTermTarget, missingGroups, normalizeCode, outcomeLabels, parseLivePrerequisites,
-  placeCourse, readOutcomes, readPlan, readTermDetails, readTermTargets, readYearRange, removeCourse,
+  placeCourse, profileWithoutLevel, readOutcomes, readPlan, readTermDetails, readTermTargets, readYearRange, removeCourse,
 } from './model.mjs';
 import { element, renderGraph, termOptions } from './graph.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
@@ -12,13 +12,16 @@ import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
 const published = document.documentElement.hasAttribute('data-published-profile');
+const queryParams = new URLSearchParams(location.search);
 const personal = published
-  ? new URLSearchParams(location.search).get('plan') === 'personal'
+  ? queryParams.get('plan') === 'personal'
   : location.pathname === '/personal';
-const profile = personal
+const without3B = personal && queryParams.get('variant') === 'without-3b';
+const importedProfile = personal
   ? await fetch(published ? './alex-plan.json' : './api/profile').then((response) => response.ok ? response.json() : null).catch(() => null)
   : null;
-const scope = personal ? '-alex' : '';
+const profile = without3B ? profileWithoutLevel(importedProfile, '3B') : importedProfile;
+const scope = personal ? without3B ? '-alex-without-3b' : '-alex' : '';
 const storageKey = `uwflow-webflow-planner-v1${scope}`;
 const favoritesKey = `uwflow-webflow-planner-favorites-v1${scope}`;
 const equivalents = profile?.equivalents ?? {};
@@ -89,8 +92,9 @@ let plan = readPlan(saved?.plan ?? profile?.plan, timeline());
 let displayPlan = plan;
 let targets = plannerTargets(saved?.targets ?? profile?.targets, !saved?.yearRange);
 let { titles: termTitles, notes: termNotes } = readTermDetails(saved?.termDetails, timeline());
-const disabledRules = new Set(requirements.rules.filter(({ id }) =>
-  Array.isArray(saved?.disabledRules) && saved.disabledRules.includes(id),
+const savedDisabled = new Set(Array.isArray(saved?.disabledRules) ? saved.disabledRules : []);
+const disabledRules = new Set(requirements.rules.filter(({ id, replaces }) =>
+  savedDisabled.has(id) || savedDisabled.has(replaces),
 ).map(({ id }) => id));
 const preferences = readOpinions(saved?.preferences);
 let autoMode = saved?.autoMode === true;
@@ -199,10 +203,11 @@ function makeDraggable(card, code) {
   card.dataset.course = code;
   card.addEventListener('pointerdown', (event) => {
     if (event.button !== 0 || !event.isPrimary || pinned(code) ||
-      event.target.closest('.catalog-add, .warning-trigger, .favorite-star, .course-outcome-menu, .term-pin, .auto-request')) return;
+      event.target.closest('.catalog-add, .warning-trigger, .favorite-star, .course-outcome-menu, .term-pin, .auto-request, .request-remove')) return;
     suppressClick = null;
     const { pointerId, clientX, clientY } = event;
-    drag = { pointerId, code, card, startX: clientX, startY: clientY, x: clientX, y: clientY };
+    const source = card.closest('.term-card, #requests-section');
+    drag = { pointerId, code, card, source, startX: clientX, startY: clientY, x: clientX, y: clientY };
   });
   card.addEventListener('click', (event) => {
     if (suppressClick === card && event.detail) {
@@ -214,7 +219,8 @@ function makeDraggable(card, code) {
 }
 
 function updateDropTarget(active) {
-  const cell = document.elementFromPoint(active.x, active.y)?.closest('.term-card');
+  const targets = autoMode ? '.term-card, #requests-section' : '.term-card';
+  const cell = document.elementFromPoint(active.x, active.y)?.closest(targets);
   if (active.target === cell) return;
   active.target?.classList.remove('drop-active');
   active.target = cell;
@@ -275,7 +281,14 @@ function finishDrag(event) {
     updateDropTarget(active);
   }
   active.target?.classList.remove('drop-active');
-  if (event?.type === 'pointerup' && active.target) addOrMove(active.code, active.target.dataset.term);
+  if (event?.type === 'pointerup' && active.target) {
+    const { source } = active;
+    if (active.target.id === 'requests-section') {
+      if (source !== active.target) moveToRequests(active.code, Boolean(source));
+    } else {
+      addOrMove(active.code, active.target.dataset.term, source?.id === 'requests-section');
+    }
+  }
   updateScheduleHighlight();
 }
 
@@ -362,21 +375,40 @@ function setOpinion(code, value) {
 
 function renderRequests() {
   byId('requests-section').hidden = !autoMode;
-  if (!autoMode) return;
+  if (!autoMode || drag?.source?.id === 'requests-section') return;
   const codes = Object.keys(preferences).filter((code) => preferences[code] === 'required');
   byId('request-count').textContent = codes.length;
   const items = codes.map((code) => {
     const term = termsById.get(scheduled.get(actualCode(code)));
     const failure = autoSolving ? null : autoResult?.unscheduled[code];
     const item = element('div', `request-item${failure ? ' unplaced' : ''}`);
+    makeDraggable(item, code);
+    const grip = element('span', 'drag-handle');
+    grip.setAttribute('aria-hidden', 'true');
     const open = makeButton('request-course', `View ${code} course details`, code);
-    open.addEventListener('click', () => showCourse(code, open));
-    const remove = makeButton('icon-button', `Remove ${code} from Schedule for Me`, '×');
+    open.addEventListener('click', () => showCourse(code, open, true));
+    const remove = makeButton('icon-button request-remove', `Remove ${code} from Schedule for Me`, '×');
     remove.addEventListener('click', () => setOpinion(code, 'neutral'));
-    item.append(open, remove, element('span', 'request-status', failure ?? term?.label ?? 'Waiting for a placement'));
+    item.append(grip, open, remove, element('span', 'request-status', failure ?? term?.label ?? 'Waiting for a placement'));
     return item;
   });
-  byId('request-list').replaceChildren(...(items.length ? items : [element('p', 'quiet-message', 'Use + on a course you want in your plan.')]));
+  byId('request-list').replaceChildren(...(items.length ? items : [element('p', 'quiet-message', 'Drop a course here to let Auto place it.')]));
+}
+
+function moveToRequests(code, fromTerm) {
+  code = actualCode(code);
+  if (!isAcademicCourse(code)) {
+    announce(`${code} is outside academic course planning.`);
+    return;
+  }
+  if (fromTerm && outcomeFor(code)) {
+    announce(`${code} can’t be moved to Schedule for Me. Keep its recorded placement or mark it as planned first.`);
+    return;
+  }
+  if (fromTerm) plan = removeCourse(plan, code, outcomes);
+  setOpinion(code, 'required');
+  renderPlan();
+  announce(`${code} moved to Schedule for Me.`);
 }
 
 function renderAutoStatus() {
@@ -624,7 +656,8 @@ function loadDetails(codes) {
   pending.forEach((code) => inFlight.set(code, loading));
 }
 
-function addOrMove(code, target) {
+function addOrMove(code, target, fromRequests = false) {
+  const requestedCode = code;
   code = actualCode(code);
   if (autoMode && isAcademicCourse(code) && !plan[target]?.includes(code)
       && plan[target]?.filter(isAcademicCourse).length + (termNotes[target]?.length ?? 0) >= Math.min(autoTermLimit, targets[target])) {
@@ -632,9 +665,10 @@ function addOrMove(code, target) {
     return;
   }
   const next = placeCourse(plan, code, target, outcomes);
-  if (next === plan) return;
+  if (next === plan && !(fromRequests && plan[target]?.includes(code) && !pinned(code))) return;
   const moved = scheduled.has(code);
   plan = next;
+  if (fromRequests && preferences[requestedCode] === 'required') delete preferences[requestedCode];
   renderPlan();
   savePlan();
   scheduleAuto();
@@ -658,7 +692,8 @@ function removeFromPlan(code) {
 }
 
 function changeGraphTerm(code, target) {
-  if (target) addOrMove(code, target);
+  const request = actualCode(code) === selectedCode && dialogTrigger?.closest('.request-item')?.dataset.course;
+  if (target) addOrMove(request || code, target, Boolean(request));
   else removeFromPlan(code);
   updateDetails(code);
 }
@@ -727,15 +762,13 @@ function termCourse(code, term, groups) {
     card.append(label);
   }
   if (autoMode) {
-    const pin = makeButton('term-pin', pinned(code) ? `${code} is locked` : `${manual ? 'Unpin' : 'Pin'} ${code}`, manual ? '📌' : '⌖');
-    pin.title = pinned(code) ? 'Outcome locked' : manual ? 'Unpin from this term' : 'Pin to this term';
-    pin.disabled = pinned(code);
+    const pin = makeButton('term-pin', pinned(code) ? `${code} is locked` : `${manual ? 'Unpin' : 'Pin'} ${code}`, '📌');
+    pin.setAttribute('aria-pressed', String(manual));
+    pin.title = outcome ? 'Recorded placement' : manual ? 'Move to Schedule for Me' : 'Pin to this term';
+    pin.disabled = Boolean(outcome);
     pin.addEventListener('click', () => {
-      if (manual) {
-        plan = removeCourse(plan, code, outcomes);
-        setOpinion(code, 'required');
-        renderPlan();
-      } else addOrMove(code, term.id);
+      if (manual) moveToRequests(code, true);
+      else addOrMove(code, term.id);
     });
     card.append(pin);
   }
@@ -893,6 +926,16 @@ function renderTerm(term) {
   edit.append(pencil);
   edit.addEventListener('click', () => openTermEditor(term, 'title'));
   cell.append(edit);
+  if (term.level) {
+    const rules = makeButton('term-requirement', `View ${term.level} requirements`);
+    rules.dataset.level = term.level;
+    rules.hidden = true;
+    rules.addEventListener('click', () => {
+      const active = termRules(term.level);
+      showDegreeRule((active.find((rule) => !rule.met) ?? active[0])?.id);
+    });
+    cell.append(rules);
+  }
   const notes = termNotes[term.id] ?? [];
   if (displayPlan[term.id].length || notes.length) {
     const list = element('div', 'term-courses');
@@ -942,6 +985,7 @@ function renderBoard() {
     for (const season of seasons) grid.append(renderTerm(termsById.get(`${year}-${season.toLowerCase()}`)));
   }
   board.replaceChildren(grid);
+  updateTermRules();
   hoveredCourse = board.querySelector('.term-course:hover')?.dataset.course;
   updateScheduleHighlight();
   byId('planned-count').textContent = `${[...scheduled.keys()].filter(isAcademicCourse).length} ${Object.keys(outcomes).length ? 'courses' : 'planned'}`;
@@ -990,6 +1034,24 @@ function renderBuckets() {
   byId('prereq-list').replaceChildren(...buckets);
 }
 
+function termRules(level) {
+  return degreeReport?.rules.filter((rule) => rule.level === level && !rule.disabled) ?? [];
+}
+
+function updateTermRules() {
+  for (const badge of board.querySelectorAll('.term-requirement')) {
+    const { level } = badge.dataset;
+    const rules = termRules(level);
+    const tally = rules.reduce((count, rule) => count + rule.current, 0);
+    const target = rules.reduce((count, rule) => count + rule.target, 0);
+    const [min, max] = requirements.termElectives[level];
+    const electiveRange = min === max ? `${max}` : `${min}–${max}`;
+    badge.hidden = !rules.length;
+    badge.textContent = `${tally}/${target} required${max ? ` · ${electiveRange} elective ${max === 1 ? 'slot' : 'slots'}` : ''}`;
+    badge.classList.toggle('met', rules.every((rule) => rule.met));
+  }
+}
+
 function updateDegree() {
   degreeReport = evaluateDegree(requirements, archive, counted, { timeline: timeline(), equivalents, disabledRules });
   const active = degreeReport.total > 0;
@@ -1002,6 +1064,7 @@ function updateDegree() {
   byId('degree-section').hidden = met || !active;
   updateDegreeSidebar(degreeReport);
   refreshDegreeReport?.(degreeReport);
+  updateTermRules();
 }
 
 function setRuleEnabled(id, enabled) {
@@ -1238,9 +1301,10 @@ byId('placement-form').addEventListener('submit', (event) => {
   event.preventDefault();
   const code = selectedCode;
   const target = byId('target-term').value;
+  const request = dialogTrigger?.closest('.request-item')?.dataset.course;
   if (!degreeDialog.open) dialogTrigger = null;
   dialog.close();
-  addOrMove(code, target);
+  addOrMove(request ?? code, target, Boolean(request));
   if (degreeDialog.open) return;
   const cell = document.querySelector(`[data-term="${target}"]`);
   const card = cell?.querySelector(`[data-course="${CSS.escape(code)}"] .term-course-open`);
@@ -1260,11 +1324,22 @@ const degreeActions = {
   requestCourseButton, isAutoMode: () => autoMode, getPlan: () => displayPlan,
 };
 const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, degreeActions);
+function showProfileLinks(available) {
+  const original = byId('open-personal-plan');
+  const variant = byId('open-alex-variant');
+  original.href = published ? '?plan=personal' : './personal';
+  variant.href = `${original.getAttribute('href')}${published ? '&' : '?'}variant=without-3b`;
+  original.hidden = !available || (personal && !without3B);
+  variant.hidden = !available || without3B;
+  if (without3B) original.textContent = 'Original Alex’s plan';
+}
 if (personal) {
-  byId('planner-title').textContent = profile ? 'Alex’s course plan' : 'Personal plan unavailable';
+  const name = without3B ? 'Alex’s plan without 3B' : 'Alex’s course plan';
+  byId('planner-title').textContent = profile ? name : 'Personal plan unavailable';
   byId('open-sample-plan').hidden = false;
-  byId('reset-plan').textContent = 'Restore Alex’s plan';
+  byId('reset-plan').textContent = without3B ? 'Restore plan without 3B' : 'Restore Alex’s plan';
   byId('reset-plan').hidden = !profile;
+  showProfileLinks(Boolean(profile));
 }
 renderPlan();
 autoSwitch.checked = autoMode;
@@ -1303,12 +1378,11 @@ byId('close-opinions').addEventListener('click', () => opinionsDialog.close());
 scheduleAuto();
 if (applyProfileUpdate || (saved && !saved.yearRange)) savePlan();
 if (published && !personal) {
-  byId('open-personal-plan').href = '?plan=personal';
-  byId('open-personal-plan').hidden = false;
+  showProfileLinks(true);
 }
 if (!personal && !published) {
   request('./api/profile-status').then(({ available }) => {
-    byId('open-personal-plan').hidden = !available;
+    showProfileLinks(available);
   }).catch(() => {});
   request('./api/catalog').then((rows) => {
     if (!Array.isArray(rows) || !rows.length) return;

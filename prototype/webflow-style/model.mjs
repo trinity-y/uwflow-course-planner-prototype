@@ -59,6 +59,17 @@ export function readPlan(raw, timeline = terms) {
   return plan;
 }
 
+export function profileWithoutLevel(profile, level) {
+  if (!profile) return profile;
+  const term = terms.find((term) => ({ ...term, ...profile.terms?.[term.id] }).level === level);
+  if (!term) return profile;
+  const plan = { ...profile.plan, [term.id]: [] };
+  return {
+    ...profile, plan, outcomes: readOutcomes(profile.outcomes, indexPlan(plan)),
+    additions: { ...profile.additions, [term.id]: [] },
+  };
+}
+
 export function placeCourse(plan, code, target, outcomes = {}) {
   if (isPinned(outcomes[code]) || !Object.hasOwn(plan, target) || termOrder(target) === undefined || plan[target].includes(code)) {
     return plan;

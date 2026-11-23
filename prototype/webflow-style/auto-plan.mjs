@@ -24,8 +24,8 @@ export function solveAuto({
   const active = new Set(activeTerms);
   const disabledRules = new Set(disabled);
   const rules = requirements.rules.filter(({ id }) => !disabledRules.has(id));
-  const coreByCode = new Map(rules.filter(({ type }) => type === 'required').flatMap((rule) =>
-    rule.levels?.flatMap((level) => requirements.coreByLevel[level].map((code) => [code, level])) ?? [],
+  const coreByCode = new Map(rules.filter(({ type, level }) => type === 'required' && level).flatMap(({ level }) =>
+    requirements.coreByLevel[level].map((code) => [code, level]),
   ));
   const termByLevel = new Map(timeline.filter((term) => term.level).map((term) => [term.level, term.id]));
   const pins = new Map(Object.entries(plan).flatMap(([term, codes]) => codes.map((code) => [code, term])));
@@ -140,7 +140,7 @@ export function solveAuto({
         if (level === requiredLevel) state = place(state, code, [id]) ?? state;
       }
     }
-    for (const rule of rules.filter(({ type, levels }) => type === 'required' && !levels)) {
+    for (const rule of rules.filter(({ type, level }) => type === 'required' && !level)) {
       for (const code of rule.codes) state = place(state, code) ?? state;
     }
 
@@ -230,8 +230,8 @@ export function solveAuto({
     }
 
     const orderedIds = ['communication', 'mechanics', 'sustainability', 'science', 'impact', 'humanities',
-      'technical-cs', 'technical-ece', 'technical-additional', 'demo-course', 'early-electives',
-      'fourth-year', 'elective-total', 'academic-units'];
+      'technical-cs', 'technical-ece', 'technical-additional', 'demo-course', 'electives-1b', 'electives-2a',
+      'electives-4a', 'electives-4b', 'elective-total', 'academic-units'];
     const remainingRules = [...new Set([...orderedIds, ...byId.keys()])]
       .map((id) => byId.get(id)).filter((rule) => rule && rule.type !== 'required' && !rule.core);
     for (let round = 0; round < 2; round += 1) {

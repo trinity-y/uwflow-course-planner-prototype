@@ -15,7 +15,8 @@ courses stay in their recorded term. Choose **Planned** to unlock a course for e
 To enable **Load Alex’s plan** for a private profile, set
 `PLANNER_PROFILE_FILE` to the absolute path of its JSON file when starting the
 server. The `.local/` directory is ignored by Git. The personal page uses its
-own browser storage and local catalog.
+own browser storage and local catalog. **Alex’s plan without 3B** uses the same
+profile with 3B’s courses and outcomes cleared and saves separately.
 
 The sample uses the Fall 2023 timeline with the program rules from
 [Waterloo’s 2024–25 Software Engineering calendar](https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2024-2025#/programs/H1zle10Cs3).
@@ -24,6 +25,8 @@ Each term has an editable class target. Zero-target terms are striped. Use
 courses and notes outside that range. Click a term title to edit it, or use the
 plus in an empty slot to add a note card.
 The schedule header opens a degree report with per-rule status and progress.
+The badge on each academic term opens its calendar rules. Fixed courses count
+in the listed term, with the calendar’s out-of-sequence exceptions.
 Use a rule’s switch to remove it from the score and outstanding sidebar. The
 fictional CS 100 rule provides an example to turn off.
 Expand a category in the sidebar to browse and drag outstanding course choices.
@@ -56,6 +59,8 @@ and prerequisite graphs work with no upstream service. Use
 
 Turn on **Auto plan** to generate suggestions from a blank plan or alongside
 manual course pins. The browser worker uses the bundled rules and catalog, term
-targets capped at eight courses, and saved opinions. **Schedule for Me** requests
-a course, and **Shuffle** tries another solution. Turning Auto off hides its
-suggestions while retaining the manual schedule and preferences.
+targets capped at eight courses, and saved opinions. Drop a course into
+**Schedule for Me**, above the year grid, to let Auto choose its term. Drop a
+request back into a term to pin it. Suggestions have grey pins until you pin
+them. **Shuffle** tries another solution. Turning Auto off hides its suggestions
+while retaining the manual schedule and preferences.

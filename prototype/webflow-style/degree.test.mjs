@@ -11,15 +11,17 @@ const check = (result, id) => result.rules.find((rule) => rule.id === id);
 const add = (plan, codes, term) => codes.reduce((current, code) => placeCourse(current, code, term), plan);
 const blank = () => Object.fromEntries(Object.keys(initialPlan()).map((term) => [term, []]));
 
-test('the blank plan has zero rules met and the sample plan meets the core rule', () => {
+test('the blank plan has zero rules met and the sample plan meets the per-term core rules', () => {
   assert.equal(report(blank()).percent, 0);
   const sample = report(initialPlan());
-  assert.equal(check(sample, 'core').current, 38);
-  assert.equal(check(sample, 'core').met, true);
+  const core = sample.rules.filter(({ type }) => type === 'required');
+  assert.equal(core.length, 8);
+  assert.equal(core.reduce((sum, { current }) => sum + current, 0), 38);
+  assert.ok(core.every((rule) => rule.met));
   assert.deepEqual(check(sample, 'interface').matched, ['CS 349']);
   assert.deepEqual(check(sample, 'mechanics').matched, ['ECE 105']);
   assert.equal(check(sample, 'technical-cs').met, true);
-  assert.equal(sample.met, 4);
+  assert.equal(sample.met, 12);
 });
 
 test('an elective that appears in two lists only fills one slot', () => {
@@ -57,11 +59,23 @@ test('degree choices preserve published lists and paired lab requirements', () =
 test('the sidebar shows eligible communication choices and only missing fixed courses', () => {
   let degree = report(initialPlan());
   const remainingChoices = (id) => degreeCourseSets(requirements, archive, check(degree, id), { remainingOnly: true });
-  assert.deepEqual(remainingChoices('core'), []);
+  assert.deepEqual(remainingChoices('core-1b'), []);
   assert.deepEqual(remainingChoices('communication'), [{ options: requirements.lists.communication }]);
   degree = report(removeCourse(add(initialPlan(), ['ENGL 109'], '2024-fall'), 'SE 102'));
   assert.deepEqual(remainingChoices('communication'), []);
-  assert.deepEqual(remainingChoices('core'), [{ title: '1B', options: [['SE 102']] }]);
+  assert.deepEqual(remainingChoices('core-1b'), [{ options: [['SE 102']] }]);
+});
+
+test('a wrong-term course leaves its own requirement open unless the calendar allows out-of-sequence study', () => {
+  const original = initialPlan();
+  const moved = add(original, ['SE 302', 'CS 343'], '2027-spring');
+  const rule = check(report(moved), 'core-3b');
+  assert.equal(rule.current, 5);
+  assert.ok(rule.matched.includes('CS 343'));
+  assert.deepEqual(rule.elsewhere, [{ required: 'SE 302', scheduled: 'SE 302' }]);
+  assert.deepEqual(degreeCourseSets(requirements, archive, rule, {
+    remainingOnly: true, countedElsewhere: ['SE 302'],
+  }), [{ options: [['SE 302']] }]);
 });
 
 test('communication and technical electives use the calendar timing boundaries', () => {
@@ -118,13 +132,14 @@ test('degree rules expose additional eligible courses after applying quotas and 
   assert.deepEqual(communication.matched, ['COMMST 100']);
   assert.deepEqual(communication.additional, ['ENGL 109']);
 
-  const fourth = check(result, 'fourth-year');
-  assert.equal(fourth.current, 3);
-  assert.equal(fourth.available, 6);
-  assert.equal(fourth.matched.length, 3);
-  assert.ok(fourth.matched.includes('CS 448'));
-  assert.equal(fourth.additional.length, 3);
-  assert.equal(fourth.met, false);
+  const fourthA = check(result, 'electives-4a');
+  assert.equal(fourthA.current, 2);
+  assert.equal(fourthA.available, 5);
+  assert.equal(fourthA.additional.length, 3);
+  assert.equal(fourthA.met, true);
+  const fourthB = check(result, 'electives-4b');
+  assert.deepEqual(fourthB.matched, ['CS 448']);
+  assert.equal(fourthB.met, false);
 });
 
 test('the total elective rule keeps the full list available above its target', () => {
@@ -178,8 +193,8 @@ test('a custom sequence and approved course equivalents apply to degree checks',
   const result = evaluateDegree(requirements, archive, scheduled, {
     timeline, equivalents: { 'CS 241E': 'CS 241' },
   });
-  assert.deepEqual(check(result, 'core').matched, ['CS 241E']);
-  assert.deepEqual(check(result, 'fourth-year').matched, ['CS 454']);
+  assert.deepEqual(check(result, 'core-2a').matched, ['CS 241E']);
+  assert.deepEqual(check(result, 'electives-4a').matched, ['CS 454']);
 });
 
 test('a plan can pass all modeled rules and an uneven fourth year fails its distribution rule', () => {
@@ -192,5 +207,5 @@ test('a plan can pass all modeled rules and an uneven fourth year fails its dist
   const complete = report(plan);
   assert.deepEqual(complete.rules.filter((rule) => !rule.met).map(({ id }) => id), []);
   assert.equal(complete.percent, 100);
-  assert.equal(check(report(add(plan, ['ECE 459'], '2028-winter')), 'fourth-year').met, false);
+  assert.equal(check(report(add(plan, ['ECE 459'], '2028-winter')), 'electives-4a').met, false);
 });

@@ -17,6 +17,17 @@
     "4A": ["SE 401", "SE 463", "SE 490"],
     "4B": ["SE 402", "SE 491"]
   },
+  "termElectives": {
+    "1A": [0, 0],
+    "1B": [1, 1],
+    "2A": [1, 2],
+    "2B": [0, 1],
+    "3A": [0, 1],
+    "3B": [0, 1],
+    "4A": [2, 3],
+    "4B": [3, 4]
+  },
+  "outOfSequence": ["CHE 102", "CS 343", "CS 348", "CS 349", "CS 449", "ECE 140", "ECE 192", "ECE 358", "MSE 343", "SE 380"],
   "lists": {
     "demo-course": [
       ["CS 100"]
@@ -954,26 +965,81 @@
   },
   "rules": [
     {
-      "id": "core",
+      "id": "core-1a",
       "type": "required",
-      "title": "Core Software Engineering courses",
+      "level": "1A",
+      "replaces": "core",
+      "title": "1A required courses",
       "source": "program",
-      "levels": [
-        "1A",
-        "1B",
-        "2A",
-        "2B",
-        "3A",
-        "3B",
-        "4A",
-        "4B"
-      ],
-      "description": "Schedule all 38 fixed courses and seminars. The 3A interface course is tracked separately."
+      "description": "Schedule the fixed courses listed for 1A. Waterloo allows CHE 102 out of sequence for a reduced elective load."
+    },
+    {
+      "id": "core-1b",
+      "type": "required",
+      "level": "1B",
+      "replaces": "core",
+      "title": "1B required courses",
+      "source": "program",
+      "description": "Schedule the fixed courses and seminar listed for 1B. Waterloo allows certain courses out of sequence for a reduced elective load."
+    },
+    {
+      "id": "core-2a",
+      "type": "required",
+      "level": "2A",
+      "replaces": "core",
+      "title": "2A required courses",
+      "source": "program",
+      "description": "Schedule the fixed courses and seminar listed for 2A. Waterloo allows certain courses out of sequence for a reduced elective load."
+    },
+    {
+      "id": "core-2b",
+      "type": "required",
+      "level": "2B",
+      "replaces": "core",
+      "title": "2B required courses",
+      "source": "program",
+      "description": "Schedule the fixed courses and seminar listed for 2B. Waterloo allows certain courses out of sequence for a reduced elective load."
+    },
+    {
+      "id": "core-3a",
+      "type": "required",
+      "level": "3A",
+      "replaces": "core",
+      "title": "3A required courses",
+      "source": "program",
+      "description": "Schedule the fixed courses and seminar listed for 3A. Waterloo allows certain courses out of sequence for a reduced elective load."
+    },
+    {
+      "id": "core-3b",
+      "type": "required",
+      "level": "3B",
+      "replaces": "core",
+      "title": "3B required courses",
+      "source": "program",
+      "description": "Schedule the fixed courses and seminar listed for 3B. Waterloo allows certain courses out of sequence for a reduced elective load."
+    },
+    {
+      "id": "core-4a",
+      "type": "required",
+      "level": "4A",
+      "replaces": "core",
+      "title": "4A required courses",
+      "source": "program",
+      "description": "Schedule the fixed courses and seminar listed for 4A. Waterloo allows certain courses out of sequence for a reduced elective load."
+    },
+    {
+      "id": "core-4b",
+      "type": "required",
+      "level": "4B",
+      "replaces": "core",
+      "title": "4B required courses",
+      "source": "program",
+      "description": "Schedule the fixed courses and seminar listed for 4B. Waterloo allows certain courses out of sequence for a reduced elective load."
     },
     {
       "id": "interface",
       "type": "choose",
-      "title": "User interfaces or human-computer interaction",
+      "title": "3A user interfaces or human-computer interaction",
       "source": "program",
       "list": "interface",
       "core": true,
@@ -1075,36 +1141,68 @@
       "description": "Plan 12 distinct electives, with ten category choices and two additional eligible 0.50-unit courses. The sustainability requirement may overlap with another category."
     },
     {
-      "id": "early-electives",
+      "id": "electives-1b",
       "type": "electiveTiming",
-      "title": "First- and second-year electives",
-      "source": "program",
+      "level": "1B",
       "levels": [
-        "1B",
+        "1B"
+      ],
+      "minimumByLevel": {
+        "1B": 1
+      },
+      "count": 1,
+      "replaces": "early-electives",
+      "title": "1B approved electives",
+      "source": "program",
+      "description": "Plan 1 approved elective in 1B."
+    },
+    {
+      "id": "electives-2a",
+      "type": "electiveTiming",
+      "level": "2A",
+      "levels": [
         "2A"
       ],
       "minimumByLevel": {
-        "1B": 1,
         "2A": 1
       },
-      "count": 2,
-      "description": "Plan one approved elective in 1B and at least one in 2A. The calendar allows a second in 2A and up to one in 2B."
+      "count": 1,
+      "replaces": "early-electives",
+      "title": "2A approved electives",
+      "source": "program",
+      "description": "Plan at least 1 approved elective in 2A. The calendar lists 1–2."
     },
     {
-      "id": "fourth-year",
+      "id": "electives-4a",
       "type": "electiveTiming",
-      "title": "Fourth-year elective distribution",
-      "source": "program",
+      "level": "4A",
       "levels": [
-        "4A",
+        "4A"
+      ],
+      "minimumByLevel": {
+        "4A": 2
+      },
+      "count": 2,
+      "replaces": "fourth-year",
+      "title": "4A approved electives",
+      "source": "program",
+      "description": "Plan at least 2 approved electives in 4A. The calendar lists 2–3."
+    },
+    {
+      "id": "electives-4b",
+      "type": "electiveTiming",
+      "level": "4B",
+      "levels": [
         "4B"
       ],
-      "count": 5,
-      "description": "Plan at least two approved electives in 4A and three in 4B. The calendar lists two or three in 4A and three or four in 4B.",
       "minimumByLevel": {
-        "4A": 2,
         "4B": 3
-      }
+      },
+      "count": 3,
+      "replaces": "fourth-year",
+      "title": "4B approved electives",
+      "source": "program",
+      "description": "Plan at least 3 approved electives in 4B. The calendar lists 3–4."
     },
     {
       "id": "academic-units",

@@ -192,18 +192,22 @@ function courseCodes(codes, label, actions, counted = false) {
 }
 
 function updateCourseGroups(container, rule, actions) {
-  const missing = rule.missing ?? [];
-  const codes = [...rule.matched, ...rule.additional, ...missing];
+  const elsewhere = rule.elsewhere ?? [];
+  const misplaced = new Set(elsewhere.map(({ required }) => required));
+  const missing = (rule.missing ?? []).filter((code) => !misplaced.has(code));
+  const otherTerms = elsewhere.map(({ scheduled }) => scheduled);
+  const codes = [...rule.matched, ...rule.additional, ...missing, ...otherTerms];
   const locations = codes.map((code) => {
     const placement = actions.findPlacement(code);
     return placement && [placement.code, placement.term.id];
   });
-  const signature = JSON.stringify([rule.matched, rule.additional, missing, locations, actions.isAutoMode?.()]);
+  const signature = JSON.stringify([rule.matched, rule.additional, missing, otherTerms, locations, actions.isAutoMode?.()]);
   if (container.dataset.courses === signature) return;
   container.dataset.courses = signature;
   const contents = [];
   if (rule.matched.length) contents.push(courseCodes(rule.matched, 'Counted', actions, true));
   if (rule.additional.length) contents.push(courseCodes(rule.additional, 'Additional eligible', actions));
+  if (otherTerms.length) contents.push(courseCodes(otherTerms, 'Scheduled in another term', actions));
   if (missing.length) contents.push(courseCodes(missing, 'Missing', actions));
   if (!contents.length) contents.push(element('p', '', 'No eligible courses are scheduled for this rule.'));
   container.replaceChildren(...contents);

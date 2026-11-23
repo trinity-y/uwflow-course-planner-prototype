@@ -27,9 +27,9 @@ This is the feature record for the Software Engineering course planner on `alex-
 ## Automatic planning
 
 - Turn on **Auto plan** to generate a Software Engineering schedule using enabled rules, known prerequisites, course requests, pins, and term targets. Plans run in the browser and use a maximum of eight courses per term. Aim for five where capacity and requirements allow.
-- Use **Schedule for Me** to request a course without specifying its term. Show unplaced requests in red with the reason. Place earlier prerequisites automatically, choosing shorter valid paths first.
+- Show **Schedule for Me** as its own drop zone inside **Academic schedule**, just above the year grid. Drag courses in from the sidebar or move a planned course there to let Auto choose its term. Drag a request back into a term to pin it there. Show unplaced requests in red with the reason. Place earlier prerequisites automatically, choosing shorter valid paths first.
 - Use five course states: **Must take**, **Interested**, **Neutral**, **Prefer to avoid**, and **Ban**. Must-take courses are placement goals, bans exclude automatic placements, and interest and avoidance break ties between plans with the same number of courses.
-- Treat manual placements and passed or failed courses as pins. Show automatic suggestions with dashed borders and provide a pin control to keep a suggestion. Turning Auto off hides suggestions and preserves the manual plan, outcomes, requests, opinions, and Shuffle setting.
+- Treat manual placements and recorded course outcomes as pins. Show automatic suggestions with dashed borders and a grey pin. A colored pin shows a fixed placement. Turning Auto off hides suggestions and preserves the manual plan, outcomes, requests, opinions, and Shuffle setting.
 - Show real progress during the search. Offer **Shuffle** for a different set of equivalent choices and show a partial plan when constraints leave requirements or requests unresolved.
 - Use course details to give an opinion, or open **I want your opinions** to review categories. Show ten unrated suggestions first, previously rated courses afterward, and an **All my opinions** view.
 - Use the degree checker to verify generated plans. The prototype uses a bounded heuristic search and the bundled prerequisite data. Course availability and prerequisites without a modeled course expression remain manual checks.
@@ -39,6 +39,7 @@ This is the feature record for the Software Engineering course planner on `alex-
 - Use Waterloo’s archived 2024–25 Software Engineering calendar to model fixed courses, course lists, elective counts and academic term rules in JSON. ECE 106 is an optional natural science choice. The report covers academic requirements only, with co-op and PD left outside degree validation. Keep the rule source available in the report. [Waterloo’s 2024–25 calendar](https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2024-2025#/programs/H1zle10Cs3)
 - Use the sticky **Academic schedule** header to show the fraction and percentage of modeled rules met and whether the plan passes. Keep prerequisite warnings visible in the header when present.
 - Open a report from that summary. Each rule shows **Met** or **Incomplete**, plus a horizontal progress bar where a rule has multiple slots. Show per-term counts where distribution across terms matters.
+- Show a clickable progress badge in each academic term. Its rules count fixed courses in their calendar term or under an explicit out-of-sequence exception. Use those same rules to place Auto suggestions. Show the calendar’s recommended elective ranges in the term headers.
 - In the sidebar, show incomplete degree categories, their remaining progress, and uncounted course choices. Include communication, technical and science electives, and complementary studies alongside the core curriculum. Let users browse, star, and schedule outstanding choices. Remove each category once it is met and hide the whole section once all rules are met. Keep counted courses and surplus choices in the full report.
 - Open **Course details** by default in the report. Show assigned courses in green under **Counted**, extra scheduled choices under **Additional eligible**, and outstanding fixed courses under **Missing**. Keep the full eligible pool available to browse and star. Show surplus choices even when the rule is already met.
 - Give each rule a switch in the full report. A rule set to **Off** stays visible there for re-enabling and drops out of the validation percentage and outstanding sidebar. Save switches with the plan. Include a fictional **Demo rule · CS 100** that starts on so users can try turning it off.
@@ -48,7 +49,7 @@ This is the feature record for the Software Engineering course planner on `alex-
 
 | Rule | What the planner checks |
 | --- | --- |
-| Core Software Engineering courses | Schedule all 38 fixed courses, including all seven seminars. |
+| Required courses, 1A through 4B | Check all 38 fixed courses, including the seven seminars, under eight individual study-term rules. |
 | User interfaces or human-computer interaction | Choose CS 349, CS 449, or MSE 343. |
 | Undergraduate communication | Schedule one approved course before 3A. |
 | Advanced technical elective, CS list | Choose one course from the CS list in 3A or later. |
@@ -60,8 +61,7 @@ This is the feature record for the Software Engineering course planner on `alex-
 | Humanities and social sciences, List C | Choose a separate course from List C. |
 | Sustainability | Choose one listed course. It can also count toward another elective rule. |
 | Total academic electives | Schedule 12 distinct electives. Ten fill category requirements and two are additional eligible 0.50-unit courses. |
-| First- and second-year electives | Schedule at least one elective each in 1B and 2A. |
-| Fourth-year elective distribution | Schedule at least two electives in 4A and three in 4B. |
+| Term elective minimums, 1B, 2A, 4A, and 4B | Four individual rules check that each term meets the calendar minimum. |
 | Total academic units | Plan 21.50 units, excluding PD and co-op. |
 
 Keep the communication grade minimum of 60%, academic standing, and approved exceptions available for manual confirmation. Course offerings and complex enrolment conditions also require manual review.
@@ -75,6 +75,7 @@ Keep the communication grade minimum of 60%, academic standing, and approved exc
 ## Personal plan and course outcomes
 
 - Provide a **Load Alex’s plan** button in the sample planner. It opens a personal version seeded from the supplied course-plan workbook, including study and co-op placements, the actual term sequence, and noted favorites. Preserve conflicting elective ideas as favorites where the workbook does not give a clear placement.
+- Provide an **Alex’s plan without 3B** variant that starts with the courses and outcomes from 3B removed. It keeps the rest of the imported plan and saves its own edits.
 - Include every fixed course and seminar in Alex’s plan using Alex’s existing term sequence. Add missing seminars and the required PD courses as planned and preserve recorded outcomes. Put PD 19 and PD 20 in the first two work terms, followed by PD 10 and PD 11 in subsequent work terms. [Waterloo Engineering’s PD guidance](https://uwaterloo.ca/engineering/undergraduate-students/co-op-experience/professional-development)
 - Treat green workbook cells as passed and other scheduled entries as planned unless an outcome is known. Show **Planned**, **Enrolled**, **Passed**, and **Failed** in the course card’s **⋯** menu so the plan can distinguish actual enrollment from proposed courses.
 - Pin passed and failed courses to their recorded term. A user can explicitly change a result to **Planned** to make it editable. Failed courses cannot satisfy prerequisites or degree rules.

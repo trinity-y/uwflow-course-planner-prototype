@@ -13,7 +13,6 @@ const studyLevels = {
   '2028-winter': '4B',
 };
 
-const additionalSlots = { '1B': 1, '2A': 1, '2B': 1, '3A': 1, '3B': 1, '4A': 3, '4B': 4 };
 const sampleElectives = { '2024-winter': ['ECE 105'], '2027-spring': ['CS 488'] };
 
 export const seasons = ['Winter', 'Spring', 'Fall'];
@@ -45,7 +44,8 @@ export function createTerms({ start, end }) {
     const coreCourses = requirements.coreByLevel[level] ?? [];
     const coreChoices = requirements.rules.filter((rule) => rule.core && rule.level === level)
       .flatMap((rule) => requirements.lists[rule.list].slice(0, rule.count).flat());
-    const target = coreCourses.length + coreChoices.length + (additionalSlots[level] ?? 0);
+    const [minimum, maximum] = requirements.termElectives[level] ?? [0, 0];
+    const target = coreCourses.length + coreChoices.length + (level === '2A' ? minimum : maximum);
     const courses = [...coreCourses, ...coreChoices, ...(sampleElectives[id] ?? [])];
     return {
       id, year, season, level, courses, target,

@@ -1,7 +1,7 @@
 import { termOrder, terms } from './calendar.mjs';
 import { isAcademicCourse } from './model.mjs';
 
-const requiredCodes = (requirements, rule) => rule.codes ?? rule.levels.flatMap((level) => requirements.coreByLevel[level]);
+const requiredCodes = (requirements, rule) => rule.codes ?? requirements.coreByLevel[rule.level];
 const fixedCourses = (requirements) => requirements.rules.filter(({ type }) => type === 'required')
   .flatMap((rule) => requiredCodes(requirements, rule));
 const creditForCode = (archive, code) => archive[code]?.[2] ?? code;
@@ -11,10 +11,7 @@ const isHalfCreditElective = (archive, code) => academicUnits(archive, code) ===
 function courseSets(requirements, archive, rule) {
   const { lists } = requirements;
   if (rule.type === 'required') {
-    if (rule.levels) return rule.levels.map((level) => ({
-      title: level, options: requirements.coreByLevel[level].map((code) => [code]),
-    }));
-    return [{ options: rule.codes.map((code) => [code]) }];
+    return [{ options: requiredCodes(requirements, rule).map((code) => [code]) }];
   }
   if (rule.id === 'technical-additional') {
     const primary = new Set([...lists['technical-cs'], ...lists['technical-ece']].map(([code]) => code));
@@ -59,7 +56,7 @@ export function degreeCourseSets(requirements, archive, rule, { remainingOnly = 
   return sets.map((set) => ({
     ...set,
     options: set.options.map((codes) => codes.filter((code) =>
-      (!missing || missing.has(code)) && !counted.has(creditForCode(archive, code)),
+      missing ? missing.has(code) : !counted.has(creditForCode(archive, code)),
     )).filter((codes) => codes.length),
   })).filter(({ options }) => options.length);
 }
@@ -95,6 +92,8 @@ function assignElectiveSlots(rules, candidatesByRule) {
 
 export function evaluateDegree(requirements, archive, scheduled, { timeline = terms, equivalents = {}, disabledRules = new Set() } = {}) {
   const termsByLevel = new Map(timeline.filter(({ level }) => level).map(({ level, id }) => [level, id]));
+  const flexible = new Set(requirements.outOfSequence);
+  const inSequence = (rule, code, term) => !rule.level || term === termsByLevel.get(rule.level) || flexible.has(code);
   const creditFor = (code) => creditForCode(archive, equivalents[code] ?? code);
   const placements = new Map();
   for (const [code, term] of scheduled) {
@@ -111,7 +110,7 @@ export function evaluateDegree(requirements, archive, scheduled, { timeline = te
     for (const [lead, ...associated] of requirements.lists[list]) {
       const credit = creditFor(lead);
       if (reserved.has(credit) || candidates.has(credit)) continue;
-      const primary = placements.get(credit)?.find(({ term }) => eligible(term));
+      const primary = placements.get(credit)?.find(({ term }) => eligible(term, lead));
       if (!primary) continue;
       const supporting = associated.map((code) => placements.get(creditFor(code))?.[0]?.code);
       if (supporting.every(Boolean)) {
@@ -123,7 +122,7 @@ export function evaluateDegree(requirements, archive, scheduled, { timeline = te
 
   const coreChoices = new Map();
   for (const rule of requirements.rules.filter(({ core }) => core)) {
-    const options = [...optionsFor(rule.list).entries()];
+    const options = [...optionsFor(rule.list, (term, code) => inSequence(rule, code, term)).entries()];
     for (const [credit] of options.slice(0, rule.count)) reserved.add(credit);
     coreChoices.set(rule.id, options.map(([, placement]) => placement));
   }
@@ -161,12 +160,17 @@ export function evaluateDegree(requirements, archive, scheduled, { timeline = te
       const codes = requiredCodes(requirements, rule);
       const matched = [];
       const missing = [];
+      const elsewhere = [];
       for (const code of codes) {
-        const placement = placements.get(creditFor(code))?.[0];
+        const choices = placements.get(creditFor(code));
+        const placement = choices?.find(({ term }) => inSequence(rule, code, term));
         if (placement) matched.push(placement.code);
-        else missing.push(code);
+        else {
+          missing.push(code);
+          if (choices?.length) elsewhere.push({ required: code, scheduled: choices[0].code });
+        }
       }
-      return { ...rule, current: matched.length, target: codes.length, matched, missing, additional: [] };
+      return { ...rule, current: matched.length, target: codes.length, matched, missing, elsewhere, additional: [] };
     }
     if (rule.type === 'academicUnits') {
       let current = 0;

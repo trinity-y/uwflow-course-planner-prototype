@@ -33,6 +33,7 @@
         </form>
         <div class="plan-actions">
           <a class="button primary" id="open-personal-plan" href="./personal" hidden>Load Alex’s plan</a>
+          <a class="button subtle" id="open-alex-variant" hidden>Alex’s plan without 3B</a>
           <a class="button subtle" id="open-sample-plan" href="./" hidden>Sample planner</a>
           <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
           <button class="button clear-plan" id="clear-plan" type="button">Start blank</button>
@@ -57,10 +58,6 @@
         <div class="sidebar-heading">
           <h2 id="catalog-title">Courses</h2>
         </div>
-        <section class="requests-section" id="requests-section" aria-labelledby="requests-title" hidden>
-          <div class="section-heading"><h3 id="requests-title">Schedule for Me</h3><span class="count" id="request-count"></span></div>
-          <div id="request-list" class="request-list"></div>
-        </section>
         <section class="degree-section" id="degree-section" aria-labelledby="degree-courses-title" hidden>
           <div class="section-heading">
             <h3 id="degree-courses-title">Degree requirements</h3>
@@ -99,24 +96,30 @@
       </aside>
 
       <section class="board" aria-labelledby="board-title">
-        <header class="board-heading">
-          <div>
-            <h2 id="board-title">Academic schedule</h2>
-            <p>Drag a course into a term to add or move it.</p>
-          </div>
-          <div class="board-summary">
-            <span class="course-count" id="planned-count"></span>
-            <button class="warning-summary" id="warning-summary" type="button" hidden></button>
-            <button class="degree-check" id="open-degree-check" type="button" aria-haspopup="dialog">
-              <strong class="degree-percent" id="degree-percent"></strong>
-              <span class="degree-check-copy">
-                <strong id="degree-status"></strong>
-                <span id="degree-rule-count"></span>
-              </span>
-              <span class="degree-chevron" aria-hidden="true">›</span>
-            </button>
-          </div>
-        </header>
+        <div class="board-top">
+          <header class="board-heading">
+            <div>
+              <h2 id="board-title">Academic schedule</h2>
+              <p>Drag a course into a term to add or move it.</p>
+            </div>
+            <div class="board-summary">
+              <span class="course-count" id="planned-count"></span>
+              <button class="warning-summary" id="warning-summary" type="button" hidden></button>
+              <button class="degree-check" id="open-degree-check" type="button" aria-haspopup="dialog">
+                <strong class="degree-percent" id="degree-percent"></strong>
+                <span class="degree-check-copy">
+                  <strong id="degree-status"></strong>
+                  <span id="degree-rule-count"></span>
+                </span>
+                <span class="degree-chevron" aria-hidden="true">›</span>
+              </button>
+            </div>
+          </header>
+          <section class="requests-section" id="requests-section" aria-labelledby="requests-title" hidden>
+            <div class="section-heading"><h3 id="requests-title">Schedule for Me</h3><span class="count" id="request-count"></span></div>
+            <div id="request-list" class="request-list"></div>
+          </section>
+        </div>
         <div class="board-scroll" tabindex="0" role="region" aria-label="Schedule by year and term">
           <div class="term-board" id="term-board"></div>
         </div>
