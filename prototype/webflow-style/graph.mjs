@@ -1,4 +1,4 @@
-import { terms } from './calendar.mjs';
+import { termLabel } from './calendar.mjs';
 import { buildGraph, courseStatus, groupLabel, groupProgress, isPinned, outcomeLabels } from './model.mjs';
 
 export function element(tag, className, content) {
@@ -8,12 +8,10 @@ export function element(tag, className, content) {
   return node;
 }
 
-const termLabels = new Map(terms.map(({ id, label }) => [id, label]));
-
-export function termOptions(emptyLabel, required = false) {
+export function termOptions(timeline, emptyLabel, required = false) {
   const empty = new Option(emptyLabel, '');
   empty.disabled = required;
-  return [empty, ...terms.filter((term) => !term.beforeEntry).map((term) => new Option(term.label, term.id))];
+  return [empty, ...timeline.map((term) => new Option(term.label, term.id))];
 }
 
 function slotLabel(group) {
@@ -31,7 +29,7 @@ function graphButton(className, content, control, label) {
   return button;
 }
 
-export function renderGraph(container, code, getCourse, scheduled, { onPlacementChange, view, favoriteStar, prerequisites, outcomeFor }) {
+export function renderGraph(container, code, getCourse, scheduled, { onPlacementChange, view, favoriteStar, prerequisites, outcomeFor, placementOptions }) {
   const { depth, edges } = buildGraph(code, getCourse);
   if (depth.size === 1) {
     container.replaceChildren();
@@ -208,15 +206,15 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
       const outcome = outcomeFor(course);
       const status = outcome === 'failed' ? 'failed' : level === 0 ? 'goal' : courseStatus(course, target, prerequisites);
       const node = element('div', `graph-node ${status}`);
-      const term = termLabels.get(scheduled.get(course));
+      const currentTerm = scheduled.get(course);
       const name = getCourse(course)?.name;
       const courseName = element('span', 'graph-course-name', name);
       if (name) courseName.title = name;
       const select = element('select', 'graph-term');
       select.dataset.graphTerm = course;
       select.setAttribute('aria-label', `Term for ${course}`);
-      select.replaceChildren(...termOptions('Unscheduled'));
-      select.value = scheduled.get(course) ?? '';
+      select.replaceChildren(...placementOptions('Unscheduled', false, currentTerm));
+      select.value = currentTerm ?? '';
       select.disabled = isPinned(outcome);
       select.addEventListener('change', () => onPlacementChange(course, select.value));
       const button = graphButton('graph-inspect', undefined, `course:${course}`, `Show prerequisite slots for ${course}`);
@@ -235,7 +233,7 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
       courseName.addEventListener('click', () => inspect(course));
       node.append(heading, courseName, select);
       if (select.disabled) node.append(element('span', 'graph-node-caption', `${outcomeLabels[outcome]} · Locked`));
-      else if (status === 'late') node.append(element('span', 'graph-node-caption', `${term} is too late`));
+      else if (status === 'late') node.append(element('span', 'graph-node-caption', `${termLabel(currentTerm)} is too late`));
       bindPreview(node, () => {
         const pinned = selectedSlot();
         const slots = edges.get(view.course);

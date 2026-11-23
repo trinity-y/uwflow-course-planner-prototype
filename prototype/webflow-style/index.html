@@ -24,11 +24,18 @@
         <h1 id="planner-title">Course planner</h1>
         <p>Software Engineering <span aria-hidden="true">·</span> Fall 2023 entry</p>
       </div>
-      <div class="plan-actions">
-        <a class="button primary" id="open-personal-plan" href="./personal" hidden>Load Alex’s plan</a>
-        <a class="button subtle" id="open-sample-plan" href="./" hidden>Sample planner</a>
-        <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
-        <button class="button clear-plan" id="clear-plan" type="button">Start blank</button>
+      <div class="plan-controls">
+        <form class="year-range" id="year-range" aria-label="Schedule years">
+          <label>Start year <input id="start-year" type="number" step="1" required></label>
+          <label>End year <input id="end-year" type="number" step="1" required></label>
+          <button class="button subtle" type="submit">Apply years</button>
+        </form>
+        <div class="plan-actions">
+          <a class="button primary" id="open-personal-plan" href="./personal" hidden>Load Alex’s plan</a>
+          <a class="button subtle" id="open-sample-plan" href="./" hidden>Sample planner</a>
+          <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
+          <button class="button clear-plan" id="clear-plan" type="button">Start blank</button>
+        </div>
       </div>
     </header>
 
@@ -37,14 +44,14 @@
         <div class="sidebar-heading">
           <h2 id="catalog-title">Courses</h2>
         </div>
-        <section class="degree-section" aria-labelledby="degree-courses-title">
+        <section class="degree-section" id="degree-section" aria-labelledby="degree-courses-title" hidden>
           <div class="section-heading">
             <h3 id="degree-courses-title">Degree requirements</h3>
             <span class="count" id="degree-course-count"></span>
           </div>
           <div class="degree-course-list" id="degree-course-list" tabindex="0" role="region" aria-label="Incomplete requirements by category"></div>
         </section>
-        <section class="prereq-section" id="prereq-section" aria-labelledby="prereq-title">
+        <section class="prereq-section" id="prereq-section" aria-labelledby="prereq-title" hidden>
           <div class="section-heading">
             <h3 id="prereq-title">Missing prerequisites</h3>
             <span class="count" id="bucket-count"></span>
@@ -68,7 +75,7 @@
           </div>
           <div class="section-heading">
             <h4 id="results-title">All courses</h4>
-            <span class="catalog-source" id="catalog-source">2023–24 catalog</span>
+            <span class="catalog-source" id="catalog-source">Bundled catalog</span>
           </div>
           <div class="catalog-list" id="catalog-list"></div>
         </section>
@@ -109,6 +116,10 @@
       <button type="button" class="icon-button close-dialog" id="close-dialog" aria-label="Close course details" autofocus>×</button>
     </header>
     <div class="detail-body">
+      <section class="course-contributions" aria-labelledby="detail-contributions-title">
+        <h3 id="detail-contributions-title">Degree contributions</h3>
+        <div id="detail-contributions"></div>
+      </section>
       <div class="graph-heading">
         <h3>Prerequisite graph</h3>
         <div class="graph-legend" aria-label="Graph legend">
@@ -122,6 +133,7 @@
     <footer class="detail-footer">
       <div class="detail-links">
         <a id="flow-link" target="_blank" rel="noopener">View on UW Flow <span aria-hidden="true">↗</span></a>
+        <button type="button" class="button subtle" id="locate-detail-course" hidden>Show in schedule</button>
         <button type="button" class="button remove-course" id="remove-course" hidden>Remove</button>
       </div>
       <form id="placement-form" class="placement-form">
@@ -135,7 +147,7 @@
   <dialog class="details degree-dialog" id="degree-dialog" aria-labelledby="degree-title">
     <header class="detail-header">
       <div>
-        <div class="detail-code">Software Engineering · 2023–24</div>
+        <div class="detail-code" id="degree-calendar"></div>
         <h2 id="degree-title">Degree requirements</h2>
       </div>
       <button type="button" class="icon-button close-dialog" id="close-degree-check" aria-label="Close degree requirements" autofocus>×</button>
@@ -154,7 +166,33 @@
     <div class="detail-body">
       <p class="quiet-message">Passed and failed courses are locked to their term.</p>
       <div class="outcome-options" id="outcome-options"></div>
+      <section class="course-contributions" aria-labelledby="outcome-contributions-title">
+        <h3 id="outcome-contributions-title">Degree contributions</h3>
+        <div id="outcome-contributions"></div>
+      </section>
     </div>
+  </dialog>
+
+  <dialog class="details term-editor" id="term-editor" aria-labelledby="term-editor-title">
+    <form id="term-editor-form">
+      <header class="detail-header">
+        <div>
+          <div class="detail-code" id="term-editor-term"></div>
+          <h2 id="term-editor-title"></h2>
+        </div>
+        <button type="button" class="icon-button close-dialog" id="close-term-editor" aria-label="Close term editor">×</button>
+      </header>
+      <div class="detail-body term-editor-fields">
+        <label for="term-entry-title">Title</label>
+        <input id="term-entry-title" type="text" maxlength="100" autofocus>
+        <label for="term-entry-body" id="term-entry-body-label" hidden>Details <span>optional</span></label>
+        <textarea id="term-entry-body" maxlength="600" rows="3" hidden></textarea>
+      </div>
+      <footer class="detail-footer">
+        <button type="button" class="button remove-course" id="remove-term-note" hidden>Remove note</button>
+        <button type="submit" class="button primary" id="save-term-entry">Save</button>
+      </footer>
+    </form>
   </dialog>
 
   <div class="sr-only" id="announcement" role="status"></div>

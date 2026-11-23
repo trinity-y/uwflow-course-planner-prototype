@@ -17,17 +17,31 @@ function sourceLink(url, label) {
   return link;
 }
 
-function courseChoice(code, { getCourse, showCourse, favoriteStar, makeDraggable }) {
-  const { name } = getCourse(code);
-  const item = element('div', 'degree-course-choice');
-  const heading = element('div', 'course-with-star');
-  const link = element('button', 'degree-course-link', code);
+function courseReference(code, actions, { counted = false, draggable = false } = {}) {
+  const { findPlacement, locateCourse, showCourse, favoriteStar, makeDraggable } = actions;
+  const placement = findPlacement(code);
+  const displayCode = placement?.code ?? code;
+  const item = element('span', 'course-with-star degree-code');
+  item.classList.toggle('counted', counted);
+  const link = element('button', 'degree-course-link', displayCode);
   link.type = 'button';
-  link.setAttribute('aria-label', `Plan ${code}`);
-  makeDraggable?.(link, code);
-  link.addEventListener('click', () => showCourse(code, link, true));
-  heading.append(link, favoriteStar(code));
-  item.append(heading, element('span', 'degree-choice-name', name));
+  link.setAttribute('aria-label', placement ? `Show ${displayCode} in the schedule` : `Plan ${code}`);
+  link.title = placement?.term.label ?? actions.getCourse(code).name;
+  if (draggable) makeDraggable?.(link, code);
+  link.addEventListener('click', () => {
+    if (findPlacement(code)) locateCourse(code);
+    else showCourse(code, link, true);
+  });
+  item.append(link, favoriteStar(displayCode));
+  return item;
+}
+
+function courseChoice(code, counted, actions, draggable) {
+  const placement = actions.findPlacement(code);
+  const { name } = actions.getCourse(placement?.code ?? code);
+  const item = element('div', 'degree-course-choice');
+  item.append(courseReference(code, actions, { counted: counted.has(placement?.code ?? code), draggable }),
+    element('span', 'degree-choice-name', name));
   return item;
 }
 
@@ -41,6 +55,8 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
   let sets = [];
   let sizes = [];
   let signature;
+  let previousPlan;
+  let counted;
 
   function render() {
     const simplify = (value) => value.toLowerCase().replace(/\s/g, '');
@@ -59,7 +75,7 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
         const item = element('li', 'degree-eligible-option');
         for (const [position, code] of entry.entries()) {
           if (position) item.append(element('span', 'degree-eligible-pair', '+'));
-          item.append(courseChoice(code, actions));
+          item.append(courseChoice(code, counted, actions, remainingOnly));
         }
         list.append(item);
       }
@@ -87,12 +103,15 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
     render();
   });
 
-  function update(rule) {
-    const nextSignature = JSON.stringify([rule.id, remainingOnly ? [rule.met, rule.missing] : null]);
-    if (signature === nextSignature) return;
+  function update(rule, countedElsewhere) {
+    const nextSignature = JSON.stringify([rule.id, rule.matched, remainingOnly ? rule.missing : null, countedElsewhere]);
+    const plan = actions.getPlan();
+    if (signature === nextSignature && previousPlan === plan) return;
     signature = nextSignature;
-    sets = degreeCourseSets(requirements, archive, rule, { remainingOnly });
-    sizes = sets.map(() => pageSize);
+    previousPlan = plan;
+    counted = new Set(rule.matched);
+    sets = degreeCourseSets(requirements, archive, rule, { remainingOnly, countedElsewhere });
+    sizes = sets.map((_, index) => sizes[index] ?? pageSize);
     search.setAttribute('aria-label', `Search eligible courses for ${rule.title}`);
     search.hidden = sets.reduce((sum, set) => sum + set.options.length, 0) <= pageSize && !search.value;
     render();
@@ -104,13 +123,23 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
 function eligibleCourses(rule, requirements, archive, actions) {
   const details = element('details', 'degree-rule-details degree-eligible');
   details.append(element('summary', '', 'Eligible courses'));
+  let current = rule;
+  let picker;
   details.addEventListener('toggle', () => {
-    if (!details.open || details.childElementCount > 1) return;
-    const picker = coursePicker(requirements, archive, actions, false);
-    picker.update(rule);
-    details.append(picker.content);
+    if (!details.open) return;
+    if (!picker) {
+      picker = coursePicker(requirements, archive, actions, false);
+      details.append(picker.content);
+    }
+    picker.update(current);
   });
-  return details;
+  return {
+    details,
+    update(next) {
+      current = next;
+      if (details.open) picker?.update(next);
+    },
+  };
 }
 
 export function renderDegreeSidebar(container, requirements, archive, actions) {
@@ -123,6 +152,7 @@ export function renderDegreeSidebar(container, requirements, archive, actions) {
     details.append(summary);
     let picker;
     let current;
+    let countedElsewhere;
     details.addEventListener('toggle', () => {
       if (!details.open || !current) return;
       if (!picker) {
@@ -131,76 +161,119 @@ export function renderDegreeSidebar(container, requirements, archive, actions) {
         body.append(element('p', 'degree-rule-description', description), picker.content);
         details.append(body);
       }
-      picker.update(current);
+      picker.update(current, countedElsewhere);
     });
     cards.set(id, {
       details,
-      update(rule) {
+      update(rule, counted) {
         current = rule;
+        countedElsewhere = counted;
         progress.textContent = `${rule.current}/${rule.target}`;
-        details.hidden = rule.met;
-        if (!rule.met && details.open) picker?.update(rule);
+        details.hidden = rule.met || rule.disabled;
+        if (!details.hidden && details.open) picker?.update(rule, counted);
       },
     });
   }
 
-  const empty = element('p', 'quiet-message', 'All modeled degree requirements are met.');
-  container.replaceChildren(...[...cards.values()].map(({ details }) => details), empty);
+  container.replaceChildren(...[...cards.values()].map(({ details }) => details));
   return (report) => {
-    empty.hidden = report.rules.some((rule) => !rule.met);
-    for (const rule of report.rules) cards.get(rule.id).update(rule);
+    const counted = [...new Set(report.rules.flatMap(({ matched }) => matched))];
+    for (const rule of report.rules) cards.get(rule.id).update(rule, counted);
   };
 }
 
-function courseCodes(codes, label, favoriteStar) {
+function courseCodes(codes, label, actions, counted = false) {
   const group = element('div', 'degree-course-codes');
   group.append(element('strong', '', label));
-  for (const code of codes) {
-    const item = element('span', 'course-with-star degree-code');
-    item.append(element('span', '', code), favoriteStar(code));
-    group.append(item);
-  }
+  for (const code of new Set(codes)) group.append(courseReference(code, actions, { counted }));
   return group;
+}
+
+function updateCourseGroups(container, rule, actions) {
+  const missing = rule.missing ?? [];
+  const codes = [...rule.matched, ...rule.additional, ...missing];
+  const locations = codes.map((code) => {
+    const placement = actions.findPlacement(code);
+    return placement && [placement.code, placement.term.id];
+  });
+  const signature = JSON.stringify([rule.matched, rule.additional, missing, locations]);
+  if (container.dataset.courses === signature) return;
+  container.dataset.courses = signature;
+  const contents = [];
+  if (rule.matched.length) contents.push(courseCodes(rule.matched, 'Counted', actions, true));
+  if (rule.additional.length) contents.push(courseCodes(rule.additional, 'Additional eligible', actions));
+  if (missing.length) contents.push(courseCodes(missing, 'Missing', actions));
+  if (!contents.length) contents.push(element('p', '', 'No eligible courses are scheduled for this rule.'));
+  container.replaceChildren(...contents);
+}
+
+export function renderCourseContributions(container, rules, { usedBy, listedFor }, actions) {
+  const contents = [];
+  if (rules.length) {
+    const list = element('ul', 'contribution-list');
+    for (const { id, title, status } of rules) {
+      const item = element('li', 'contribution-rule');
+      const link = element('button', 'degree-course-link', title);
+      link.type = 'button';
+      link.addEventListener('click', () => actions.showDegreeRule(id));
+      item.append(link, element('span', `rule-status${status === 'Counted' ? ' met' : ' neutral'}`, status));
+      list.append(item);
+    }
+    contents.push(list);
+  } else {
+    contents.push(element('p', 'quiet-message', 'No modeled degree rules list this course.'));
+  }
+  if (usedBy.length) contents.push(courseCodes(usedBy, 'Prerequisite for', actions, true));
+  if (listedFor.length) contents.push(courseCodes(listedFor, 'Prerequisite option for', actions));
+  container.replaceChildren(...contents);
 }
 
 function ruleRow(rule, requirements, archive, actions) {
   const row = element('li', 'degree-rule');
+  row.dataset.degreeRule = rule.id;
   const heading = element('div', 'degree-rule-heading');
   const title = element('h3', '', rule.title);
+  title.tabIndex = -1;
   const status = element('span', 'rule-status');
-  heading.append(title, status);
+  const controls = element('div', 'degree-rule-controls');
+  const toggle = element('input', 'degree-rule-toggle');
+  toggle.type = 'checkbox';
+  toggle.setAttribute('role', 'switch');
+  toggle.setAttribute('aria-label', `Use rule ${rule.title}`);
+  toggle.addEventListener('change', () => actions.setRuleEnabled(rule.id, toggle.checked));
+  controls.append(status, toggle);
+  heading.append(title, controls);
   row.append(heading, element('p', 'degree-rule-description', rule.description));
   const bar = progress(`${rule.title} progress`);
   const amount = element('span', '');
-  if (rule.target > 1) {
-    const tracking = element('div', 'degree-rule-tracking');
-    tracking.append(bar, amount);
-    row.append(tracking);
-  }
+  const tracking = element('div', 'degree-rule-tracking');
+  tracking.append(bar, amount);
   const counts = element('p', 'degree-rule-counts');
-  if (rule.counts) row.append(counts);
+  row.append(tracking, counts);
 
   const details = element('details', 'degree-rule-details');
+  details.open = true;
   const counted = element('div', 'degree-counted');
-  details.append(element('summary', '', 'Course details'), counted, sourceLink(requirements.sources[rule.source], 'View calendar requirement'));
-  row.append(details, eligibleCourses(rule, requirements, archive, actions));
+  details.append(element('summary', '', 'Course details'), counted);
+  if (rule.source) details.append(sourceLink(requirements.sources[rule.source], 'View calendar requirement'));
+  const eligible = eligibleCourses(rule, requirements, archive, actions);
+  row.append(details, eligible.details);
 
-  let previousCourses;
   function update(next) {
+    toggle.checked = !next.disabled;
     status.classList.toggle('met', next.met);
-    status.textContent = next.met ? 'Met' : 'Incomplete';
+    status.classList.toggle('neutral', next.disabled);
+    status.textContent = next.disabled ? 'Off' : next.met ? 'Met' : 'Incomplete';
+    details.hidden = eligible.details.hidden = Boolean(next.disabled);
+    tracking.hidden = Boolean(next.disabled) || next.target <= 1;
+    counts.hidden = !next.counts;
+    if (next.disabled) return;
     bar.max = next.target;
     bar.value = next.current;
-    amount.textContent = `${next.current} / ${next.target}`;
+    amount.textContent = `${next.current} / ${next.target}${next.available > next.target ? ` · ${next.available} eligible` : ''}`;
     if (next.counts) counts.textContent = next.counts.map(({ label, count }) => `${label} · ${count}`).join('  /  ');
-    const signature = JSON.stringify([next.matched, next.missing]);
-    if (previousCourses === signature) return;
-    previousCourses = signature;
-    const contents = next.matched.length
-      ? [courseCodes(next.matched, 'Counted', actions.favoriteStar)]
-      : [element('p', '', 'No scheduled courses count toward this rule yet.')];
-    if (next.missing?.length) contents.push(courseCodes(next.missing, 'Missing', actions.favoriteStar));
-    counted.replaceChildren(...contents);
+    updateCourseGroups(counted, next, actions);
+    eligible.update(next);
   }
 
   return { row, update };
@@ -237,11 +310,12 @@ export function renderDegreeReport(container, report, requirements, archive, act
   container.replaceChildren(overview, list, manual);
 
   function update(next) {
-    state.textContent = next.met === next.total ? 'Passes the modeled requirements' : 'Degree requirements incomplete';
+    state.textContent = !next.total ? 'No active rules' : next.met === next.total ? 'Passes the modeled requirements' : 'Degree requirements incomplete';
+    percent.hidden = bar.hidden = count.hidden = !next.total;
     percent.textContent = `${next.percent}%`;
-    bar.max = next.total;
+    bar.max = next.total || 1;
     bar.value = next.met;
-    count.textContent = `${next.met} of ${next.total} rules met. The check uses the courses and terms in your plan.`;
+    count.textContent = `${next.met} of ${next.total} enabled rules met.`;
     rows.forEach((row, index) => row.update(next.rules[index]));
   }
   update(report);

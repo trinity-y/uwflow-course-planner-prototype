@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { initialPlan, sampleCatalog } from './calendar.mjs';
+import { createTerms, initialPlan, sampleCatalog } from './calendar.mjs';
 import {
   buildGraph, countableSchedule, explainMissing, groupProgress, indexPlan, missingGroups,
-  parseLivePrerequisites, placeCourse, readOutcomes, readTermTargets, removeCourse,
+  isAcademicCourse, parseLivePrerequisites, placeCourse, readOutcomes, readPlan, readTermDetails,
+  readTermTargets, readYearRange, removeCourse,
 } from './model.mjs';
 
 const required = (plan, code) => {
@@ -16,10 +17,29 @@ const oneOf = (...options) => ({ count: 1, options });
 test('initial term targets include calendar electives and preserve saved edits', () => {
   const targets = readTermTargets({ '2024-winter': 5, '2024-fall': -1 });
   assert.equal(targets['2024-winter'], 5);
-  assert.equal(targets['2024-fall'], 7);
+  assert.equal(targets['2024-fall'], 6);
   assert.equal(targets['2025-spring'], 7);
   assert.equal(targets['2027-spring'] - initialPlan()['2027-spring'].length, 2);
   assert.equal(targets['2028-winter'] - initialPlan()['2028-winter'].length, 4);
+  assert.equal(targets['2028-spring'], 0);
+  assert.equal(targets['2028-fall'], 0);
+});
+
+test('expanded year ranges support saved courses, titles and notes in new terms', () => {
+  const range = readYearRange({ start: 2028, end: 2029 });
+  const terms = createTerms(range);
+  const plan = placeCourse(readPlan(undefined, terms), 'CS 370', '2029-winter');
+  assert.equal(indexPlan(readPlan(plan, terms)).get('CS 370'), '2029-winter');
+  assert.match(explainMissing([oneOf('CS 370')], '2028-fall', indexPlan(plan)), /Winter 2029/);
+  const details = readTermDetails({
+    titles: { '2029-spring': ' Exchange ', '2029-fall': '', '2030-fall': 'Outside the timeline' },
+    notes: { '2029-spring': [{ title: ' Project ', body: ' Hold this slot ' }, { title: '  ' }] },
+  }, terms);
+  assert.deepEqual(details, {
+    titles: { '2029-spring': 'Exchange', '2029-fall': '' },
+    notes: { '2029-spring': [{ title: 'Project', body: 'Hold this slot' }] },
+  });
+  assert.deepEqual(['CS 370', 'PD 19', 'COOP 1', 'WKRPT 200'].filter(isAcademicCourse), ['CS 370']);
 });
 
 test('passed and failed placements are locked and failed courses do not satisfy prerequisites', () => {
@@ -75,7 +95,7 @@ test('same-term or later alternatives still need an earlier term', () => {
     explainMissing(required(later, 'CS 488'), '2027-spring', indexPlan(later)),
     /CS 370 \(in Fall 2027, needs an earlier term\)/,
   );
-  assert.equal(placeCourse(later, 'CS 370', '2023-winter'), later);
+  assert.equal(placeCourse(later, 'CS 370', '2022-winter'), later);
 });
 
 test('the graph includes earlier steps beyond the first-level buckets', () => {

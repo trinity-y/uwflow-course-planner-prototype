@@ -13,31 +13,53 @@ const studyLevels = {
   '2028-winter': '4B',
 };
 
-const additionalSlots = { '2A': 1, '2B': 1, '3A': 1, '3B': 1, '4A': 3, '4B': 4 };
-const sampleElectives = { '2027-spring': ['CS 488'] };
+const additionalSlots = { '1B': 1, '2A': 1, '2B': 1, '3A': 1, '3B': 1, '4A': 3, '4B': 4 };
+const sampleElectives = { '2024-winter': ['ECE 105'], '2027-spring': ['CS 488'] };
 
 export const seasons = ['Winter', 'Spring', 'Fall'];
-export const years = [2023, 2024, 2025, 2026, 2027, 2028];
+const seasonOrder = seasons.map((season) => season.toLowerCase());
+export const firstPlanYear = 1900;
+export const lastPlanYear = 2100;
+export const defaultYearRange = { start: 2023, end: 2028 };
+const termIdPattern = /^(\d{4})-(winter|spring|fall)$/;
 
-export const terms = years.flatMap((year) =>
-  seasons.map((season) => {
+export function termYear(id) {
+  const year = Number(termIdPattern.exec(id)?.[1]);
+  return year >= firstPlanYear && year <= lastPlanYear ? year : undefined;
+}
+
+export function termOrder(id) {
+  const year = termYear(id);
+  return year === undefined ? undefined : year * seasons.length + seasonOrder.indexOf(id.slice(5));
+}
+
+export function termLabel(id) {
+  const [year, season] = id.split('-');
+  return `${seasons[seasonOrder.indexOf(season)]} ${year}`;
+}
+
+export function createTerms({ start, end }) {
+  return Array.from({ length: end - start + 1 }, (_, offset) => start + offset).flatMap((year) => seasons.map((season) => {
     const id = `${year}-${season.toLowerCase()}`;
     const level = studyLevels[id];
     const coreCourses = requirements.coreByLevel[level] ?? [];
-    const beforeEntry = year === 2023 && season !== 'Fall';
-    const afterSequence = year === 2028 && season !== 'Winter';
-    const target = coreCourses.length + (additionalSlots[level] ?? 0);
-    const courses = [...coreCourses, ...(sampleElectives[id] ?? [])];
+    const coreChoices = requirements.rules.filter((rule) => rule.core && rule.level === level)
+      .flatMap((rule) => requirements.lists[rule.list].slice(0, rule.count).flat());
+    const target = coreCourses.length + coreChoices.length + (additionalSlots[level] ?? 0);
+    const courses = [...coreCourses, ...coreChoices, ...(sampleElectives[id] ?? [])];
     return {
-      id, year, season, level, courses, beforeEntry, target,
-      work: !level && !beforeEntry && !afterSequence,
+      id, year, season, level, courses, target,
+      work: !level && id !== '2023-winter' && id !== '2023-spring' &&
+        year >= defaultYearRange.start && year < defaultYearRange.end,
       label: `${season} ${year}`,
     };
-  }),
-);
+  }));
+}
 
-export const initialPlan = () => Object.fromEntries(
-  terms.map(({ id, courses }) => [id, [...courses]]),
+export const terms = createTerms(defaultYearRange);
+
+export const initialPlan = (timeline = terms) => Object.fromEntries(
+  timeline.map(({ id, courses }) => [id, [...courses]]),
 );
 
 // Each group is required. Array entries are groups that need one course.

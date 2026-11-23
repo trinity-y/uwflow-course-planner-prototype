@@ -1,10 +1,17 @@
-import { initialPlan, terms } from './calendar.mjs';
+import { defaultYearRange, firstPlanYear, initialPlan, lastPlanYear, termLabel, termOrder, terms } from './calendar.mjs';
 
-const termIndex = new Map(terms.map(({ id }, index) => [id, index]));
 export const normalizeCode = (code) => code.trim().toUpperCase().replace(/^([A-Z]+)\s*(\d)/, '$1 $2');
 export const maxTermTarget = 20;
 export const outcomeLabels = { enrolled: 'Enrolled', passed: 'Passed', failed: 'Failed' };
 export const isPinned = (outcome) => outcome === 'passed' || outcome === 'failed';
+export const isAcademicCourse = (code) => !/^(COOP|PD|WKRPT) /.test(code);
+
+export function readYearRange(range) {
+  const { start, end } = range ?? {};
+  return Number.isInteger(start) && Number.isInteger(end) && start >= firstPlanYear && end <= lastPlanYear && start <= end
+    ? { start, end }
+    : { ...defaultYearRange };
+}
 
 export function readOutcomes(raw, scheduled) {
   return Object.fromEntries([...scheduled.keys()].flatMap((code) => {
@@ -13,21 +20,37 @@ export function readOutcomes(raw, scheduled) {
   }));
 }
 
-export function readTermTargets(raw) {
-  return Object.fromEntries(terms.map(({ id, target }) => {
+export function readTermTargets(raw, timeline = terms) {
+  return Object.fromEntries(timeline.map(({ id, target }) => {
     const saved = raw?.[id];
     const valid = Number.isInteger(saved) && saved >= 0 && saved <= maxTermTarget;
     return [id, valid ? saved : target];
   }));
 }
 
-export function readPlan(raw) {
-  const plan = initialPlan();
+export function readTermDetails(raw, timeline = terms) {
+  const titles = {};
+  const notes = {};
+  for (const { id } of timeline) {
+    if (typeof raw?.titles?.[id] === 'string') titles[id] = raw.titles[id].trim();
+    if (Array.isArray(raw?.notes?.[id])) {
+      notes[id] = raw.notes[id].flatMap((note) => {
+        const title = typeof note?.title === 'string' ? note.title.trim() : '';
+        const body = typeof note?.body === 'string' ? note.body.trim() : '';
+        return title ? [{ title, body }] : [];
+      });
+    }
+  }
+  return { titles, notes };
+}
+
+export function readPlan(raw, timeline = terms) {
+  const plan = initialPlan(timeline);
   if (!raw || typeof raw !== 'object') return plan;
   const seen = new Set();
-  for (const term of terms) {
+  for (const term of timeline) {
     const codes = Array.isArray(raw[term.id]) ? raw[term.id] : plan[term.id];
-    plan[term.id] = term.beforeEntry ? [] : codes.filter((code) => {
+    plan[term.id] = codes.filter((code) => {
       if (typeof code !== 'string' || !/^[A-Z]+ \d{1,4}[A-Z]*$/.test(code) || seen.has(code)) return false;
       seen.add(code);
       return true;
@@ -37,7 +60,7 @@ export function readPlan(raw) {
 }
 
 export function placeCourse(plan, code, target, outcomes = {}) {
-  if (isPinned(outcomes[code]) || !terms.some((term) => term.id === target && !term.beforeEntry) || plan[target].includes(code)) {
+  if (isPinned(outcomes[code]) || !Object.hasOwn(plan, target) || termOrder(target) === undefined || plan[target].includes(code)) {
     return plan;
   }
   return Object.fromEntries(Object.entries(plan).map(([id, courses]) => [
@@ -64,7 +87,7 @@ export function countableSchedule(scheduled, outcomes) {
 export function courseStatus(code, target, scheduled) {
   const term = scheduled.get(code);
   if (!term) return 'missing';
-  if (target && termIndex.get(term) >= termIndex.get(target)) return 'late';
+  if (target && termOrder(term) >= termOrder(target)) return 'late';
   return 'planned';
 }
 
@@ -88,8 +111,7 @@ export function explainMissing(groups, target, scheduled) {
     const { outstanding, remaining } = groupProgress(group, target, scheduled);
     const options = outstanding.map((code) => {
       if (courseStatus(code, target, scheduled) !== 'late') return code;
-      const term = terms[termIndex.get(scheduled.get(code))];
-      return `${code} (in ${term.label}, needs an earlier term)`;
+      return `${code} (in ${termLabel(scheduled.get(code))}, needs an earlier term)`;
     });
     if (options.length === 1) return `Needs ${options[0]}.`;
     return `Choose ${remaining} of ${options.length}: ${options.join(', ')}.`;

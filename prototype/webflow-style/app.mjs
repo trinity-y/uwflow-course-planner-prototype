@@ -1,12 +1,12 @@
-import { calendarUrl, initialPlan, sampleCatalog, seasons, terms as defaultTerms, years } from './calendar.mjs';
+import { calendarUrl, createTerms, firstPlanYear, initialPlan, lastPlanYear, sampleCatalog, seasons, termOrder, termYear, terms as defaultTerms } from './calendar.mjs';
 import {
-  countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isPinned,
+  countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isAcademicCourse, isPinned,
   maxTermTarget, missingGroups, normalizeCode, outcomeLabels, parseLivePrerequisites,
-  placeCourse, readOutcomes, readPlan, readTermTargets, removeCourse,
+  placeCourse, readOutcomes, readPlan, readTermDetails, readTermTargets, readYearRange, removeCourse,
 } from './model.mjs';
 import { element, renderGraph, termOptions } from './graph.mjs';
-import { evaluateDegree } from './degree.mjs';
-import { renderDegreeReport, renderDegreeSidebar } from './degree-view.mjs';
+import { degreeCourseSets, evaluateDegree } from './degree.mjs';
+import { renderCourseContributions, renderDegreeReport, renderDegreeSidebar } from './degree-view.mjs';
 import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
@@ -17,19 +17,23 @@ const profile = personal
 const scope = personal ? '-alex' : '';
 const storageKey = `uwflow-webflow-planner-v1${scope}`;
 const favoritesKey = `uwflow-webflow-planner-favorites-v1${scope}`;
-const terms = defaultTerms.map((term) => ({ ...term, ...profile?.terms?.[term.id] }));
 const equivalents = profile?.equivalents ?? {};
 const pageSize = 30;
 const byId = (id) => document.getElementById(id);
 const dialog = byId('course-dialog');
 const degreeDialog = byId('degree-dialog');
 const outcomeDialog = byId('outcome-dialog');
+const termEditor = byId('term-editor');
+const entryTitle = byId('term-entry-title');
+const entryBody = byId('term-entry-body');
+const startYear = byId('start-year');
+const endYear = byId('end-year');
 const degreeButton = byId('open-degree-check');
 const search = byId('course-search');
 const courseList = byId('catalog-list');
 const favoritesList = byId('favorites-list');
 const board = byId('term-board');
-const termsById = new Map(terms.map((term) => [term.id, term]));
+const termsById = new Map(defaultTerms.map((term) => [term.id, { ...term, ...profile?.terms?.[term.id] }]));
 const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term', failed: 'Failed' };
 const catalog = new Map([
   ...sampleCatalog,
@@ -69,16 +73,35 @@ if (Array.isArray(startingFavorites)) {
   }
 }
 
-let plan = readPlan(saved?.plan ?? profile?.plan);
-let targets = readTermTargets(saved?.targets ?? profile?.targets);
+let yearRange = readYearRange(saved?.yearRange);
+for (const id of Object.keys({ ...profile?.plan, ...saved?.plan, ...saved?.targets })) {
+  const year = termYear(id);
+  if (year !== undefined && !termsById.has(id)) registerTerms({ start: year, end: year });
+}
+registerTerms(yearRange);
+let plan = readPlan(saved?.plan ?? profile?.plan, timeline());
+let targets = plannerTargets(saved?.targets ?? profile?.targets, !saved?.yearRange);
+let { titles: termTitles, notes: termNotes } = readTermDetails(saved?.termDetails, timeline());
+const disabledRules = new Set(requirements.rules.filter(({ id }) =>
+  Array.isArray(saved?.disabledRules) && saved.disabledRules.includes(id),
+).map(({ id }) => id));
+let termEdit;
 let scheduled = indexPlan(plan);
+let scheduledCredits;
 let outcomes = readOutcomes(saved?.outcomes ?? profile?.outcomes, scheduled);
+const applyProfileUpdate = saved && profile?.revision && saved.profileRevision !== profile.revision;
+if (applyProfileUpdate) {
+  for (const [termId, codes] of Object.entries(profile.additions ?? {})) {
+    for (const code of codes) if (!scheduled.has(code)) plan = placeCourse(plan, code, termId);
+  }
+}
 let equivalentPlacements = new Map();
 let counted;
 let prerequisites;
 let warningList = [];
 let degreeReport;
 let refreshDegreeReport;
+let listedDegreeRules;
 let selectedCode;
 let graphView;
 let dialogTrigger;
@@ -88,10 +111,12 @@ let liveCatalog = false;
 let drag;
 let suppressClick;
 let hoveredCourse;
+let locatedCourse;
 let outcomeCode;
 
 const getCourse = (code) => catalog.get(code) ?? { code, name: code };
 const actualCode = (code) => scheduled.has(code) ? code : equivalentPlacements.get(code) ?? code;
+const creditCode = (code) => archive[equivalents[code] ?? code]?.[2] ?? (equivalents[code] ?? code);
 const outcomeFor = (code) => outcomes[actualCode(code)];
 const pinned = (code) => isPinned(outcomeFor(code));
 function withEquivalents(placements) {
@@ -112,13 +137,44 @@ const request = async (path) => {
 };
 const announce = (message) => { byId('announcement').textContent = message; };
 
+function registerTerms(range) {
+  const added = createTerms(range).filter(({ id }) => !termsById.has(id));
+  for (const term of added) termsById.set(term.id, { ...term, ...profile?.terms?.[term.id] });
+  return added;
+}
+
+function timeline() {
+  return [...termsById.values()].sort((a, b) => termOrder(a.id) - termOrder(b.id));
+}
+
+function plannerTargets(raw, resetOpenTerms) {
+  const current = timeline();
+  const values = readTermTargets(raw, current);
+  if (resetOpenTerms) {
+    for (const term of current) if (!term.level) values[term.id] = 0;
+  }
+  return values;
+}
+
+function inYearRange(year) {
+  return year >= yearRange.start && year <= yearRange.end;
+}
+
+function placementOptions(label, required, currentTerm) {
+  const choices = timeline().filter((term) => inYearRange(term.year) || term.id === currentTerm);
+  return termOptions(choices, label, required);
+}
+
 function savePlan() {
   const courses = [...scheduled.keys()].filter((code) => !sampleCatalog.has(code)).map((code) => {
     const { name } = getCourse(code);
     return { code, name };
   });
   try {
-    localStorage.setItem(storageKey, JSON.stringify({ plan, targets, outcomes, courses }));
+    localStorage.setItem(storageKey, JSON.stringify({
+      plan, targets, outcomes, courses, yearRange, termDetails: { titles: termTitles, notes: termNotes },
+      disabledRules: [...disabledRules], profileRevision: profile?.revision,
+    }));
   } catch {
     // A browser can deny storage while still allowing the current plan to be edited.
   }
@@ -143,7 +199,7 @@ function makeDraggable(card, code) {
 }
 
 function updateDropTarget(active) {
-  const cell = document.elementFromPoint(active.x, active.y)?.closest('.term-card:not(.before-entry)');
+  const cell = document.elementFromPoint(active.x, active.y)?.closest('.term-card');
   if (active.target === cell) return;
   active.target?.classList.remove('drop-active');
   active.target = cell;
@@ -259,6 +315,67 @@ function withFavorite(control, code) {
   return row;
 }
 
+function findPlacement(code) {
+  const actual = actualCode(code);
+  const credit = creditCode(code);
+  const placed = scheduled.has(actual) ? actual : scheduledCredits.get(credit);
+  const term = termsById.get(scheduled.get(placed));
+  return term ? { code: placed, term } : undefined;
+}
+
+function locateCourse(code) {
+  const placement = findPlacement(code);
+  if (!placement) return;
+  if (!inYearRange(placement.term.year)) {
+    showYears(Math.min(yearRange.start, placement.term.year), Math.max(yearRange.end, placement.term.year));
+  }
+  const card = board.querySelector(`[data-course="${CSS.escape(placement.code)}"]`);
+  if (!card) return;
+  dialogTrigger = null;
+  for (const modal of [dialog, outcomeDialog, degreeDialog]) if (modal.open) modal.close();
+  locatedCourse = placement.code;
+  hoveredCourse = undefined;
+  updateScheduleHighlight();
+  card.scrollIntoView({ block: 'center', inline: 'center' });
+  card.querySelector('.term-course-open').focus({ preventScroll: true });
+  announce(`${placement.code} is in ${placement.term.label}.`);
+}
+
+function updateContributions(container, code) {
+  if (!listedDegreeRules) {
+    listedDegreeRules = new Map();
+    for (const rule of requirements.rules) {
+      for (const { options } of degreeCourseSets(requirements, archive, rule)) {
+        for (const option of options) {
+          for (const entry of option) {
+            const credit = creditCode(entry);
+            if (!listedDegreeRules.has(credit)) listedDegreeRules.set(credit, new Set());
+            listedDegreeRules.get(credit).add(rule.id);
+          }
+        }
+      }
+    }
+  }
+  const listed = listedDegreeRules.get(creditCode(code));
+  const rules = [];
+  for (const { id, title, matched, additional, disabled } of degreeReport.rules) {
+    if (disabled) continue;
+    if (matched.includes(code)) rules.push({ id, title, status: 'Counted' });
+    else if (additional.includes(code)) rules.push({ id, title, status: 'Additional eligible' });
+    else if (listed?.has(id)) rules.push({ id, title, status: 'On course list' });
+  }
+  const usedBy = [];
+  const listedFor = [];
+  for (const [dependent, term] of scheduled) {
+    if (dependent === code) continue;
+    const options = getCourse(dependent).groups?.flatMap((group) => group.options).filter((option) => actualCode(option) === code);
+    if (!options?.length) continue;
+    const matches = options.some((option) => courseStatus(option, term, prerequisites) === 'planned');
+    (matches ? usedBy : listedFor).push(dependent);
+  }
+  renderCourseContributions(container, rules, { usedBy, listedFor }, degreeActions);
+}
+
 function showCourse(code, trigger, focusPlacement = false) {
   code = actualCode(code);
   selectedCode = code;
@@ -267,7 +384,7 @@ function showCourse(code, trigger, focusPlacement = false) {
   const currentTerm = scheduled.get(code);
   byId('detail-favorite').replaceChildren(favoriteStar(code));
   const select = byId('target-term');
-  select.replaceChildren(...termOptions('Choose a term', true));
+  select.replaceChildren(...placementOptions('Choose a term', true, currentTerm));
   select.value = currentTerm ?? '';
   byId('flow-link').href = `https://uwflow.com/course/${flowCode(code)}`;
   dialog.showModal();
@@ -283,7 +400,9 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
   const atTerm = scheduled.get(code);
   const locked = pinned(code);
   byId('remove-course').hidden = !atTerm || locked;
+  byId('locate-detail-course').hidden = !atTerm;
   byId('place-course').textContent = atTerm ? 'Move course' : 'Add course';
+  updateContributions(byId('detail-contributions'), code);
   const groups = locked ? [] : missingGroups(course, atTerm, prerequisites);
   const status = byId('detail-status');
   byId('detail-code').textContent = code;
@@ -332,7 +451,7 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     : null;
   graphCleanup();
   graphCleanup = renderGraph(graph, code, getCourse, withEquivalents(scheduled), {
-    onPlacementChange: changeGraphTerm, view: graphView, favoriteStar, prerequisites, outcomeFor,
+    onPlacementChange: changeGraphTerm, view: graphView, favoriteStar, prerequisites, outcomeFor, placementOptions,
   });
   graph.dataset.course = code;
   const viewport = graph.querySelector('.graph-scroll');
@@ -433,6 +552,7 @@ function showOutcomeMenu(code) {
     return button;
   });
   byId('outcome-options').replaceChildren(...choices);
+  updateContributions(byId('outcome-contributions'), code);
   outcomeDialog.showModal();
   setHoveredCourse(undefined);
 }
@@ -471,17 +591,17 @@ function updateScheduleHighlight(focus = document.activeElement) {
   const focused = focus instanceof Element && focus.matches(':focus-visible')
     ? focus.closest('.term-course')?.dataset.course
     : undefined;
-  const selected = dialog.open || degreeDialog.open || outcomeDialog.open || drag?.ghost ? undefined : hoveredCourse ?? focused;
+  const selected = dialog.open || degreeDialog.open || outcomeDialog.open || termEditor.open || drag?.ghost ? undefined : hoveredCourse ?? focused;
   const required = new Set(getCourse(selected).groups?.flatMap(({ options }) => options.map(actualCode)));
   const target = scheduled.get(selected);
   for (const card of board.querySelectorAll('.term-course')) {
     const { course } = card.dataset;
     const active = course === selected;
     const status = !active && required.has(course) ? courseStatus(course, target, counted) : undefined;
-    card.classList.toggle('schedule-selected', active);
+    card.classList.toggle('schedule-selected', active || course === locatedCourse);
     card.classList.toggle('schedule-prerequisite', status === 'planned');
     card.classList.toggle('schedule-prerequisite-late', status === 'late');
-    card.classList.toggle('schedule-muted', Boolean(selected) && !active && !status);
+    card.classList.toggle('schedule-muted', Boolean(selected) && !active && !status && course !== locatedCourse);
   }
 }
 
@@ -492,51 +612,106 @@ function setHoveredCourse(code) {
 }
 
 board.addEventListener('pointerover', (event) => {
-  if (event.pointerType === 'touch' || dialog.open || degreeDialog.open || outcomeDialog.open || drag?.ghost) return;
+  if (event.pointerType === 'touch' || dialog.open || degreeDialog.open || outcomeDialog.open || termEditor.open || drag?.ghost) return;
   setHoveredCourse(event.target.closest('.term-course')?.dataset.course);
 });
 board.addEventListener('pointerleave', () => setHoveredCourse(undefined));
 board.addEventListener('focusin', (event) => updateScheduleHighlight(event.target));
 board.addEventListener('focusout', (event) => updateScheduleHighlight(event.relatedTarget));
+document.addEventListener('pointerdown', (event) => {
+  if (!locatedCourse || event.target.closest('.term-course')?.dataset.course === locatedCourse) return;
+  locatedCourse = undefined;
+  updateScheduleHighlight();
+});
+
+function termTitle(term) {
+  return termTitles[term.id] ?? term.note ?? '';
+}
+
+function openTermEditor(term, kind, noteIndex) {
+  const editingTitle = kind === 'title';
+  const note = termNotes[term.id]?.[noteIndex];
+  termEdit = { term, kind, noteIndex };
+  byId('term-editor-term').textContent = term.label;
+  byId('term-editor-title').textContent = editingTitle ? 'Edit term title' : note ? 'Edit note' : 'Add note';
+  byId('save-term-entry').textContent = editingTitle || note ? 'Save' : 'Add note';
+  byId('remove-term-note').hidden = !note;
+  entryTitle.required = !editingTitle;
+  entryTitle.placeholder = editingTitle ? 'e.g. Co-op placement' : 'e.g. Exchange semester';
+  entryTitle.value = editingTitle ? termTitle(term) : note?.title ?? '';
+  entryTitle.setCustomValidity('');
+  entryBody.hidden = byId('term-entry-body-label').hidden = editingTitle;
+  entryBody.value = note?.body ?? '';
+  termEditor.showModal();
+  entryTitle.select();
+  setHoveredCourse(undefined);
+}
+
+function saveTermEdit(remove = false) {
+  const { term, kind, noteIndex } = termEdit;
+  const title = entryTitle.value.trim();
+  let focus = '.term-title';
+  if (kind === 'title') {
+    termTitles[term.id] = title;
+  } else {
+    const notes = termNotes[term.id] ??= [];
+    if (remove) {
+      notes.splice(noteIndex, 1);
+      focus = '.add-term-note';
+    } else {
+      if (!title) {
+        entryTitle.setCustomValidity('Enter a title for this note.');
+        entryTitle.reportValidity();
+        return;
+      }
+      const index = noteIndex ?? notes.length;
+      notes[index] = { title, body: entryBody.value.trim() };
+      focus = `[data-note-index="${index}"]`;
+    }
+  }
+  termEditor.close();
+  renderBoard();
+  savePlan();
+  const cell = board.querySelector(`[data-term="${term.id}"]`);
+  (cell.querySelector(focus) ?? cell.querySelector('.term-title')).focus({ preventScroll: true });
+  announce(`${kind === 'title' ? 'Term title saved' : remove ? 'Note removed' : 'Note saved'} for ${term.label}.`);
+}
+
+function noteSlot(term, slot, zero) {
+  const item = makeButton(`add-term-note ${zero ? 'term-empty' : 'empty-slot'}`,
+    `Add note in ${term.label}${zero ? '' : `, slot ${slot + 1}`}`);
+  const plus = element('span', zero ? 'empty-plus' : '', '+');
+  plus.setAttribute('aria-hidden', 'true');
+  item.append(plus, element('span', '', zero ? 'Add note' : 'Empty slot'));
+  item.addEventListener('click', () => openTermEditor(term, 'note'));
+  return item;
+}
 
 function updateSlots(container, term) {
-  const emptySlots = targets[term.id] - plan[term.id].length;
+  const target = targets[term.id];
+  const zero = target === 0;
+  const classes = plan[term.id].filter(isAcademicCourse).length;
+  const emptySlots = target - classes - (zero ? 0 : termNotes[term.id]?.length ?? 0);
   const items = [];
+  container.closest('.term-card').classList.toggle('zero-target', zero);
   container.removeAttribute('aria-label');
   container.removeAttribute('role');
   if (emptySlots > 0) {
     container.role = 'group';
     container.setAttribute('aria-label', `${emptySlots} empty ${emptySlots === 1 ? 'slot' : 'slots'}`);
-    for (let slot = 0; slot < emptySlots; slot += 1) {
-      const item = element('div', 'empty-slot');
-      const plus = element('span', '', '+');
-      plus.setAttribute('aria-hidden', 'true');
-      item.append(plus, element('span', '', 'Empty slot'));
-      items.push(item);
-    }
+    for (let slot = 0; slot < emptySlots; slot += 1) items.push(noteSlot(term, slot, false));
   } else if (emptySlots < 0) {
     const over = Math.abs(emptySlots);
     items.push(element('div', 'term-over-target', `${over} over target`));
-  } else if (!plan[term.id].length) {
-    const empty = element('div', 'term-empty');
-    const plus = element('span', 'empty-plus', '+');
-    plus.setAttribute('aria-hidden', 'true');
-    empty.append(plus, element('span', '', 'Drop a course here'));
-    items.push(empty);
   }
-  container.classList.toggle('zero-target', emptySlots === 0 && !plan[term.id].length);
+  if (zero) items.push(noteSlot(term, 0, true));
   container.replaceChildren(...items);
 }
 
 function renderTerm(term) {
-  const cell = element('section', `term-card${term.beforeEntry ? ' before-entry' : ''}`);
+  const cell = element('section', 'term-card');
   cell.dataset.term = term.id;
   cell.setAttribute('aria-label', term.label);
-  if (term.beforeEntry) {
-    cell.append(element('span', 'entry-label', 'Before entry'));
-    return cell;
-  }
-
   const heading = element('div', 'term-heading');
   const label = term.level ? `${term.level} · Study term` : term.work ? 'Co-op term' : 'Open term';
   const targetLabel = element('label', 'term-target');
@@ -547,13 +722,31 @@ function renderTerm(term) {
   targetLabel.append(element('span', '', 'Target'), target);
   heading.append(element('span', 'term-type', label), targetLabel);
   cell.append(heading);
-  if (term.note) cell.append(element('p', 'term-note', term.note));
-  if (plan[term.id].length) {
+  const title = termTitle(term);
+  const edit = makeButton(`term-title${title ? '' : ' untitled'}`, `Edit title for ${term.label}${title ? `, ${title}` : ''}`);
+  edit.setAttribute('aria-haspopup', 'dialog');
+  edit.append(element('span', 'term-title-text', title || 'Add term title'));
+  const pencil = element('span', 'term-pencil', '✎');
+  pencil.setAttribute('aria-hidden', 'true');
+  edit.append(pencil);
+  edit.addEventListener('click', () => openTermEditor(term, 'title'));
+  cell.append(edit);
+  const notes = termNotes[term.id] ?? [];
+  if (plan[term.id].length || notes.length) {
     const list = element('div', 'term-courses');
     for (const code of plan[term.id]) {
       const groups = pinned(code) ? [] : missingGroups(getCourse(code), term.id, prerequisites);
       if (groups.length) warningList.push({ code, term, groups });
       list.append(termCourse(code, term, groups));
+    }
+    for (const [noteIndex, note] of notes.entries()) {
+      const entry = makeButton('term-note-card', `Edit note ${note.title} in ${term.label}`);
+      entry.setAttribute('aria-haspopup', 'dialog');
+      entry.dataset.noteIndex = noteIndex;
+      entry.append(element('strong', '', note.title), element('span', 'term-note-tag', 'Note'));
+      if (note.body) entry.append(element('span', 'term-note-body', note.body));
+      entry.addEventListener('click', () => openTermEditor(term, 'note', noteIndex));
+      list.append(entry);
     }
     cell.append(list);
   }
@@ -580,14 +773,14 @@ function renderBoard() {
     header.append(icon, element('span', '', season));
     grid.append(header);
   }
-  for (const year of years) {
+  for (let year = yearRange.start; year <= yearRange.end; year += 1) {
     grid.append(element('h3', 'year-label', year));
     for (const season of seasons) grid.append(renderTerm(termsById.get(`${year}-${season.toLowerCase()}`)));
   }
   board.replaceChildren(grid);
   hoveredCourse = board.querySelector('.term-course:hover')?.dataset.course;
   updateScheduleHighlight();
-  byId('planned-count').textContent = `${scheduled.size} ${Object.keys(outcomes).length ? 'courses' : 'planned'}`;
+  byId('planned-count').textContent = `${[...scheduled.keys()].filter(isAcademicCourse).length} ${Object.keys(outcomes).length ? 'courses' : 'planned'}`;
   const warning = byId('warning-summary');
   const count = warningList.length;
   warning.hidden = count === 0;
@@ -595,12 +788,8 @@ function renderBoard() {
 }
 
 function renderBuckets() {
-  const section = byId('prereq-list');
+  byId('prereq-section').hidden = warningList.length === 0;
   byId('bucket-count').textContent = warningList.length;
-  if (!warningList.length) {
-    section.replaceChildren(element('p', 'quiet-message', 'No missing prerequisites for the course paths shown.'));
-    return;
-  }
 
   const buckets = warningList.map(({ code, term, groups }) => {
     const bucket = element('article', 'bucket');
@@ -631,19 +820,29 @@ function renderBuckets() {
     }
     return bucket;
   });
-  section.replaceChildren(...buckets);
+  byId('prereq-list').replaceChildren(...buckets);
 }
 
 function updateDegree() {
-  degreeReport = evaluateDegree(requirements, archive, counted, { timeline: terms, equivalents });
-  const met = degreeReport.met === degreeReport.total;
+  degreeReport = evaluateDegree(requirements, archive, counted, { timeline: timeline(), equivalents, disabledRules });
+  const active = degreeReport.total > 0;
+  const met = active && degreeReport.met === degreeReport.total;
   degreeButton.classList.toggle('met', met);
-  byId('degree-percent').textContent = `${degreeReport.percent}%`;
-  byId('degree-status').textContent = met ? 'Passes modeled requirements' : 'Degree requirements incomplete';
-  byId('degree-rule-count').textContent = `${degreeReport.met} of ${degreeReport.total} rules met`;
+  byId('degree-percent').textContent = active ? `${degreeReport.percent}%` : '—';
+  byId('degree-status').textContent = !active ? 'No active rules' : met ? 'Passes modeled requirements' : 'Degree requirements incomplete';
+  byId('degree-rule-count').textContent = active ? `${degreeReport.met} of ${degreeReport.total} rules met` : '';
   byId('degree-course-count').textContent = `${degreeReport.total - degreeReport.met} rules left`;
+  byId('degree-section').hidden = met || !active;
   updateDegreeSidebar(degreeReport);
   refreshDegreeReport?.(degreeReport);
+}
+
+function setRuleEnabled(id, enabled) {
+  if (enabled) disabledRules.delete(id);
+  else disabledRules.add(id);
+  updateDegree();
+  savePlan();
+  announce(`${requirements.rules.find((rule) => rule.id === id).title} turned ${enabled ? 'on' : 'off'}.`);
 }
 
 function catalogCard(course) {
@@ -686,7 +885,7 @@ function renderCatalog() {
       searchTerms.every((word) => haystack.includes(word));
   });
   byId('results-title').textContent = query ? 'Search results' : 'All courses';
-  byId('catalog-source').textContent = query ? `${matches.length} found` : liveCatalog ? 'UW Flow catalog' : '2023–24 catalog';
+  byId('catalog-source').textContent = query ? `${matches.length} found` : liveCatalog ? 'UW Flow catalog' : 'Bundled catalog';
   if (!matches.length) {
     courseList.replaceChildren(element('p', 'quiet-message', 'No unscheduled courses match your search.'));
     return;
@@ -712,6 +911,12 @@ function renderPlan() {
   const focusCode = card?.dataset.course;
   const focusLabel = focused.getAttribute('aria-label');
   scheduled = indexPlan(plan);
+  scheduledCredits = new Map();
+  for (const code of scheduled.keys()) {
+    const credit = creditCode(code);
+    if (!scheduledCredits.has(credit)) scheduledCredits.set(credit, code);
+  }
+  if (!scheduled.has(locatedCourse)) locatedCourse = undefined;
   equivalentPlacements = new Map(Object.entries(equivalents)
     .filter(([actual]) => scheduled.has(actual))
     .map(([actual, required]) => [required, actual]));
@@ -728,12 +933,51 @@ function renderPlan() {
   }
 }
 
+function showYears(start, end) {
+  yearRange = { start, end };
+  startYear.value = start;
+  endYear.value = end;
+  for (const { id, target } of registerTerms(yearRange)) {
+    plan[id] = [];
+    targets[id] = target;
+  }
+  renderBoard();
+  savePlan();
+}
+
+for (const input of [startYear, endYear]) {
+  input.min = firstPlanYear;
+  input.max = lastPlanYear;
+  input.addEventListener('input', () => endYear.setCustomValidity(''));
+}
+startYear.value = yearRange.start;
+endYear.value = yearRange.end;
+byId('year-range').addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (startYear.valueAsNumber > endYear.valueAsNumber) {
+    endYear.setCustomValidity('Enter an end year on or after the start year.');
+    endYear.reportValidity();
+    return;
+  }
+  showYears(startYear.valueAsNumber, endYear.valueAsNumber);
+  announce(`Showing ${yearRange.start} through ${yearRange.end}.`);
+});
+
+entryTitle.addEventListener('input', () => entryTitle.setCustomValidity(''));
+byId('close-term-editor').addEventListener('click', () => termEditor.close());
+byId('remove-term-note').addEventListener('click', () => saveTermEdit(true));
+byId('term-editor-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  saveTermEdit();
+});
+
 search.addEventListener('input', () => {
   resultLimit = pageSize;
   courseList.scrollTop = 0;
   renderCatalog();
 });
 byId('calendar-link').href = calendarUrl;
+byId('degree-calendar').textContent = `${requirements.program} · ${requirements.calendar}`;
 byId('warning-summary').addEventListener('click', () => {
   const first = document.querySelector('.warning-trigger');
   first?.scrollIntoView({ block: 'center', inline: 'center' });
@@ -741,8 +985,9 @@ byId('warning-summary').addEventListener('click', () => {
 });
 function replacePlan(next, message, nextOutcomes = {}) {
   plan = next;
-  targets = readTermTargets(profile?.targets);
+  targets = plannerTargets(profile?.targets, true);
   outcomes = readOutcomes(nextOutcomes, indexPlan(plan));
+  termNotes = {};
   renderPlan();
   savePlan();
   announce(message);
@@ -750,36 +995,51 @@ function replacePlan(next, message, nextOutcomes = {}) {
 byId('reset-plan').addEventListener('click', () => {
   if (personal) {
     if (profile && window.confirm('Replace your edits with the imported course plan?')) {
-      replacePlan(readPlan(profile.plan), 'Imported plan restored.', profile.outcomes);
+      termTitles = {};
+      replacePlan(readPlan(profile.plan, timeline()), 'Imported plan restored.', profile.outcomes);
     }
   } else if (window.confirm('Replace your edits with the sample plan?')) {
-    replacePlan(initialPlan(), 'Sample plan restored.');
+    termTitles = {};
+    replacePlan(initialPlan(timeline()), 'Sample plan restored.');
   }
 });
 byId('clear-plan').addEventListener('click', () => {
-  if (!window.confirm('Start a blank plan? This clears scheduled courses and recorded outcomes.')) return;
-  const blank = Object.fromEntries(terms.map(({ id }) => [id, []]));
+  if (!window.confirm('Start a blank plan? This clears scheduled courses, recorded outcomes, and note cards.')) return;
+  const blank = Object.fromEntries(timeline().map(({ id }) => [id, []]));
   replacePlan(blank, 'Blank plan started.');
 });
-degreeButton.addEventListener('click', () => {
+function showDegreeRule(id) {
   const report = byId('degree-report');
-  refreshDegreeReport = renderDegreeReport(report, degreeReport, requirements, archive, {
-    favoriteStar, getCourse, showCourse,
-  });
-  report.scrollTop = 0;
-  degreeDialog.showModal();
+  dialogTrigger = null;
+  if (dialog.open) dialog.close();
+  if (outcomeDialog.open) outcomeDialog.close();
+  if (!degreeDialog.open) {
+    refreshDegreeReport = renderDegreeReport(report, degreeReport, requirements, archive, degreeActions);
+    report.scrollTop = 0;
+    degreeDialog.showModal();
+  }
   setHoveredCourse(undefined);
-});
+  if (id) {
+    const rule = report.querySelector(`[data-degree-rule="${CSS.escape(id)}"]`);
+    rule.querySelector('details').open = true;
+    rule.querySelector('h3').scrollIntoView({ block: 'start' });
+    rule.querySelector('h3').focus({ preventScroll: true });
+  }
+}
+degreeButton.addEventListener('click', () => showDegreeRule());
 byId('close-degree-check').addEventListener('click', () => degreeDialog.close());
 byId('close-outcome').addEventListener('click', () => outcomeDialog.close());
 outcomeDialog.addEventListener('close', () => {
+  if (degreeDialog.open || board.contains(document.activeElement)) return;
   board.querySelector(`[data-course="${CSS.escape(outcomeCode)}"] .course-outcome-menu`)?.focus({ preventScroll: true });
 });
 degreeDialog.addEventListener('close', () => {
+  if (degreeDialog.open) return;
   refreshDegreeReport = undefined;
-  degreeButton.focus({ preventScroll: true });
+  if (!board.contains(document.activeElement)) degreeButton.focus({ preventScroll: true });
 });
 byId('close-dialog').addEventListener('click', () => dialog.close());
+byId('locate-detail-course').addEventListener('click', () => locateCourse(selectedCode));
 dialog.addEventListener('close', () => {
   if (dialog.open) return;
   graphCleanup();
@@ -810,9 +1070,10 @@ byId('remove-course').addEventListener('click', () => {
   if (!degreeDialog.open) search.focus({ preventScroll: true });
 });
 
-const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, {
-  favoriteStar, getCourse, makeDraggable, showCourse,
-});
+const degreeActions = {
+  favoriteStar, getCourse, findPlacement, locateCourse, makeDraggable, showCourse, showDegreeRule, setRuleEnabled, getPlan: () => plan,
+};
+const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, degreeActions);
 if (personal) {
   byId('planner-title').textContent = profile ? 'Alex’s course plan' : 'Personal plan unavailable';
   byId('open-sample-plan').hidden = false;
@@ -820,6 +1081,7 @@ if (personal) {
   byId('reset-plan').hidden = !profile;
 }
 renderPlan();
+if (applyProfileUpdate || (saved && !saved.yearRange)) savePlan();
 if (!personal) {
   request('./api/profile-status').then(({ available }) => {
     byId('open-personal-plan').hidden = !available;
