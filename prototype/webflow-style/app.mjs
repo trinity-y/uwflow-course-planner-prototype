@@ -213,6 +213,7 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
   }
   const graph = byId('detail-graph');
   const previous = graph.querySelector('.graph-scroll');
+  const focusOption = document.activeElement.dataset.option;
   const scroll = graph.dataset.course === code && previous
     ? { left: previous.scrollLeft, top: previous.scrollTop }
     : null;
@@ -226,6 +227,8 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     const select = graph.querySelector(`[data-graph-term="${CSS.escape(focusCourse)}"]`);
     if (select) select.focus();
     else if (!viewport) byId('target-term').focus();
+  } else if (focusOption) {
+    graph.querySelector(`button[data-option="${CSS.escape(focusOption)}"]`)?.focus({ preventScroll: true });
   }
 }
 
