@@ -16,127 +16,178 @@ export function termOptions(emptyLabel, required = false) {
   return [empty, ...terms.filter((term) => !term.beforeEntry).map((term) => new Option(term.label, term.id))];
 }
 
-function isChoice(group) {
-  return group.count !== null && group.options.length > 1;
+function slotLabel(group) {
+  const countNames = ['', 'One', 'Two', 'Three', 'Four', 'Five'];
+  return group.count < group.options.length
+    ? `${countNames[group.count] ?? group.count} of ${group.options.length}`
+    : groupLabel(group);
 }
 
-function directRequirements(groups, target, scheduled, bindGroup) {
-  const section = element('div', 'direct-requirements');
-  section.setAttribute('aria-label', 'Direct prerequisite groups');
-  if (groups.length > 1) section.append(element('strong', '', `All ${groups.length} groups required`));
-  const list = element('ul', 'direct-groups');
-  for (const group of groups) {
-    const { remaining } = groupProgress(group, target, scheduled);
-    const item = element('li', `direct-group ${remaining ? 'unmet' : 'met'}`);
-    const badge = element('strong', 'group-badge', groupLabel(group));
-    const status = element('span', 'sr-only', remaining ? ', incomplete: ' : ', met: ');
-    item.append(badge, status);
-    if (isChoice(group)) {
-      const options = element('span', 'direct-options');
-      for (const code of group.options) {
-        const option = element('button', 'direct-option', code);
-        option.type = 'button';
-        option.dataset.option = code;
-        option.setAttribute('aria-label', `Show ${code} in the prerequisite graph`);
-        options.append(option);
-      }
-      item.append(options);
-    } else {
-      item.append(element('span', '', group.options[0]));
-    }
-    bindGroup(item, group);
-    list.append(item);
-  }
-  section.append(list);
-  return section;
+function graphButton(className, content, control, label) {
+  const button = element('button', className, content);
+  button.type = 'button';
+  button.dataset.graphControl = control;
+  button.setAttribute('aria-label', label);
+  return button;
 }
 
-export function renderGraph(container, code, getCourse, scheduled, onPlacementChange) {
+export function renderGraph(container, code, getCourse, scheduled, onPlacementChange, view) {
   const { depth, edges } = buildGraph(code, getCourse);
   if (depth.size === 1) {
     container.replaceChildren();
     return () => {};
   }
 
+  if (!depth.has(view.course)) {
+    view.course = code;
+    view.slot = null;
+  }
   const target = scheduled.get(code);
   const scroll = element('div', 'graph-scroll');
   scroll.tabIndex = 0;
   scroll.setAttribute('role', 'region');
   scroll.setAttribute('aria-label', 'Prerequisite courses, earliest steps first');
+  const panel = element('section', 'graph-slots');
+  panel.setAttribute('aria-labelledby', 'graph-slots-title');
   const canvas = element('canvas', 'graph-lines');
   canvas.setAttribute('aria-hidden', 'true');
   const layout = element('div', 'graph-layout');
   layout.append(canvas);
   const cards = new Map();
   const gates = new Map();
+  const slotTargets = new Map();
   const summaries = new Map();
-  const choiceTargets = new Map();
-  const choicesByCourse = new Map();
   const deepest = Math.max(...depth.values());
-  let pointerSelection;
-  let focusSelection;
-  let currentSelection;
-  let highlightedGroups = new Set();
+  let pointerPreview;
+  let focusPreview;
+  let currentGroup;
   let links = [];
   let frame;
 
+  const selectedSlot = () => edges.get(view.course)[view.slot];
+
   function updateHighlight() {
-    const selection = pointerSelection ?? focusSelection;
-    if (selection === currentSelection) return;
-    currentSelection = selection;
-    highlightedGroups = new Set(selection?.groups);
-    const involved = new Set();
-    for (const group of highlightedGroups) {
-      involved.add(choiceTargets.get(group));
-      group.options.forEach((option) => involved.add(option));
+    const preview = pointerPreview ?? focusPreview;
+    const pinned = selectedSlot();
+    const group = pinned ?? preview?.group;
+    const primary = preview?.group === group ? preview?.option : undefined;
+    const involved = group ? new Set([...group.options, slotTargets.get(group)]) : null;
+    for (const [course, { node, button }] of cards) {
+      const inspected = course === view.course;
+      node.classList.toggle('graph-inspected', inspected);
+      node.classList.toggle('graph-muted', involved !== null && !involved.has(course));
+      node.classList.toggle('graph-emphasis', course === primary);
+      button.setAttribute('aria-pressed', String(inspected));
     }
-    for (const [course, card] of cards) {
-      card.classList.toggle('graph-muted', Boolean(selection) && !involved.has(course));
-      card.classList.toggle('graph-emphasis', course === selection?.course);
+    for (const [slot, gate] of gates) {
+      gate.classList.toggle('graph-muted', Boolean(group) && group !== slot);
+      gate.setAttribute('aria-pressed', String(pinned === slot));
     }
-    for (const [group, item] of [...gates, ...summaries]) {
-      item.classList.toggle('graph-muted', Boolean(selection) && !highlightedGroups.has(group));
+    for (const [slot, { item, button }] of summaries) {
+      const highlighted = group === slot;
+      item.classList.toggle('graph-muted', Boolean(group) && !highlighted);
+      item.classList.toggle('graph-slot-current', highlighted);
+      button.setAttribute('aria-pressed', String(pinned === slot));
     }
-    if (frame === undefined) frame = requestAnimationFrame(paint);
+    if (currentGroup !== group) {
+      currentGroup = group;
+      if (frame === undefined) frame = requestAnimationFrame(paint);
+    }
   }
 
-  function bindHighlight(node, groups, course, includeFocus = true) {
-    const selection = { groups, course };
+  function bindPreview(node, getPreview) {
+    let pointer;
+    let focus;
     node.addEventListener('pointerenter', (event) => {
       if (event.pointerType === 'touch') return;
-      pointerSelection = selection;
+      pointer = getPreview();
+      pointerPreview = pointer;
       updateHighlight();
     });
     node.addEventListener('pointerleave', () => {
-      if (pointerSelection !== selection) return;
-      pointerSelection = undefined;
+      if (pointerPreview !== pointer) return;
+      pointerPreview = undefined;
       updateHighlight();
     });
-    if (!includeFocus) return;
-    node.addEventListener('focusin', () => {
-      focusSelection = selection;
+    node.addEventListener('focusin', (event) => {
+      focus = event.target.matches(':focus-visible') ? getPreview() : undefined;
+      focusPreview = focus;
       updateHighlight();
     });
     node.addEventListener('focusout', (event) => {
-      if (focusSelection !== selection || node.contains(event.relatedTarget)) return;
-      focusSelection = undefined;
+      if (focusPreview !== focus || node.contains(event.relatedTarget)) return;
+      focusPreview = undefined;
       updateHighlight();
     });
   }
 
-  for (const [to, groups] of edges) {
-    for (const group of groups) {
-      if (!isChoice(group)) continue;
-      choiceTargets.set(group, to);
+  function inspect(course) {
+    view.course = course;
+    view.slot = null;
+    pointerPreview = undefined;
+    focusPreview = undefined;
+    renderSlots();
+    updateHighlight();
+    panel.querySelector('h4').focus({ preventScroll: true });
+  }
+
+  function toggleSlot(course, index) {
+    const changedCourse = view.course !== course;
+    view.slot = !changedCourse && view.slot === index ? null : index;
+    view.course = course;
+    if (changedCourse) renderSlots();
+    updateHighlight();
+  }
+
+  function renderSlots() {
+    const course = view.course;
+    const heading = element('h4', '', `Prerequisite slots for ${course}`);
+    heading.id = 'graph-slots-title';
+    heading.tabIndex = -1;
+    heading.dataset.graphControl = 'prerequisite-slots';
+    summaries.clear();
+    const list = element('ul', 'graph-slot-list');
+    for (const [index, group] of edges.get(course).entries()) {
+      if (group.count === null) continue;
+      const { remaining } = groupProgress(group, scheduled.get(course), scheduled);
+      const label = slotLabel(group);
+      const item = element('li', `graph-slot ${remaining ? 'unmet' : 'met'}`);
+      const button = graphButton('graph-slot-button', undefined, `slot:${course}:${index}`,
+        `Highlight ${label.toLowerCase()} slot ${index + 1} for ${course}`);
+      button.append(
+        element('strong', 'group-badge', label),
+        element('span', 'graph-slot-progress', remaining ? `${remaining} needed` : 'Met'),
+      );
+      button.addEventListener('click', () => toggleSlot(course, index));
+      bindPreview(button, () => ({ group }));
+      const options = element('div', 'direct-options');
       for (const option of group.options) {
-        if (!choicesByCourse.has(option)) choicesByCourse.set(option, []);
-        choicesByCourse.get(option).push(group);
+        const link = graphButton('direct-option', option, `option:${course}:${index}:${option}`,
+          `Show ${option} in the prerequisite graph`);
+        bindPreview(link, () => ({ group, option }));
+        link.addEventListener('click', () => cards.get(option).node.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
+        options.append(link);
       }
-      const label = groupLabel(group);
+      item.append(button, options);
+      list.append(item);
+      summaries.set(group, { item, button });
+    }
+    const noSlots = getCourse(course)?.groups ? 'No course prerequisites in this graph.' : 'No prerequisite slots available.';
+    panel.replaceChildren(heading, list.childElementCount ? list : element('p', 'quiet-message', noSlots));
+  }
+
+  for (const [to, groups] of edges) {
+    for (const [index, group] of groups.entries()) {
+      if (group.count === null) continue;
+      slotTargets.set(group, to);
+      const label = slotLabel(group);
       const { remaining } = groupProgress(group, scheduled.get(to), scheduled);
-      const gate = element('span', `graph-gate ${remaining ? 'unmet' : 'met'}`, label);
+      const gate = graphButton(`graph-gate ${remaining ? 'unmet' : 'met'}`, label, `gate:${to}:${index}`,
+        `Highlight ${label.toLowerCase()} branch ${index + 1} for ${to}`);
+      gate.tabIndex = -1;
       gate.title = `${to}: ${label} from ${group.options.join(', ')}`;
-      bindHighlight(gate, [group], undefined, false);
+      gate.addEventListener('click', () => toggleSlot(to, index));
+      bindPreview(gate, () => ({ group }));
       layout.append(gate);
       gates.set(group, gate);
     }
@@ -144,55 +195,52 @@ export function renderGraph(container, code, getCourse, scheduled, onPlacementCh
 
   for (let level = deepest; level >= 0; level -= 1) {
     const column = element('section', 'graph-column');
-    const label = level === 0 ? 'Selected course' : level === 1 ? 'Direct prerequisites' : 'Earlier steps';
+    const label = level === 0 ? 'Goal course' : level === 1 ? 'Direct prerequisites' : 'Earlier steps';
     if (level < 2) column.classList.add('graph-direct');
     column.append(element('h4', '', label));
     const stack = element('div', 'graph-stack');
-    for (const [courseCode, courseDepth] of depth) {
+    for (const [course, courseDepth] of depth) {
       if (courseDepth !== level) continue;
-      const status = level === 0 ? 'goal' : courseStatus(courseCode, target, scheduled);
+      const status = level === 0 ? 'goal' : courseStatus(course, target, scheduled);
       const node = element('div', `graph-node ${status}`);
-      const term = termLabels.get(scheduled.get(courseCode));
-      const name = getCourse(courseCode)?.name;
+      const term = termLabels.get(scheduled.get(course));
+      const name = getCourse(course)?.name;
       const courseName = element('span', 'graph-course-name', name);
       if (name) courseName.title = name;
       const select = element('select', 'graph-term');
-      select.dataset.graphTerm = courseCode;
-      select.setAttribute('aria-label', `Term for ${courseCode}`);
+      select.dataset.graphTerm = course;
+      select.setAttribute('aria-label', `Term for ${course}`);
       select.replaceChildren(...termOptions('Unscheduled'));
-      select.value = scheduled.get(courseCode) ?? '';
-      select.addEventListener('change', () => onPlacementChange(courseCode, select.value));
-      const heading = element('div', 'graph-node-heading');
-      heading.append(element('strong', '', courseCode));
-      const groupCount = getCourse(courseCode)?.groups?.length;
-      if (groupCount > 1) {
-        const label = element('span', 'graph-all', `All ${groupCount}`);
-        label.title = `All ${groupCount} prerequisite groups required`;
-        heading.append(label);
+      select.value = scheduled.get(course) ?? '';
+      select.addEventListener('change', () => onPlacementChange(course, select.value));
+      const button = graphButton('graph-inspect', undefined, `course:${course}`, `Show prerequisite slots for ${course}`);
+      button.addEventListener('click', () => inspect(course));
+      const heading = element('span', 'graph-node-heading');
+      heading.append(element('strong', '', course));
+      const groupCount = getCourse(course)?.groups?.length ?? 0;
+      node.style.setProperty('--slot-count', groupCount);
+      if (groupCount) {
+        heading.append(element('span', 'graph-all', `${groupCount} ${groupCount === 1 ? 'slot' : 'slots'}`));
       }
-      node.append(heading, courseName, select);
+      button.append(heading, courseName);
+      node.append(button, select);
       if (status === 'late') node.append(element('span', 'graph-node-caption', `${term} is too late`));
-      const choices = choicesByCourse.get(courseCode);
-      if (choices) bindHighlight(node, choices, courseCode);
+      bindPreview(node, () => {
+        const pinned = selectedSlot();
+        const slots = edges.get(view.course);
+        const group = pinned ?? slots.find((slot) => slot.count !== null && slot.options.length > 1 && slot.options.includes(course));
+        return group?.options.includes(course) ? { group, option: course } : undefined;
+      });
       stack.append(node);
-      cards.set(courseCode, node);
+      cards.set(course, { node, button });
     }
     column.append(stack);
     layout.append(column);
   }
 
   scroll.append(layout);
-  const direct = getCourse(code)?.groups ? edges.get(code) : [];
-  const summary = direct.length ? directRequirements(direct, target, scheduled, (item, group) => {
-    summaries.set(group, item);
-    if (isChoice(group)) bindHighlight(item.querySelector('.group-badge'), [group], undefined, false);
-    for (const option of item.querySelectorAll('button[data-option]')) {
-      const course = option.dataset.option;
-      bindHighlight(option, [group], course);
-      option.addEventListener('click', () => cards.get(course).scrollIntoView({ block: 'nearest', inline: 'nearest' }));
-    }
-  }) : null;
-  container.replaceChildren(...(summary ? [summary, scroll] : [scroll]));
+  renderSlots();
+  container.replaceChildren(panel, scroll);
 
   const ctx = canvas.getContext('2d');
   function paint() {
@@ -206,11 +254,11 @@ export function renderGraph(container, code, getCourse, scheduled, onPlacementCh
       ctx.stroke(path);
     }
     for (const link of links) {
-      if (!currentSelection) stroke(link);
-      else if (!highlightedGroups.has(link.group)) stroke(link, .28, 1.5, '#a1a9b8');
+      if (!currentGroup) stroke(link);
+      else if (currentGroup !== link.group) stroke(link, .28, 1.5, '#a1a9b8');
     }
     for (const link of links) {
-      if (highlightedGroups.has(link.group)) stroke(link, 1, 2, '#526ccf');
+      if (currentGroup === link.group) stroke(link, 1, 2, '#526ccf');
     }
   }
 
@@ -224,13 +272,13 @@ export function renderGraph(container, code, getCourse, scheduled, onPlacementCh
     links = [];
 
     for (const [to, groups] of edges) {
-      const end = cards.get(to).getBoundingClientRect();
+      const end = cards.get(to).node.getBoundingClientRect();
       const endX = end.left - bounds.left;
       const centerY = end.top + end.height / 2 - bounds.top;
       for (const [index, group] of groups.entries()) {
         const gate = gates.get(group);
         const gateX = endX - 38;
-        const gateY = centerY + (index - (groups.length - 1) / 2) * 20;
+        const gateY = centerY + (index - (groups.length - 1) / 2) * 24;
         if (gate) {
           gate.style.transform = `translate(${gateX}px, ${gateY}px) translate(-50%, -50%)`;
           const path = new Path2D();
@@ -240,7 +288,7 @@ export function renderGraph(container, code, getCourse, scheduled, onPlacementCh
         }
         for (const from of group.options) {
           if (depth.get(from) <= depth.get(to)) continue;
-          const start = cards.get(from).getBoundingClientRect();
+          const start = cards.get(from).node.getBoundingClientRect();
           const x = start.right - bounds.left;
           const y = start.top + start.height / 2 - bounds.top;
           const destinationX = gate ? gateX : endX;
@@ -259,6 +307,7 @@ export function renderGraph(container, code, getCourse, scheduled, onPlacementCh
 
   const observer = new ResizeObserver(measure);
   observer.observe(layout);
+  updateHighlight();
   return () => {
     observer.disconnect();
     if (frame !== undefined) cancelAnimationFrame(frame);

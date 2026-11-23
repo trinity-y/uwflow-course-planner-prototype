@@ -256,6 +256,10 @@ h1, h2, h3, h4, p { margin: 0; }
 .term-course { display: flex; align-items: center; min-width: 0; border: 1px solid #e4e8f6; border-left: 3px solid #a7b5f2; border-radius: 6px; background: #f6f7ff; cursor: grab; }
 .term-course .drag-handle { flex: 0 0 5px; margin-left: 4px; }
 .term-course:hover { border-color: #bac8f5; }
+.term-course.schedule-selected { outline: 2px solid var(--blue); outline-offset: 1px; }
+.term-course.schedule-prerequisite { border-color: #9acbb8; border-left-color: #4f9c82; background: #eaf8f1; }
+.term-course.schedule-prerequisite-late { border-color: #efcf86; border-left-color: #c78a29; background: var(--warning-soft); }
+.term-course.schedule-muted { opacity: .3; filter: grayscale(1); }
 .term-course-open { display: flex; width: 100%; align-items: baseline; gap: 7px; padding: 6px 6px; }
 .term-course-open .course-code { font-size: .8125rem; }
 .term-course-name { font-size: .75rem; }
@@ -347,10 +351,14 @@ h1, h2, h3, h4, p { margin: 0; }
 .graph-legend .late { border-color: #e0bd70; background: var(--warning-soft); }
 .detail-status { margin: 9px 0; padding: 8px 10px; border-radius: 7px; color: var(--muted); background: #f5f7fc; font-size: .875rem; line-height: 1.5; }
 .detail-status.needs-attention { color: var(--warning); background: var(--warning-soft); }
-.direct-requirements { display: flex; flex-wrap: wrap; align-items: center; gap: 7px 11px; margin: 11px 0; font-size: .8125rem; }
-.direct-groups { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; margin: 0; padding: 0; }
-.direct-group { display: flex; align-items: center; gap: 5px; padding: 3px 6px 3px 3px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: #fafbff; }
-.direct-options { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 2px; }
+.graph-slots { display: grid; gap: 7px; margin: 11px 0; font-size: .8125rem; }
+.graph-slot-list { display: flex; flex-wrap: wrap; gap: 7px; list-style: none; margin: 0; padding: 0; }
+.graph-slot { min-width: 121px; border: 1px solid var(--line); border-radius: 7px; color: var(--ink); background: #fafbff; }
+.graph-slot-current { border-color: #8e9ee2; }
+.graph-slot-button { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%; padding: 5px 7px 2px; border: 0; border-radius: 6px; background: transparent; color: inherit; }
+.graph-slot-button[aria-pressed="true"] .group-badge { background: var(--blue); color: #fff; }
+.graph-slot-progress { color: var(--muted); font-size: .75rem; white-space: nowrap; }
+.direct-options { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; padding: 1px 6px 4px; }
 .direct-option { background: transparent; border: 0; border-radius: 4px; color: var(--ink); padding: 2px 3px; font-size: inherit; }
 .direct-option + .direct-option::before { content: "·"; margin-right: 5px; color: var(--muted); }
 .direct-option:hover, .direct-option:focus-visible { background: var(--blue-soft); color: var(--blue); text-decoration: underline; }
@@ -358,17 +366,21 @@ h1, h2, h3, h4, p { margin: 0; }
 .unmet .group-badge, .graph-gate.unmet { background: var(--warning-soft); color: var(--warning); }
 .live-detail { display: grid; gap: 5px; color: var(--muted); font-size: .8125rem; line-height: 1.5; margin-top: 10px; }
 .graph-scroll { overflow: auto; max-height: 460px; border: 1px solid var(--line); border-radius: 9px; background: radial-gradient(circle, #dce2f6 1px, transparent 1.4px) 0 0 / 12px 12px #f6f8ff; }
-.graph-layout { display: flex; justify-content: space-between; gap: 76px; padding: 14px; width: max-content; min-width: 100%; position: relative; }
+.graph-layout { display: flex; justify-content: space-between; gap: 83px; padding: 14px; width: max-content; min-width: 100%; position: relative; }
 .graph-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .graph-gate { position: absolute; z-index: 1; inset: 0 auto auto 0; border: 1px solid #aed1c3; box-shadow: 0 1px 3px #2934541a; }
 .graph-gate.unmet { border-color: #e4c987; }
+.graph-gate:hover { border-color: var(--blue); }
+.graph-gate[aria-pressed="true"] { background: var(--blue); color: #fff; border-color: var(--blue); }
 .graph-column { flex: 1 0 147px; display: flex; flex-direction: column; width: 148px; gap: 12px; }
 .graph-direct { align-self: flex-start; min-height: 360px; }
 .graph-column h4 { position: relative; padding: 0 3px; text-align: center; color: #536286; font-size: .75rem; font-weight: 740; }
 .graph-stack { flex: 1; display: flex; flex-direction: column; align-items: stretch; justify-content: center; gap: 8px; }
-.graph-node { position: relative; display: grid; gap: 3px; padding: 7px 8px; border: 1px solid #dce3f3; border-radius: 7px; background: #fff; }
+.graph-node { position: relative; display: grid; align-content: center; gap: 3px; min-height: calc(var(--slot-count, 0) * 24px + 5px); padding: 7px 8px; border: 1px solid #dce3f3; border-radius: 7px; background: #fff; }
 .graph-node strong { font-size: .875rem; }
 .graph-node-heading { display: flex; justify-content: space-between; align-items: center; gap: 3px; }
+.graph-inspect { display: grid; min-width: 0; gap: 3px; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; }
+.graph-inspect:hover .graph-node-heading > strong { text-decoration: underline; }
 .graph-all { padding: 2px 4px; color: var(--blue); background: #e3e9fc; }
 .graph-course-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-size: .75rem; line-height: 1.2; color: var(--muted); }
 .graph-direct .graph-course-name { -webkit-line-clamp: 1; }
@@ -378,6 +390,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .graph-node.missing { border-style: dashed; border-color: #aab6d1; }
 .graph-node.late { background: var(--warning-soft); border-color: #efcf86; }
 .graph-node.goal { background: var(--blue-soft); border-color: #9faef0; color: #2b3fb0; }
+.graph-node.graph-inspected { box-shadow: inset 0 0 0 1px #7588de; }
 .graph-muted { opacity: .3; filter: grayscale(1); }
 .graph-emphasis { outline: 2px solid var(--blue); outline-offset: 1px; }
 .detail-footer { border-top: 1px solid var(--line); background: #fafbff; }

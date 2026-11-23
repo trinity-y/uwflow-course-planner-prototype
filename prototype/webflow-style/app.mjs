@@ -11,6 +11,7 @@ const byId = (id) => document.getElementById(id);
 const dialog = byId('course-dialog');
 const search = byId('course-search');
 const courseList = byId('catalog-list');
+const board = byId('term-board');
 const termsById = new Map(terms.map((term) => [term.id, term]));
 const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term' };
 const catalog = new Map(sampleCatalog);
@@ -33,12 +34,14 @@ let targets = readTermTargets(saved?.targets);
 let scheduled = indexPlan(plan);
 let warningList = [];
 let selectedCode;
+let graphView;
 let dialogTrigger;
 let graphCleanup = () => {};
 let resultLimit = pageSize;
 let liveCatalog = false;
 let drag;
 let suppressClick;
+let hoveredCourse;
 
 const getCourse = (code) => catalog.get(code) ?? { code, name: code };
 const flowCode = (code) => code.toLowerCase().replace(/\s/g, '');
@@ -94,11 +97,11 @@ function scrollDuringDrag(active) {
   const vertical = active.y < 52 ? -8 : active.y > window.innerHeight - 52 ? 8 : 0;
   if (vertical) window.scrollBy(0, vertical);
 
-  const board = byId('term-board').parentElement;
-  const { left, right, top, bottom } = board.getBoundingClientRect();
+  const viewport = board.parentElement;
+  const { left, right, top, bottom } = viewport.getBoundingClientRect();
   if (active.y > top && active.y < bottom && active.x > left && active.x < right) {
     const horizontal = active.x < left + 34 ? -7 : active.x > right - 34 ? 7 : 0;
-    if (horizontal) board.scrollLeft += horizontal;
+    if (horizontal) viewport.scrollLeft += horizontal;
   }
   updateDropTarget(active);
   active.frame = requestAnimationFrame(() => scrollDuringDrag(active));
@@ -116,6 +119,8 @@ window.addEventListener('pointermove', (event) => {
     if (drag.card.isConnected) drag.card.setPointerCapture(event.pointerId);
     drag.card.classList.add('dragging');
     document.body.append(drag.ghost);
+    hoveredCourse = undefined;
+    updateScheduleHighlight();
     drag.width = drag.ghost.offsetWidth;
     drag.height = drag.ghost.offsetHeight;
     scrollDuringDrag(drag);
@@ -142,6 +147,7 @@ function finishDrag(event) {
   }
   active.target?.classList.remove('drop-active');
   if (event?.type === 'pointerup' && active.target) addOrMove(active.code, active.target.dataset.term);
+  updateScheduleHighlight();
 }
 
 window.addEventListener('pointerup', finishDrag);
@@ -157,6 +163,7 @@ function makeButton(className, label, content) {
 
 function showCourse(code, trigger, focusPlacement = false) {
   selectedCode = code;
+  graphView = { course: code, slot: null };
   dialogTrigger = trigger;
   const currentTerm = scheduled.get(code);
   const select = byId('target-term');
@@ -164,6 +171,7 @@ function showCourse(code, trigger, focusPlacement = false) {
   select.value = currentTerm ?? '';
   byId('flow-link').href = `https://uwflow.com/course/${flowCode(code)}`;
   dialog.showModal();
+  setHoveredCourse(undefined);
   loadDetails([code]);
   updateDetails(focusPlacement ? code : undefined);
 }
@@ -213,12 +221,12 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
   }
   const graph = byId('detail-graph');
   const previous = graph.querySelector('.graph-scroll');
-  const focusOption = document.activeElement.dataset.option;
+  const graphControl = document.activeElement.dataset.graphControl;
   const scroll = graph.dataset.course === code && previous
     ? { left: previous.scrollLeft, top: previous.scrollTop }
     : null;
   graphCleanup();
-  graphCleanup = renderGraph(graph, code, getCourse, scheduled, changeGraphTerm);
+  graphCleanup = renderGraph(graph, code, getCourse, scheduled, changeGraphTerm, graphView);
   graph.dataset.course = code;
   const viewport = graph.querySelector('.graph-scroll');
   byId('placement-form').hidden = Boolean(viewport);
@@ -227,8 +235,8 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     const select = graph.querySelector(`[data-graph-term="${CSS.escape(focusCourse)}"]`);
     if (select) select.focus();
     else if (!viewport) byId('target-term').focus();
-  } else if (focusOption) {
-    graph.querySelector(`button[data-option="${CSS.escape(focusOption)}"]`)?.focus({ preventScroll: true });
+  } else if (graphControl) {
+    graph.querySelector(`[data-graph-control="${CSS.escape(graphControl)}"]`)?.focus({ preventScroll: true });
   }
 }
 
@@ -311,6 +319,38 @@ function termCourse(code, term, groups) {
   return card;
 }
 
+function updateScheduleHighlight(focus = document.activeElement) {
+  const focused = focus instanceof Element && focus.matches(':focus-visible')
+    ? focus.closest('.term-course')?.dataset.course
+    : undefined;
+  const selected = dialog.open || drag?.ghost ? undefined : hoveredCourse ?? focused;
+  const prerequisites = new Set(getCourse(selected).groups?.flatMap(({ options }) => options));
+  const target = scheduled.get(selected);
+  for (const card of board.querySelectorAll('.term-course')) {
+    const { course } = card.dataset;
+    const active = course === selected;
+    const status = !active && prerequisites.has(course) ? courseStatus(course, target, scheduled) : undefined;
+    card.classList.toggle('schedule-selected', active);
+    card.classList.toggle('schedule-prerequisite', status === 'planned');
+    card.classList.toggle('schedule-prerequisite-late', status === 'late');
+    card.classList.toggle('schedule-muted', Boolean(selected) && !active && !status);
+  }
+}
+
+function setHoveredCourse(code) {
+  if (hoveredCourse === code) return;
+  hoveredCourse = code;
+  updateScheduleHighlight();
+}
+
+board.addEventListener('pointerover', (event) => {
+  if (event.pointerType === 'touch' || dialog.open || drag?.ghost) return;
+  setHoveredCourse(event.target.closest('.term-course')?.dataset.course);
+});
+board.addEventListener('pointerleave', () => setHoveredCourse(undefined));
+board.addEventListener('focusin', (event) => updateScheduleHighlight(event.target));
+board.addEventListener('focusout', (event) => updateScheduleHighlight(event.relatedTarget));
+
 function updateSlots(container, term) {
   const emptySlots = targets[term.id] - plan[term.id].length;
   const items = [];
@@ -382,7 +422,6 @@ function renderTerm(term) {
 
 function renderBoard() {
   warningList = [];
-  const board = byId('term-board');
   const grid = document.createDocumentFragment();
   grid.append(element('span', 'year-header', 'Year'));
   for (const season of seasons) {
@@ -397,6 +436,8 @@ function renderBoard() {
     for (const season of seasons) grid.append(renderTerm(termsById.get(`${year}-${season.toLowerCase()}`)));
   }
   board.replaceChildren(grid);
+  hoveredCourse = board.querySelector('.term-course:hover')?.dataset.course;
+  updateScheduleHighlight();
   byId('planned-count').textContent = `${scheduled.size} planned`;
   const warning = byId('warning-summary');
   const count = warningList.length;
