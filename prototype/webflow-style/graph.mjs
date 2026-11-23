@@ -29,7 +29,7 @@ function graphButton(className, content, control, label) {
   return button;
 }
 
-export function renderGraph(container, code, getCourse, scheduled, { onPlacementChange, view, favoriteStar, prerequisites, outcomeFor, placementOptions }) {
+export function renderGraph(container, code, getCourse, scheduled, { onPlacementChange, view, favoriteStar, prerequisites, outcomeFor, placementOptions, requestCourseButton }) {
   const { depth, edges } = buildGraph(code, getCourse);
   if (depth.size === 1) {
     container.replaceChildren();
@@ -168,6 +168,8 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
         bindPreview(link, () => ({ group, option }));
         link.addEventListener('click', () => cards.get(option).node.scrollIntoView({ block: 'nearest', inline: 'nearest' }));
         choice.append(link, star);
+        const request = requestCourseButton?.(option);
+        if (request) choice.append(request);
         options.append(choice);
       }
       item.append(button, options);
@@ -225,6 +227,8 @@ export function renderGraph(container, code, getCourse, scheduled, { onPlacement
       star.dataset.graphControl = `favorite:course:${course}`;
       button.append(codeLabel);
       heading.append(button, star);
+      const request = requestCourseButton?.(course);
+      if (request) heading.append(request);
       const groupCount = getCourse(course)?.groups?.length ?? 0;
       node.style.setProperty('--slot-count', groupCount);
       if (groupCount) {

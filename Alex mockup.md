@@ -24,6 +24,16 @@ This is the feature record for the Software Engineering course planner on `alex-
 - Put a term picker under each course in the graph, including the goal course. Use it to schedule, move, or remove an editable course directly. Course outcome locks apply here too.
 - On the academic schedule, highlight a hovered course and any of its direct prerequisites that are already on the board. Dim unrelated cards and signal when a prerequisite is scheduled too late.
 
+## Automatic planning
+
+- Turn on **Auto plan** to generate a Software Engineering schedule using enabled rules, known prerequisites, course requests, pins, and term targets. Plans run in the browser and use a maximum of eight courses per term. Aim for five where capacity and requirements allow.
+- Use **Schedule for Me** to request a course without specifying its term. Show unplaced requests in red with the reason. Place earlier prerequisites automatically, choosing shorter valid paths first.
+- Use five course states: **Must take**, **Interested**, **Neutral**, **Prefer to avoid**, and **Ban**. Must-take courses are placement goals, bans exclude automatic placements, and interest and avoidance break ties between plans with the same number of courses.
+- Treat manual placements and passed or failed courses as pins. Show automatic suggestions with dashed borders and provide a pin control to keep a suggestion. Turning Auto off hides suggestions and preserves the manual plan, outcomes, requests, opinions, and Shuffle setting.
+- Show real progress during the search. Offer **Shuffle** for a different set of equivalent choices and show a partial plan when constraints leave requirements or requests unresolved.
+- Use course details to give an opinion, or open **I want your opinions** to review categories. Show ten unrated suggestions first, previously rated courses afterward, and an **All my opinions** view.
+- Use the degree checker to verify generated plans. The prototype uses a bounded heuristic search and the bundled prerequisite data. Course availability and prerequisites without a modeled course expression remain manual checks.
+
 ## Degree requirements and progress
 
 - Use Waterloo’s archived 2024–25 Software Engineering calendar to model fixed courses, course lists, elective counts and academic term rules in JSON. ECE 106 is an optional natural science choice. The report covers academic requirements only, with co-op and PD left outside degree validation. Keep the rule source available in the report. [Waterloo’s 2024–25 calendar](https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2024-2025#/programs/H1zle10Cs3)

@@ -53,3 +53,9 @@ prototype does not evaluate grades, standing, enrollment restrictions, or term o
 Any static HTTP server can serve this directory. The bundled catalog, planner,
 and prerequisite graphs work with no upstream service. Use
 `PLANNER_OFFLINE=1 node prototype/webflow-style/server.mjs` to try that mode locally.
+
+Turn on **Auto plan** to generate suggestions from a blank plan or alongside
+manual course pins. The browser worker uses the bundled rules and catalog, term
+targets capped at eight courses, and saved opinions. **Schedule for Me** requests
+a course, and **Shuffle** tries another solution. Turning Auto off hides its
+suggestions while retaining the manual schedule and preferences.

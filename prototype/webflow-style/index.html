@@ -25,6 +25,7 @@
         <p>Software Engineering <span aria-hidden="true">·</span> Fall 2023 entry</p>
       </div>
       <div class="plan-controls">
+        <label class="auto-mode-control"><input id="auto-mode" class="degree-rule-toggle" type="checkbox" role="switch"> Auto plan</label>
         <form class="year-range" id="year-range" aria-label="Schedule years">
           <label>Start year <input id="start-year" type="number" step="1" required></label>
           <label>End year <input id="end-year" type="number" step="1" required></label>
@@ -39,11 +40,27 @@
       </div>
     </header>
 
+    <section class="auto-toolbar" id="auto-toolbar" aria-label="Automatic planning" hidden>
+      <div class="auto-progress">
+        <strong id="auto-status" role="status"></strong>
+        <progress id="auto-progress" max="1" aria-label="Planning progress" hidden></progress>
+        <div id="auto-issues" class="auto-issues"></div>
+      </div>
+      <div class="auto-actions">
+        <button type="button" class="button subtle" id="shuffle-plan">Shuffle</button>
+        <button type="button" class="button primary" id="open-opinions">I want your opinions</button>
+      </div>
+    </section>
+
     <div class="workspace-grid">
       <aside class="sidebar" aria-labelledby="catalog-title">
         <div class="sidebar-heading">
           <h2 id="catalog-title">Courses</h2>
         </div>
+        <section class="requests-section" id="requests-section" aria-labelledby="requests-title" hidden>
+          <div class="section-heading"><h3 id="requests-title">Schedule for Me</h3><span class="count" id="request-count"></span></div>
+          <div id="request-list" class="request-list"></div>
+        </section>
         <section class="degree-section" id="degree-section" aria-labelledby="degree-courses-title" hidden>
           <div class="section-heading">
             <h3 id="degree-courses-title">Degree requirements</h3>
@@ -116,6 +133,11 @@
       <button type="button" class="icon-button close-dialog" id="close-dialog" aria-label="Close course details" autofocus>×</button>
     </header>
     <div class="detail-body">
+      <section class="course-contributions" aria-labelledby="course-opinion-title">
+        <h3 id="course-opinion-title">Your preference</h3>
+        <div id="course-opinion"></div>
+        <p class="quiet-message">Must take · Interested · Neutral · Prefer to avoid · Ban</p>
+      </section>
       <section class="course-contributions" aria-labelledby="detail-contributions-title">
         <h3 id="detail-contributions-title">Degree contributions</h3>
         <div id="detail-contributions"></div>
@@ -193,6 +215,19 @@
         <button type="submit" class="button primary" id="save-term-entry">Save</button>
       </footer>
     </form>
+  </dialog>
+
+  <dialog class="details opinions-dialog" id="opinions-dialog" aria-labelledby="opinions-title">
+    <header class="detail-header">
+      <h2 id="opinions-title">Course opinions</h2>
+      <button type="button" class="icon-button close-dialog" id="close-opinions" aria-label="Close course opinions" autofocus>×</button>
+    </header>
+    <div class="detail-body opinion-body">
+      <label class="opinion-category">Category <select id="opinion-category"></select></label>
+      <p class="quiet-message">Must take · Interested · Neutral · Prefer to avoid · Ban</p>
+      <div id="opinion-list"></div>
+      <button type="button" class="button subtle" id="more-opinions" hidden>Show 10 more courses</button>
+    </div>
   </dialog>
 
   <div class="sr-only" id="announcement" role="status"></div>

@@ -33,6 +33,8 @@ function courseReference(code, actions, { counted = false, draggable = false } =
     else showCourse(code, link, true);
   });
   item.append(link, favoriteStar(displayCode));
+  const request = actions.requestCourseButton?.(displayCode);
+  if (request) item.append(request);
   return item;
 }
 
@@ -104,7 +106,7 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
   });
 
   function update(rule, countedElsewhere) {
-    const nextSignature = JSON.stringify([rule.id, rule.matched, remainingOnly ? rule.missing : null, countedElsewhere]);
+    const nextSignature = JSON.stringify([rule.id, rule.matched, remainingOnly ? rule.missing : null, countedElsewhere, actions.isAutoMode?.()]);
     const plan = actions.getPlan();
     if (signature === nextSignature && previousPlan === plan) return;
     signature = nextSignature;
@@ -196,7 +198,7 @@ function updateCourseGroups(container, rule, actions) {
     const placement = actions.findPlacement(code);
     return placement && [placement.code, placement.term.id];
   });
-  const signature = JSON.stringify([rule.matched, rule.additional, missing, locations]);
+  const signature = JSON.stringify([rule.matched, rule.additional, missing, locations, actions.isAutoMode?.()]);
   if (container.dataset.courses === signature) return;
   container.dataset.courses = signature;
   const contents = [];

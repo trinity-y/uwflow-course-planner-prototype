@@ -9,7 +9,7 @@ const files = new Map([
   ['/', ['index.html', 'text/html']],
   ['/index.html', ['index.html', 'text/html']],
   ['/styles.css', ['styles.css', 'text/css']],
-  ...['app', 'calendar', 'model', 'graph', 'degree', 'degree-view'].map((name) => [
+  ...['app', 'calendar', 'model', 'graph', 'degree', 'degree-view', 'auto-plan', 'auto-controls', 'auto-worker'].map((name) => [
     `/${name}.mjs`, [`${name}.mjs`, 'text/javascript'],
   ]),
   ...['degree-requirements', 'calendar-courses'].map((name) => [

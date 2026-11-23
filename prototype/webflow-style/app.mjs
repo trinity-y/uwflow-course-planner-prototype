@@ -7,12 +7,16 @@ import {
 import { element, renderGraph, termOptions } from './graph.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
 import { renderCourseContributions, renderDegreeReport, renderDegreeSidebar } from './degree-view.mjs';
+import { autoTermLimit, createAutoRunner, opinionPicker, readOpinions, renderOpinions } from './auto-controls.mjs';
 import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
-const personal = location.pathname === '/personal';
+const published = document.documentElement.hasAttribute('data-published-profile');
+const personal = published
+  ? new URLSearchParams(location.search).get('plan') === 'personal'
+  : location.pathname === '/personal';
 const profile = personal
-  ? await fetch('./api/profile').then((response) => response.ok ? response.json() : null).catch(() => null)
+  ? await fetch(published ? './alex-plan.json' : './api/profile').then((response) => response.ok ? response.json() : null).catch(() => null)
   : null;
 const scope = personal ? '-alex' : '';
 const storageKey = `uwflow-webflow-planner-v1${scope}`;
@@ -33,6 +37,8 @@ const search = byId('course-search');
 const courseList = byId('catalog-list');
 const favoritesList = byId('favorites-list');
 const board = byId('term-board');
+const autoSwitch = byId('auto-mode');
+const opinionsDialog = byId('opinions-dialog');
 const termsById = new Map(defaultTerms.map((term) => [term.id, { ...term, ...profile?.terms?.[term.id] }]));
 const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term', failed: 'Failed' };
 const catalog = new Map([
@@ -80,11 +86,20 @@ for (const id of Object.keys({ ...profile?.plan, ...saved?.plan, ...saved?.targe
 }
 registerTerms(yearRange);
 let plan = readPlan(saved?.plan ?? profile?.plan, timeline());
+let displayPlan = plan;
 let targets = plannerTargets(saved?.targets ?? profile?.targets, !saved?.yearRange);
 let { titles: termTitles, notes: termNotes } = readTermDetails(saved?.termDetails, timeline());
 const disabledRules = new Set(requirements.rules.filter(({ id }) =>
   Array.isArray(saved?.disabledRules) && saved.disabledRules.includes(id),
 ).map(({ id }) => id));
+const preferences = readOpinions(saved?.preferences);
+let autoMode = saved?.autoMode === true;
+let autoSeed = Number.isSafeInteger(saved?.autoSeed) ? saved.autoSeed : 0;
+let autoResult;
+let autoSolving = false;
+let autoError = false;
+let opinionLimit = 10;
+const autoRunner = createAutoRunner(requirements, archive);
 let termEdit;
 let scheduled = indexPlan(plan);
 let scheduledCredits;
@@ -173,7 +188,7 @@ function savePlan() {
   try {
     localStorage.setItem(storageKey, JSON.stringify({
       plan, targets, outcomes, courses, yearRange, termDetails: { titles: termTitles, notes: termNotes },
-      disabledRules: [...disabledRules], profileRevision: profile?.revision,
+      disabledRules: [...disabledRules], autoMode, autoSeed, preferences, profileRevision: profile?.revision,
     }));
   } catch {
     // A browser can deny storage while still allowing the current plan to be edited.
@@ -184,7 +199,7 @@ function makeDraggable(card, code) {
   card.dataset.course = code;
   card.addEventListener('pointerdown', (event) => {
     if (event.button !== 0 || !event.isPrimary || pinned(code) ||
-      event.target.closest('.catalog-add, .warning-trigger, .favorite-star, .course-outcome-menu')) return;
+      event.target.closest('.catalog-add, .warning-trigger, .favorite-star, .course-outcome-menu, .term-pin, .auto-request')) return;
     suppressClick = null;
     const { pointerId, clientX, clientY } = event;
     drag = { pointerId, code, card, startX: clientX, startY: clientY, x: clientX, y: clientY };
@@ -315,6 +330,121 @@ function withFavorite(control, code) {
   return row;
 }
 
+function requestCourseButton(code) {
+  if (!autoMode) return undefined;
+  const requested = preferences[code] === 'required';
+  const button = makeButton('auto-request', `Schedule ${code} for me`, requested ? '✓' : '+');
+  button.title = 'Schedule for Me';
+  button.dataset.requestCode = code;
+  button.setAttribute('aria-pressed', String(requested));
+  button.addEventListener('click', () => setOpinion(code, preferences[code] === 'required' ? 'neutral' : 'required'));
+  return button;
+}
+
+function setOpinion(code, value) {
+  if (value === 'neutral') delete preferences[code];
+  else preferences[code] = value;
+  for (const button of document.querySelectorAll(`[data-opinion-code="${CSS.escape(code)}"]`)) {
+    button.setAttribute('aria-pressed', String(button.dataset.opinion === value));
+  }
+  for (const button of document.querySelectorAll(`[data-request-code="${CSS.escape(code)}"]`)) {
+    button.setAttribute('aria-pressed', String(value === 'required'));
+    button.textContent = value === 'required' ? '✓' : '+';
+  }
+  savePlan();
+  if (autoMode) {
+    if (value === 'banned' && scheduled.has(code)) renderPlan();
+    renderRequests();
+    scheduleAuto();
+  }
+  if (opinionsDialog.open && !dialog.open) showOpinionList();
+}
+
+function renderRequests() {
+  byId('requests-section').hidden = !autoMode;
+  if (!autoMode) return;
+  const codes = Object.keys(preferences).filter((code) => preferences[code] === 'required');
+  byId('request-count').textContent = codes.length;
+  const items = codes.map((code) => {
+    const term = termsById.get(scheduled.get(actualCode(code)));
+    const failure = autoSolving ? null : autoResult?.unscheduled[code];
+    const item = element('div', `request-item${failure ? ' unplaced' : ''}`);
+    const open = makeButton('request-course', `View ${code} course details`, code);
+    open.addEventListener('click', () => showCourse(code, open));
+    const remove = makeButton('icon-button', `Remove ${code} from Schedule for Me`, '×');
+    remove.addEventListener('click', () => setOpinion(code, 'neutral'));
+    item.append(open, remove, element('span', 'request-status', failure ?? term?.label ?? 'Waiting for a placement'));
+    return item;
+  });
+  byId('request-list').replaceChildren(...(items.length ? items : [element('p', 'quiet-message', 'Use + on a course you want in your plan.')]));
+}
+
+function renderAutoStatus() {
+  byId('auto-toolbar').hidden = !autoMode;
+  byId('auto-progress').hidden = !autoSolving;
+  const incomplete = autoResult && (autoResult.met < autoResult.total || autoResult.issues.length
+    || Object.keys(autoResult.unscheduled).length);
+  byId('auto-status').textContent = autoSolving ? 'Solving your plan…' : autoError ? 'Auto planning could not finish. Try Shuffle.'
+    : incomplete ? `Partial plan · ${autoResult.met} of ${autoResult.total} rules met`
+      : autoResult ? `Plan ready · ${autoResult.met} of ${autoResult.total} rules met` : 'Auto plan';
+  const list = element('ul');
+  if (!autoSolving && autoResult) {
+    const unresolved = Object.keys(autoResult.unscheduled).length;
+    if (unresolved) list.append(element('li', '', `${unresolved} requested ${unresolved === 1 ? 'course needs' : 'courses need'} a placement.`));
+    for (const issue of autoResult.issues) list.append(element('li', '', issue));
+  }
+  byId('auto-issues').replaceChildren(...(list.childElementCount ? [list] : []));
+}
+
+function scheduleAuto() {
+  if (!autoMode) return;
+  autoSolving = true;
+  autoError = false;
+  renderAutoStatus();
+  renderRequests();
+  byId('auto-progress').value = 0;
+  const terms = timeline();
+  autoRunner.run({
+    plan, timeline: terms, activeTerms: terms.filter((term) => inYearRange(term.year)).map(({ id }) => id),
+    targets, notes: Object.fromEntries(Object.entries(termNotes).map(([id, notes]) => [id, notes.length])),
+    outcomes, preferences, disabled: [...disabledRules], equivalents, seed: autoSeed,
+    groups: Object.fromEntries([...catalog].filter(([, course]) => Array.isArray(course.groups)).map(([code, course]) => [code, course.groups])),
+  }, (progress) => { byId('auto-progress').value = progress; }, (result) => {
+    autoResult = result;
+    autoSolving = false;
+    renderAutoStatus();
+    renderPlan();
+    if (dialog.open) updateDetails();
+  }, () => {
+    autoResult = undefined;
+    autoSolving = false;
+    autoError = true;
+    renderAutoStatus();
+    renderPlan();
+  });
+}
+
+function showOpinionList() {
+  const { opinionCode, opinion } = document.activeElement.dataset;
+  const category = byId('opinion-category').value;
+  const suggested = autoResult?.suggestions.map(([code]) => code) ?? [];
+  const rule = requirements.rules.find(({ id }) => id === category);
+  const eligible = rule && requirements.lists[rule.list]?.flat();
+  const pool = category === 'all' ? Object.keys(preferences)
+    : eligible ? [...suggested.filter((code) => eligible.includes(code)), ...eligible]
+      : [...suggested, ...Object.keys(preferences), ...sampleCatalog.keys()];
+  const codes = [...new Set(pool)].filter(isAcademicCourse);
+  const fresh = codes.filter((code) => !preferences[code]);
+  const rated = codes.filter((code) => preferences[code]);
+  const shown = [...fresh.slice(0, opinionLimit), ...rated];
+  renderOpinions(byId('opinion-list'), { codes: shown, preferences, getCourse, openCourse: showCourse, setOpinion });
+  if (opinionCode && opinion) byId('opinion-list').querySelector(
+    `[data-opinion-code="${CSS.escape(opinionCode)}"][data-opinion="${CSS.escape(opinion)}"]`,
+  )?.focus({ preventScroll: true });
+  if (!shown.length) byId('opinion-list').append(element('p', 'quiet-message', 'No opinions recorded yet.'));
+  byId('more-opinions').hidden = fresh.length <= opinionLimit;
+}
+
 function findPlacement(code) {
   const actual = actualCode(code);
   const credit = creditCode(code);
@@ -383,6 +513,7 @@ function showCourse(code, trigger, focusPlacement = false) {
   dialogTrigger = trigger;
   const currentTerm = scheduled.get(code);
   byId('detail-favorite').replaceChildren(favoriteStar(code));
+  byId('course-opinion').replaceChildren(opinionPicker(code, preferences[code], setOpinion));
   const select = byId('target-term');
   select.replaceChildren(...placementOptions('Choose a term', true, currentTerm));
   select.value = currentTerm ?? '';
@@ -435,8 +566,8 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     note.append(element('span', '', 'UW Flow lists no prerequisites.'));
   } else if (inFlight.has(code)) {
     note.append(element('span', '', 'Looking up prerequisites on UW Flow…'));
-  } else if (personal) {
-    note.append(element('span', '', 'This personal plan uses the local course catalog.'));
+  } else if (personal || published) {
+    note.append(element('span', '', 'This planner uses the bundled course catalog.'));
   } else {
     note.append(element('span', '', 'Live prerequisites are unavailable.'));
   }
@@ -451,7 +582,7 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
     : null;
   graphCleanup();
   graphCleanup = renderGraph(graph, code, getCourse, withEquivalents(scheduled), {
-    onPlacementChange: changeGraphTerm, view: graphView, favoriteStar, prerequisites, outcomeFor, placementOptions,
+    onPlacementChange: changeGraphTerm, view: graphView, favoriteStar, prerequisites, outcomeFor, placementOptions, requestCourseButton,
   });
   graph.dataset.course = code;
   const viewport = graph.querySelector('.graph-scroll');
@@ -467,7 +598,7 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
 }
 
 function loadDetails(codes) {
-  if (personal) return;
+  if (personal || published) return;
   const pending = codes.filter((code) => !liveDetails.has(code) && !inFlight.has(code));
   if (!pending.length) return;
   const params = new URLSearchParams(pending.map((code) => ['code', flowCode(code)]));
@@ -488,18 +619,25 @@ function loadDetails(codes) {
   }).catch(() => {}).finally(() => {
     pending.forEach((code) => inFlight.delete(code));
     if (graphChanged || pending.includes(selectedCode)) updateDetails();
+    if (graphChanged) scheduleAuto();
   });
   pending.forEach((code) => inFlight.set(code, loading));
 }
 
 function addOrMove(code, target) {
   code = actualCode(code);
+  if (autoMode && isAcademicCourse(code) && !plan[target]?.includes(code)
+      && plan[target]?.filter(isAcademicCourse).length + (termNotes[target]?.length ?? 0) >= Math.min(autoTermLimit, targets[target])) {
+    announce(`${termsById.get(target).label} has no room for another pinned course.`);
+    return;
+  }
   const next = placeCourse(plan, code, target, outcomes);
   if (next === plan) return;
   const moved = scheduled.has(code);
   plan = next;
   renderPlan();
   savePlan();
+  scheduleAuto();
   announce(`${code} ${moved ? 'moved' : 'added'} to ${termsById.get(target).label}.`);
   if (!sampleCatalog.has(code)) loadDetails([code]);
 }
@@ -507,11 +645,15 @@ function addOrMove(code, target) {
 function removeFromPlan(code) {
   code = actualCode(code);
   const next = removeCourse(plan, code, outcomes);
-  if (next === plan) return;
+  if (next === plan) {
+    if (autoMode && scheduled.has(code) && !pinned(code)) setOpinion(code, 'banned');
+    return;
+  }
   plan = next;
   delete outcomes[code];
   renderPlan();
   savePlan();
+  scheduleAuto();
   announce(`${code} removed from the plan.`);
 }
 
@@ -542,11 +684,13 @@ function showOutcomeMenu(code) {
     const button = makeButton('button outcome-option', null, label);
     button.setAttribute('aria-pressed', String((outcomes[code] ?? 'planned') === outcome));
     button.addEventListener('click', () => {
+      if (outcome !== 'planned' && !pinned(code)) plan = placeCourse(plan, code, term.id);
       if (outcome === 'planned') delete outcomes[code];
       else outcomes[code] = outcome;
       outcomeDialog.close();
       renderPlan();
       savePlan();
+      scheduleAuto();
       announce(`${code} marked ${label.toLowerCase()}.`);
     });
     return button;
@@ -560,6 +704,8 @@ function showOutcomeMenu(code) {
 function termCourse(code, term, groups) {
   const course = getCourse(code);
   const card = element('div', 'term-course');
+  const manual = plan[term.id].includes(code);
+  if (autoMode && !manual) card.classList.add('auto-suggestion');
   makeDraggable(card, code);
   const grip = element('span', 'drag-handle');
   grip.setAttribute('aria-hidden', 'true');
@@ -579,6 +725,19 @@ function termCourse(code, term, groups) {
     card.classList.add(`outcome-${outcome}`);
     if (pinned(code)) label.title = 'Locked to this term';
     card.append(label);
+  }
+  if (autoMode) {
+    const pin = makeButton('term-pin', pinned(code) ? `${code} is locked` : `${manual ? 'Unpin' : 'Pin'} ${code}`, manual ? '📌' : '⌖');
+    pin.title = pinned(code) ? 'Outcome locked' : manual ? 'Unpin from this term' : 'Pin to this term';
+    pin.disabled = pinned(code);
+    pin.addEventListener('click', () => {
+      if (manual) {
+        plan = removeCourse(plan, code, outcomes);
+        setOpinion(code, 'required');
+        renderPlan();
+      } else addOrMove(code, term.id);
+    });
+    card.append(pin);
   }
   const menu = makeButton('course-outcome-menu', `Change status for ${code} in ${term.label}`, '⋯');
   menu.setAttribute('aria-haspopup', 'dialog');
@@ -670,8 +829,10 @@ function saveTermEdit(remove = false) {
     }
   }
   termEditor.close();
-  renderBoard();
+  if (autoMode && kind === 'note') renderPlan();
+  else renderBoard();
   savePlan();
+  if (kind === 'note') scheduleAuto();
   const cell = board.querySelector(`[data-term="${term.id}"]`);
   (cell.querySelector(focus) ?? cell.querySelector('.term-title')).focus({ preventScroll: true });
   announce(`${kind === 'title' ? 'Term title saved' : remove ? 'Note removed' : 'Note saved'} for ${term.label}.`);
@@ -688,9 +849,9 @@ function noteSlot(term, slot, zero) {
 }
 
 function updateSlots(container, term) {
-  const target = targets[term.id];
+  const target = autoMode ? Math.min(autoTermLimit, targets[term.id]) : targets[term.id];
   const zero = target === 0;
-  const classes = plan[term.id].filter(isAcademicCourse).length;
+  const classes = displayPlan[term.id].filter(isAcademicCourse).length;
   const emptySlots = target - classes - (zero ? 0 : termNotes[term.id]?.length ?? 0);
   const items = [];
   container.closest('.term-card').classList.toggle('zero-target', zero);
@@ -717,8 +878,9 @@ function renderTerm(term) {
   const targetLabel = element('label', 'term-target');
   const target = element('select', '');
   target.setAttribute('aria-label', `Course target for ${term.label}`);
-  target.replaceChildren(...Array.from({ length: maxTermTarget + 1 }, (_, count) => new Option(count, count)));
-  target.value = targets[term.id];
+  const limit = autoMode ? autoTermLimit : maxTermTarget;
+  target.replaceChildren(...Array.from({ length: limit + 1 }, (_, count) => new Option(count, count)));
+  target.value = Math.min(limit, targets[term.id]);
   targetLabel.append(element('span', '', 'Target'), target);
   heading.append(element('span', 'term-type', label), targetLabel);
   cell.append(heading);
@@ -732,9 +894,9 @@ function renderTerm(term) {
   edit.addEventListener('click', () => openTermEditor(term, 'title'));
   cell.append(edit);
   const notes = termNotes[term.id] ?? [];
-  if (plan[term.id].length || notes.length) {
+  if (displayPlan[term.id].length || notes.length) {
     const list = element('div', 'term-courses');
-    for (const code of plan[term.id]) {
+    for (const code of displayPlan[term.id]) {
       const groups = pinned(code) ? [] : missingGroups(getCourse(code), term.id, prerequisites);
       if (groups.length) warningList.push({ code, term, groups });
       list.append(termCourse(code, term, groups));
@@ -755,8 +917,10 @@ function renderTerm(term) {
   updateSlots(slots, term);
   target.addEventListener('change', () => {
     targets[term.id] = Number(target.value);
-    updateSlots(slots, term);
+    if (autoMode) renderPlan();
+    else updateSlots(slots, term);
     savePlan();
+    scheduleAuto();
     announce(`${term.label} course target set to ${target.value}.`);
   });
   return cell;
@@ -813,7 +977,10 @@ function renderBuckets() {
         chip.title = status === 'late' ? `${course.name} · Needs an earlier term` : course.name;
         makeDraggable(chip, option);
         chip.addEventListener('click', () => showCourse(option, chip, true));
-        chips.append(withFavorite(chip, option));
+        const choice = withFavorite(chip, option);
+        const requestButton = requestCourseButton(option);
+        if (requestButton) choice.append(requestButton);
+        chips.append(choice);
       }
       options.append(chips);
       bucket.append(options);
@@ -842,6 +1009,7 @@ function setRuleEnabled(id, enabled) {
   else disabledRules.add(id);
   updateDegree();
   savePlan();
+  scheduleAuto();
   announce(`${requirements.rules.find((rule) => rule.id === id).title} turned ${enabled ? 'on' : 'off'}.`);
 }
 
@@ -860,9 +1028,11 @@ function catalogCard(course) {
   info.append(withFavorite(open, code), title);
   const term = termsById.get(scheduled.get(actualCode(code)));
   const action = pinned(code) ? 'View' : term ? 'Move' : 'Schedule';
-  const add = makeButton('icon-button catalog-add', `${action} ${code}`, term ? '✓' : '+');
-  add.title = pinned(code) ? `Locked to ${term.label}` : term ? `Planned for ${term.label}` : `Schedule ${code}`;
-  add.addEventListener('click', () => showCourse(code, add, true));
+  const add = requestCourseButton(code) ?? makeButton('icon-button catalog-add', `${action} ${code}`, term ? '✓' : '+');
+  if (!autoMode) {
+    add.title = pinned(code) ? `Locked to ${term.label}` : term ? `Planned for ${term.label}` : `Schedule ${code}`;
+    add.addEventListener('click', () => showCourse(code, add, true));
+  }
   card.append(grip, info, add);
   return card;
 }
@@ -910,7 +1080,17 @@ function renderPlan() {
   const card = focused.closest('[data-course]');
   const focusCode = card?.dataset.course;
   const focusLabel = focused.getAttribute('aria-label');
-  scheduled = indexPlan(plan);
+  const focusTerm = focused.closest('[data-term]')?.dataset.term;
+  const manual = indexPlan(plan);
+  displayPlan = Object.fromEntries(Object.entries(plan).map(([id, courses]) => [id, [...courses]]));
+  if (autoMode && autoResult) {
+    for (const [code, term] of autoResult.suggestions) {
+      const limit = Math.min(autoTermLimit, targets[term]) - (termNotes[term]?.length ?? 0);
+      if (!manual.has(code) && preferences[code] !== 'banned' && inYearRange(termsById.get(term).year)
+          && displayPlan[term].filter(isAcademicCourse).length < limit) displayPlan[term].push(code);
+    }
+  }
+  scheduled = indexPlan(displayPlan);
   scheduledCredits = new Map();
   for (const code of scheduled.keys()) {
     const credit = creditCode(code);
@@ -927,10 +1107,12 @@ function renderPlan() {
   renderBuckets();
   renderFavorites();
   renderCatalog();
+  renderRequests();
   if (focusCode && focusLabel && !focused.isConnected) {
     const targets = [...document.querySelectorAll(`[data-course="${CSS.escape(focusCode)}"] button, button[data-course="${CSS.escape(focusCode)}"]`)];
     targets.find((node) => node.getAttribute('aria-label') === focusLabel)?.focus({ preventScroll: true });
-  }
+  } else if (focusTerm && focusLabel && !focused.isConnected) board
+    .querySelector(`[data-term="${CSS.escape(focusTerm)}"] [aria-label="${CSS.escape(focusLabel)}"]`)?.focus({ preventScroll: true });
 }
 
 function showYears(start, end) {
@@ -941,8 +1123,9 @@ function showYears(start, end) {
     plan[id] = [];
     targets[id] = target;
   }
-  renderBoard();
+  renderPlan();
   savePlan();
+  scheduleAuto();
 }
 
 for (const input of [startYear, endYear]) {
@@ -985,11 +1168,13 @@ byId('warning-summary').addEventListener('click', () => {
 });
 function replacePlan(next, message, nextOutcomes = {}) {
   plan = next;
+  autoResult = undefined;
   targets = plannerTargets(profile?.targets, true);
   outcomes = readOutcomes(nextOutcomes, indexPlan(plan));
   termNotes = {};
   renderPlan();
   savePlan();
+  scheduleAuto();
   announce(message);
 }
 byId('reset-plan').addEventListener('click', () => {
@@ -1071,7 +1256,8 @@ byId('remove-course').addEventListener('click', () => {
 });
 
 const degreeActions = {
-  favoriteStar, getCourse, findPlacement, locateCourse, makeDraggable, showCourse, showDegreeRule, setRuleEnabled, getPlan: () => plan,
+  favoriteStar, getCourse, findPlacement, locateCourse, makeDraggable, showCourse, showDegreeRule, setRuleEnabled,
+  requestCourseButton, isAutoMode: () => autoMode, getPlan: () => displayPlan,
 };
 const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, degreeActions);
 if (personal) {
@@ -1081,8 +1267,46 @@ if (personal) {
   byId('reset-plan').hidden = !profile;
 }
 renderPlan();
+autoSwitch.checked = autoMode;
+autoSwitch.addEventListener('change', () => {
+  autoMode = autoSwitch.checked;
+  autoRunner.cancel();
+  autoSolving = false;
+  autoResult = undefined;
+  renderAutoStatus();
+  renderPlan();
+  savePlan();
+  scheduleAuto();
+});
+byId('shuffle-plan').addEventListener('click', () => {
+  autoSeed += 1;
+  savePlan();
+  scheduleAuto();
+});
+const opinionCategory = byId('opinion-category');
+opinionCategory.append(new Option('Suggested courses', 'suggested'), new Option('All my opinions', 'all'),
+  ...requirements.rules.filter((rule) => rule.list && rule.source).map((rule) => new Option(rule.title, rule.id)));
+opinionCategory.addEventListener('change', () => {
+  opinionLimit = 10;
+  showOpinionList();
+});
+byId('more-opinions').addEventListener('click', () => {
+  opinionLimit += 10;
+  showOpinionList();
+});
+byId('open-opinions').addEventListener('click', () => {
+  opinionLimit = 10;
+  showOpinionList();
+  opinionsDialog.showModal();
+});
+byId('close-opinions').addEventListener('click', () => opinionsDialog.close());
+scheduleAuto();
 if (applyProfileUpdate || (saved && !saved.yearRange)) savePlan();
-if (!personal) {
+if (published && !personal) {
+  byId('open-personal-plan').href = '?plan=personal';
+  byId('open-personal-plan').hidden = false;
+}
+if (!personal && !published) {
   request('./api/profile-status').then(({ available }) => {
     byId('open-personal-plan').hidden = !available;
   }).catch(() => {});
