@@ -17,17 +17,88 @@ function sourceLink(url, label) {
   return link;
 }
 
-function courseChoice(code, { getCourse, showCourse, favoriteStar }) {
+function courseChoice(code, { getCourse, showCourse, favoriteStar, makeDraggable }) {
   const { name } = getCourse(code);
   const item = element('div', 'degree-course-choice');
   const heading = element('div', 'course-with-star');
   const link = element('button', 'degree-course-link', code);
   link.type = 'button';
   link.setAttribute('aria-label', `Plan ${code}`);
+  makeDraggable?.(link, code);
   link.addEventListener('click', () => showCourse(code, link, true));
   heading.append(link, favoriteStar(code));
   item.append(heading, element('span', 'degree-choice-name', name));
   return item;
+}
+
+function coursePicker(requirements, archive, actions, remainingOnly) {
+  const content = element('div', 'degree-eligible-content');
+  const search = element('input', 'degree-eligible-search');
+  search.type = 'search';
+  search.placeholder = 'Filter by code or title';
+  const results = element('div', 'degree-eligible-groups');
+  content.append(search, results);
+  let sets = [];
+  let sizes = [];
+  let signature;
+
+  function render() {
+    const simplify = (value) => value.toLowerCase().replace(/\s/g, '');
+    const query = simplify(search.value);
+    const sections = [];
+    for (const [index, { title, options }] of sets.entries()) {
+      const matches = options.filter((entry) => !query || entry.some((code) =>
+        simplify(code).includes(query) || simplify(actions.getCourse(code).name).includes(query),
+      ));
+      if (!matches.length) continue;
+      const section = element('section', 'degree-eligible-group');
+      section.dataset.setIndex = index;
+      if (title) section.append(element('h4', '', title));
+      const list = element('ul', 'degree-eligible-list');
+      for (const entry of matches.slice(0, sizes[index])) {
+        const item = element('li', 'degree-eligible-option');
+        for (const [position, code] of entry.entries()) {
+          if (position) item.append(element('span', 'degree-eligible-pair', '+'));
+          item.append(courseChoice(code, actions));
+        }
+        list.append(item);
+      }
+      section.append(list);
+      if (matches.length > sizes[index]) {
+        const more = element('button', 'button degree-more', `Show more (${sizes[index]} of ${matches.length})`);
+        more.type = 'button';
+        more.addEventListener('click', () => {
+          const firstNew = sizes[index];
+          sizes[index] += pageSize;
+          render();
+          results.querySelector(`[data-set-index="${index}"]`)
+            ?.querySelectorAll('.degree-eligible-option')[firstNew]?.querySelector('button')?.focus();
+        });
+        section.append(more);
+      }
+      sections.push(section);
+    }
+    const message = sets.length ? 'No eligible courses match.' : 'See the full degree report for eligible courses.';
+    results.replaceChildren(...(sections.length ? sections : [element('p', 'quiet-message', message)]));
+  }
+
+  search.addEventListener('input', () => {
+    sizes.fill(pageSize);
+    render();
+  });
+
+  function update(rule) {
+    const nextSignature = JSON.stringify([rule.id, remainingOnly ? [rule.met, rule.missing] : null]);
+    if (signature === nextSignature) return;
+    signature = nextSignature;
+    sets = degreeCourseSets(requirements, archive, rule, { remainingOnly });
+    sizes = sets.map(() => pageSize);
+    search.setAttribute('aria-label', `Search eligible courses for ${rule.title}`);
+    search.hidden = sets.reduce((sum, set) => sum + set.options.length, 0) <= pageSize && !search.value;
+    render();
+  }
+
+  return { content, update };
 }
 
 function eligibleCourses(rule, requirements, archive, actions) {
@@ -35,63 +106,50 @@ function eligibleCourses(rule, requirements, archive, actions) {
   details.append(element('summary', '', 'Eligible courses'));
   details.addEventListener('toggle', () => {
     if (!details.open || details.childElementCount > 1) return;
-    const sets = degreeCourseSets(requirements, archive, rule);
-    const content = element('div', 'degree-eligible-content');
-    const search = element('input', 'degree-eligible-search');
-    search.type = 'search';
-    search.placeholder = 'Filter by code or title';
-    search.setAttribute('aria-label', `Search eligible courses for ${rule.title}`);
-    const results = element('div', 'degree-eligible-groups');
-    const sizes = sets.map(() => pageSize);
-
-    function render() {
-      const simplify = (value) => value.toLowerCase().replace(/\s/g, '');
-      const query = simplify(search.value);
-      const sections = [];
-      for (const [index, { title, options }] of sets.entries()) {
-        const matches = options.filter((entry) => !query || entry.some((code) =>
-          simplify(code).includes(query) || simplify(actions.getCourse(code).name).includes(query),
-        ));
-        if (!matches.length) continue;
-        const section = element('section', 'degree-eligible-group');
-        if (title) section.append(element('h4', '', title));
-        const list = element('ul', 'degree-eligible-list');
-        for (const entry of matches.slice(0, sizes[index])) {
-          const item = element('li', 'degree-eligible-option');
-          for (const [position, code] of entry.entries()) {
-            if (position) item.append(element('span', 'degree-eligible-pair', '+'));
-            item.append(courseChoice(code, actions));
-          }
-          list.append(item);
-        }
-        section.append(list);
-        if (matches.length > sizes[index]) {
-          const more = element('button', 'button degree-more', `Show more (${sizes[index]} of ${matches.length})`);
-          more.type = 'button';
-          more.addEventListener('click', () => {
-            const firstNew = sizes[index];
-            sizes[index] += pageSize;
-            render();
-            results.querySelectorAll('.degree-eligible-group')[sections.indexOf(section)]
-              ?.querySelectorAll('.degree-eligible-option')[firstNew]?.querySelector('button')?.focus();
-          });
-          section.append(more);
-        }
-        sections.push(section);
-      }
-      results.replaceChildren(...(sections.length ? sections : [element('p', 'quiet-message', 'No eligible courses match.')]));
-    }
-
-    if (sets.reduce((sum, set) => sum + set.options.length, 0) > pageSize) content.append(search);
-    search.addEventListener('input', () => {
-      sizes.fill(pageSize);
-      render();
-    });
-    content.append(results);
-    details.append(content);
-    render();
+    const picker = coursePicker(requirements, archive, actions, false);
+    picker.update(rule);
+    details.append(picker.content);
   });
   return details;
+}
+
+export function renderDegreeSidebar(container, requirements, archive, actions) {
+  const cards = new Map();
+  for (const { id, title, description } of requirements.rules) {
+    const details = element('details', 'sidebar-degree-rule');
+    const summary = element('summary', 'sidebar-degree-summary');
+    const progress = element('span', 'sidebar-degree-progress');
+    summary.append(element('span', '', title), progress);
+    details.append(summary);
+    let picker;
+    let current;
+    details.addEventListener('toggle', () => {
+      if (!details.open || !current) return;
+      if (!picker) {
+        picker = coursePicker(requirements, archive, actions, true);
+        const body = element('div', 'sidebar-degree-body');
+        body.append(element('p', 'degree-rule-description', description), picker.content);
+        details.append(body);
+      }
+      picker.update(current);
+    });
+    cards.set(id, {
+      details,
+      update(rule) {
+        current = rule;
+        progress.textContent = `${rule.current}/${rule.target}`;
+        details.hidden = rule.met;
+        if (!rule.met && details.open) picker?.update(rule);
+      },
+    });
+  }
+
+  const empty = element('p', 'quiet-message', 'All modeled degree requirements are met.');
+  container.replaceChildren(...[...cards.values()].map(({ details }) => details), empty);
+  return (report) => {
+    empty.hidden = report.rules.some((rule) => !rule.met);
+    for (const rule of report.rules) cards.get(rule.id).update(rule);
+  };
 }
 
 function courseCodes(codes, label, favoriteStar) {

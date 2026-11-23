@@ -10,7 +10,7 @@ const fixedCourses = (requirements) => requirements.rules.filter(({ type }) => t
 const creditForCode = (archive, code) => archive[code]?.[2] ?? code;
 const isHalfCreditElective = (archive, code) => archive[code]?.[1] === 0.5 && !/^(COOP|PD|WKRPT) /.test(code);
 
-export function degreeCourseSets(requirements, archive, rule) {
+function courseSets(requirements, archive, rule) {
   const { lists } = requirements;
   if (rule.type === 'required') {
     if (rule.levels) return rule.levels.map((level) => ({
@@ -46,6 +46,18 @@ export function degreeCourseSets(requirements, archive, rule) {
     { title: 'Published elective lists', options: [...approved.values()] },
     { title: 'Other 0.50-unit courses', options: halfCredit },
   ];
+}
+
+export function degreeCourseSets(requirements, archive, rule, { remainingOnly = false } = {}) {
+  if (remainingOnly && rule.met) return [];
+  const sets = courseSets(requirements, archive, rule);
+  if (!remainingOnly || !rule.missing) return sets;
+
+  const missing = new Set(rule.missing);
+  return sets.map((set) => ({
+    ...set,
+    options: set.options.filter((codes) => codes.some((code) => missing.has(code))),
+  })).filter(({ options }) => options.length);
 }
 
 function assignElectiveSlots(rules, candidatesByRule) {

@@ -53,6 +53,16 @@ test('degree choices preserve published lists and paired lab requirements', () =
   assert.equal(other.options.some(([code]) => ['CS 137', 'CHEM 123L', 'PD 3', 'COOP 1'].includes(code)), false);
 });
 
+test('the sidebar shows eligible communication choices and only missing fixed courses', () => {
+  let degree = report(initialPlan());
+  const remainingChoices = (id) => degreeCourseSets(requirements, archive, check(degree, id), { remainingOnly: true });
+  assert.deepEqual(remainingChoices('core'), []);
+  assert.deepEqual(remainingChoices('communication'), [{ options: requirements.lists.communication }]);
+  degree = report(add(add(initialPlan(), ['ENGL 109'], '2024-fall'), ['PD 19'], '2024-spring'));
+  assert.deepEqual(remainingChoices('communication'), []);
+  assert.deepEqual(remainingChoices('pd-core'), [{ options: [['PD 10'], ['PD 11'], ['PD 20']] }]);
+});
+
 test('communication and technical electives use the calendar timing boundaries', () => {
   let plan = add(blank(), ['CS 488'], '2025-spring');
   plan = add(plan, ['ENGL 109'], '2026-winter');

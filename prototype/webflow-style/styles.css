@@ -144,9 +144,21 @@ h1, h2, h3, h4, p { margin: 0; }
   color: var(--blue);
   background: #e9edff;
 }
-.degree-course-list, .prereq-list { display: grid; gap: 8px; margin-top: 9px; max-height: clamp(80px, 20dvh, 170px); overflow-y: auto; overflow-x: hidden; padding: 2px 3px; scrollbar-width: thin; }
-.degree-course-group { display: grid; gap: 4px; }
-.degree-course-group h4 { color: var(--muted); font-size: .75rem; font-weight: 650; }
+.degree-course-list, .prereq-list { display: grid; gap: 8px; margin-top: 9px; overflow-y: auto; overflow-x: hidden; padding: 2px 3px; scrollbar-width: thin; }
+.prereq-list { max-height: clamp(80px, 20dvh, 170px); }
+.degree-course-list { max-height: clamp(140px, 31dvh, 265px); gap: 5px; }
+.sidebar-degree-rule { border: 1px solid var(--line); border-radius: 7px; background: #fafbff; }
+.sidebar-degree-summary { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; align-items: center; gap: 6px; padding: 6px 7px; cursor: pointer; list-style: none; font-size: .8125rem; font-weight: 700; line-height: 1.25; }
+.sidebar-degree-summary::-webkit-details-marker { display: none; }
+.sidebar-degree-summary::before { content: ""; width: 5px; height: 5px; border-right: 1.5px solid var(--muted); border-top: 1.5px solid var(--muted); transform: rotate(45deg); }
+.sidebar-degree-rule[open] > summary::before { transform: rotate(135deg); }
+.sidebar-degree-summary:hover { color: var(--blue); }
+.sidebar-degree-progress { padding: 3px 4px; border-radius: 4px; background: #eef1ff; color: #42549e; font-size: .75rem; font-variant-numeric: tabular-nums; }
+.sidebar-degree-body { padding: 0 7px 7px; }
+.sidebar-degree-body .degree-rule-description { font-size: .75rem; }
+.sidebar-degree-body .degree-eligible-content { gap: 5px; }
+.sidebar-degree-body .degree-course-link { cursor: grab; touch-action: none; color: var(--blue); }
+.sidebar-degree-body .degree-choice-name { font-size: .75rem; line-height: 1.25; }
 .favorites-list { max-height: 133px; margin-top: 7px; padding: 2px 3px; overflow-y: auto; scrollbar-width: thin; }
 .favorites-list .catalog-card:last-child { margin-bottom: 0; }
 .course-with-star { display: inline-flex; align-items: center; gap: 3px; }

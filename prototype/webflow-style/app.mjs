@@ -5,7 +5,7 @@ import {
 } from './model.mjs';
 import { element, renderGraph, termOptions } from './graph.mjs';
 import { evaluateDegree } from './degree.mjs';
-import { renderDegreeReport } from './degree-view.mjs';
+import { renderDegreeReport, renderDegreeSidebar } from './degree-view.mjs';
 import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
@@ -27,10 +27,6 @@ const catalog = new Map([
   ...Object.entries(archive).filter(([code]) => !sampleCatalog.has(code))
     .map(([code, [name]]) => [code, { code, name }]),
 ]);
-const degreeCourseGroups = [
-  ...Object.entries(requirements.coreByLevel),
-  ['Professional development', requirements.rules.find(({ id }) => id === 'pd-core').codes],
-];
 const liveDetails = new Map();
 const inFlight = new Map();
 let saved;
@@ -563,30 +559,6 @@ function renderBuckets() {
   section.replaceChildren(...buckets);
 }
 
-function renderDegreeCourses() {
-  const fixedRules = degreeReport.rules.filter(({ type }) => type === 'required');
-  const missing = new Set(fixedRules.flatMap((rule) => rule.missing));
-  const groups = [];
-  for (const [title, codes] of degreeCourseGroups) {
-    const remaining = codes.filter((code) => missing.has(code));
-    if (!remaining.length) continue;
-    const group = element('section', 'degree-course-group');
-    const chips = element('div', 'bucket-chips');
-    for (const code of remaining) {
-      const { name } = getCourse(code);
-      const chip = makeButton('bucket-chip', `${code}, ${name}, unscheduled`, code);
-      chip.title = name;
-      makeDraggable(chip, code);
-      chip.addEventListener('click', () => showCourse(code, chip, true));
-      chips.append(withFavorite(chip, code));
-    }
-    group.append(element('h4', '', title), chips);
-    groups.push(group);
-  }
-  byId('degree-course-list').replaceChildren(...(groups.length ? groups : [element('p', 'quiet-message', 'All required courses are in the plan.')]));
-  byId('degree-course-count').textContent = `${missing.size} left`;
-}
-
 function updateDegree() {
   degreeReport = evaluateDegree(requirements, archive, scheduled);
   const met = degreeReport.met === degreeReport.total;
@@ -594,7 +566,8 @@ function updateDegree() {
   byId('degree-percent').textContent = `${degreeReport.percent}%`;
   byId('degree-status').textContent = met ? 'Passes modeled requirements' : 'Degree requirements incomplete';
   byId('degree-rule-count').textContent = `${degreeReport.met} of ${degreeReport.total} rules met`;
-  renderDegreeCourses();
+  byId('degree-course-count').textContent = `${degreeReport.total - degreeReport.met} rules left`;
+  updateDegreeSidebar(degreeReport);
   refreshDegreeReport?.(degreeReport);
 }
 
@@ -719,7 +692,10 @@ byId('close-dialog').addEventListener('click', () => dialog.close());
 dialog.addEventListener('close', () => {
   if (dialog.open) return;
   graphCleanup();
-  if (dialogTrigger) (dialogTrigger.isConnected ? dialogTrigger : search).focus({ preventScroll: true });
+  if (dialogTrigger) {
+    const opener = dialogTrigger.isConnected && !dialogTrigger.closest('[hidden]') ? dialogTrigger : search;
+    opener.focus({ preventScroll: true });
+  }
   selectedCode = undefined;
 });
 byId('placement-form').addEventListener('submit', (event) => {
@@ -743,6 +719,9 @@ byId('remove-course').addEventListener('click', () => {
   if (!degreeDialog.open) search.focus({ preventScroll: true });
 });
 
+const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, {
+  favoriteStar, getCourse, makeDraggable, showCourse,
+});
 renderPlan();
 request('./api/catalog').then((rows) => {
   if (!Array.isArray(rows) || !rows.length) return;
