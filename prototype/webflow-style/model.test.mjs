@@ -4,7 +4,7 @@ import { test } from 'node:test';
 import { createTerms, initialPlan, sampleCatalog } from './calendar.mjs';
 import {
   buildGraph, countableSchedule, explainMissing, groupProgress, indexPlan, missingGroups,
-  isAcademicCourse, parseLivePrerequisites, placeCourse, profileWithoutLevel, readOutcomes, readPlan, readTermDetails,
+  isAcademicCourse, parseLivePrerequisites, placeCourse, profileThroughLevel, readOutcomes, readPlan, readTermDetails,
   readTermTargets, readYearRange, removeCourse,
 } from './model.mjs';
 
@@ -59,20 +59,29 @@ test('passed and failed placements are locked and failed courses do not satisfy 
   );
 });
 
-test('the 3B variant drops only that term’s courses, outcomes and profile additions', () => {
+test('a personal plan cutoff includes the selected study term and clears every later term', () => {
   const profile = {
-    terms: { '2026-spring': { level: '' }, '2026-fall': { level: '3B', title: 'Fall 2026' } },
-    plan: { '2025-spring': ['SE 212'], '2026-fall': ['SE 302', 'CS 343'], '2027-spring': ['CS 488'] },
-    additions: { '2026-fall': ['SE 390'], '2027-spring': ['SE 490'] },
-    outcomes: { 'SE 212': 'passed', 'SE 302': 'enrolled', 'CS 343': 'passed' },
-    favorites: ['CS 488'],
+    terms: { '2026-winter': { level: '', work: true }, '2026-spring': { level: '3A', work: false } },
+    plan: {
+      '2025-spring': ['SE 212'], '2026-winter': ['PD 10'], '2026-spring': ['SE 301'],
+      '2026-fall': ['SE 302', 'CS 343'], '2027-winter': ['COOP 5'], '2027-spring': ['CS 488'],
+      '2029-spring': ['ENGL 109'],
+    },
+    additions: { '2026-spring': ['SE 301'], '2026-fall': ['SE 390'], '2027-spring': ['SE 490'] },
+    outcomes: { 'SE 212': 'passed', 'SE 301': 'enrolled', 'SE 302': 'enrolled', 'CS 343': 'passed' },
+    favorites: [{ code: 'CS 488' }],
   };
 
-  const variant = profileWithoutLevel(profile, '3B');
-  assert.deepEqual(variant.plan, { ...profile.plan, '2026-fall': [] });
-  assert.deepEqual(variant.additions, { ...profile.additions, '2026-fall': [] });
-  assert.deepEqual(variant.outcomes, { 'SE 212': 'passed' });
-  assert.deepEqual(variant.favorites, profile.favorites);
+  assert.equal(profileThroughLevel(profile, ''), profile);
+  const cutoff = profileThroughLevel(profile, '3A');
+  assert.deepEqual(cutoff.plan['2026-winter'], ['PD 10']);
+  assert.deepEqual(cutoff.plan['2026-spring'], ['SE 301']);
+  for (const id of ['2026-fall', '2027-winter', '2027-spring', '2028-winter', '2029-spring']) {
+    assert.deepEqual(cutoff.plan[id], []);
+  }
+  assert.deepEqual(cutoff.additions, { '2026-spring': ['SE 301'] });
+  assert.deepEqual(cutoff.outcomes, { 'SE 212': 'passed', 'SE 301': 'enrolled' });
+  assert.deepEqual(cutoff.favorites, profile.favorites);
   assert.deepEqual(profile.plan['2026-fall'], ['SE 302', 'CS 343']);
 });
 

@@ -15,8 +15,10 @@ courses stay in their recorded term. Choose **Planned** to unlock a course for e
 To enable **Load Alex’s plan** for a private profile, set
 `PLANNER_PROFILE_FILE` to the absolute path of its JSON file when starting the
 server. The `.local/` directory is ignored by Git. The personal page uses its
-own browser storage and local catalog. **Alex’s plan without 3B** uses the same
-profile with 3B’s courses and outcomes cleared and saves separately.
+own browser storage and local catalog. Next to **Load Alex’s plan**, leave
+**Load through** set to **All terms** or choose the last study term to include.
+For example, **3A** keeps the schedule through 3A and leaves later terms empty.
+Each cutoff saves separately.
 
 The sample uses the Fall 2023 timeline with the program rules from
 [Waterloo’s 2024–25 Software Engineering calendar](https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2024-2025#/programs/H1zle10Cs3).

@@ -89,12 +89,14 @@ h1, h2, h3, h4, p { margin: 0; }
   font-weight: 640;
 }
 .button:hover { background: var(--blue-soft); border-color: #d1d8f3; }
-.plan-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.plan-actions { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 7px; }
 .plan-actions a { text-decoration: none; }
 .plan-controls { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: flex-end; gap: 10px 15px; }
-.year-range { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px; }
-.year-range label { display: grid; gap: 3px; color: var(--muted); font-size: .75rem; font-weight: 640; }
-.year-range input { width: 76px; min-height: 38px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); }
+.year-range, .personal-plan-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px; }
+.year-range label, .personal-plan-controls label { display: grid; gap: 3px; color: var(--muted); font-size: .75rem; font-weight: 640; }
+.year-range input, .personal-plan-controls select { min-height: 38px; padding: 5px 7px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface); color: var(--ink); }
+.year-range input { width: 76px; }
+.personal-plan-controls select { font-size: .875rem; }
 .clear-plan { color: #8b3445; }
 .clear-plan:hover { background: #fff1f3; border-color: #efd7dc; }
 .reset-icon { color: var(--blue); font-size: 1.15rem; line-height: 1; }
@@ -556,7 +558,7 @@ h1, h2, h3, h4, p { margin: 0; }
   .page-heading p { font-size: .875rem; }
   .page-heading .button { min-height: 32px; }
   .plan-controls { justify-content: flex-start; }
-  .year-range input { min-height: 32px; }
+  .year-range input, .personal-plan-controls select { min-height: 32px; }
   .board-heading { align-items: flex-start; flex-direction: column; padding: 10px 12px; gap: 7px; }
   .board-heading p { line-height: 1.28; }
   .board-summary { justify-content: flex-start; }

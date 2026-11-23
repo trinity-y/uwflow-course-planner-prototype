@@ -59,14 +59,26 @@ export function readPlan(raw, timeline = terms) {
   return plan;
 }
 
-export function profileWithoutLevel(profile, level) {
-  if (!profile) return profile;
-  const term = terms.find((term) => ({ ...term, ...profile.terms?.[term.id] }).level === level);
-  if (!term) return profile;
-  const plan = { ...profile.plan, [term.id]: [] };
+export function profileThroughLevel(profile, level) {
+  if (!profile || !level) return profile;
+  const levels = new Map(terms.map(({ id, level }) => [id, level]));
+  for (const [id, term] of Object.entries(profile.terms ?? {})) {
+    if (Object.hasOwn(term, 'level')) levels.set(id, term.level);
+  }
+  const lastTerm = [...levels].find(([, studyLevel]) => studyLevel === level)?.[0];
+  const cutoff = termOrder(lastTerm);
+  if (cutoff === undefined) return profile;
+
+  const plan = { ...profile.plan };
+  const additions = { ...profile.additions };
+  for (const id of new Set([...levels.keys(), ...Object.keys(plan), ...Object.keys(additions)])) {
+    if (termOrder(id) > cutoff) {
+      plan[id] = [];
+      delete additions[id];
+    }
+  }
   return {
-    ...profile, plan, outcomes: readOutcomes(profile.outcomes, indexPlan(plan)),
-    additions: { ...profile.additions, [term.id]: [] },
+    ...profile, plan, additions, outcomes: readOutcomes(profile.outcomes, indexPlan(plan)),
   };
 }
 

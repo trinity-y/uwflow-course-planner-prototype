@@ -32,8 +32,10 @@
           <button class="button subtle" type="submit">Apply years</button>
         </form>
         <div class="plan-actions">
-          <a class="button primary" id="open-personal-plan" href="./personal" hidden>Load Alex’s plan</a>
-          <a class="button subtle" id="open-alex-variant" hidden>Alex’s plan without 3B</a>
+          <div class="personal-plan-controls" id="personal-plan-controls" hidden>
+            <label>Load through <select id="personal-plan-through"><option value="">All terms</option></select></label>
+            <a class="button primary" id="open-personal-plan" href="./personal">Load Alex’s plan</a>
+          </div>
           <a class="button subtle" id="open-sample-plan" href="./" hidden>Sample planner</a>
           <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
           <button class="button clear-plan" id="clear-plan" type="button">Start blank</button>

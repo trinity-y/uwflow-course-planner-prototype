@@ -2,7 +2,7 @@ import { calendarUrl, createTerms, firstPlanYear, initialPlan, lastPlanYear, sam
 import {
   countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isAcademicCourse, isPinned,
   maxTermTarget, missingGroups, normalizeCode, outcomeLabels, parseLivePrerequisites,
-  placeCourse, profileWithoutLevel, readOutcomes, readPlan, readTermDetails, readTermTargets, readYearRange, removeCourse,
+  placeCourse, profileThroughLevel, readOutcomes, readPlan, readTermDetails, readTermTargets, readYearRange, removeCourse,
 } from './model.mjs';
 import { element, renderGraph, termOptions } from './graph.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
@@ -16,12 +16,14 @@ const queryParams = new URLSearchParams(location.search);
 const personal = published
   ? queryParams.get('plan') === 'personal'
   : location.pathname === '/personal';
-const without3B = personal && queryParams.get('variant') === 'without-3b';
+const studyLevels = Object.keys(requirements.coreByLevel);
+const requestedLevel = queryParams.get('through') ?? (queryParams.get('variant') === 'without-3b' ? '3A' : '');
+const throughLevel = personal && studyLevels.includes(requestedLevel) ? requestedLevel : '';
 const importedProfile = personal
   ? await fetch(published ? './alex-plan.json' : './api/profile').then((response) => response.ok ? response.json() : null).catch(() => null)
   : null;
-const profile = without3B ? profileWithoutLevel(importedProfile, '3B') : importedProfile;
-const scope = personal ? without3B ? '-alex-without-3b' : '-alex' : '';
+const profile = profileThroughLevel(importedProfile, throughLevel);
+const scope = personal ? '-alex' + (throughLevel ? `-through-${throughLevel.toLowerCase()}` : '') : '';
 const storageKey = `uwflow-webflow-planner-v1${scope}`;
 const favoritesKey = `uwflow-webflow-planner-favorites-v1${scope}`;
 const equivalents = profile?.equivalents ?? {};
@@ -1324,22 +1326,27 @@ const degreeActions = {
   requestCourseButton, isAutoMode: () => autoMode, getPlan: () => displayPlan,
 };
 const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, degreeActions);
-function showProfileLinks(available) {
-  const original = byId('open-personal-plan');
-  const variant = byId('open-alex-variant');
-  original.href = published ? '?plan=personal' : './personal';
-  variant.href = `${original.getAttribute('href')}${published ? '&' : '?'}variant=without-3b`;
-  original.hidden = !available || (personal && !without3B);
-  variant.hidden = !available || without3B;
-  if (without3B) original.textContent = 'Original Alex’s plan';
+const profileThrough = byId('personal-plan-through');
+const profileControls = byId('personal-plan-controls');
+const profileLink = byId('open-personal-plan');
+function updateProfileLink() {
+  const params = new URLSearchParams();
+  if (published) params.set('plan', 'personal');
+  if (profileThrough.value) params.set('through', profileThrough.value);
+  const path = published ? './' : './personal';
+  profileLink.href = params.size ? `${path}?${params}` : path;
 }
+profileThrough.append(...studyLevels.map((level) => new Option(level, level)));
+profileThrough.value = throughLevel;
+profileThrough.addEventListener('change', updateProfileLink);
+updateProfileLink();
 if (personal) {
-  const name = without3B ? 'Alex’s plan without 3B' : 'Alex’s course plan';
+  const name = throughLevel ? `Alex’s plan through ${throughLevel}` : 'Alex’s course plan';
   byId('planner-title').textContent = profile ? name : 'Personal plan unavailable';
   byId('open-sample-plan').hidden = false;
-  byId('reset-plan').textContent = without3B ? 'Restore plan without 3B' : 'Restore Alex’s plan';
+  byId('reset-plan').textContent = 'Restore Alex’s plan';
   byId('reset-plan').hidden = !profile;
-  showProfileLinks(Boolean(profile));
+  profileControls.hidden = !profile;
 }
 renderPlan();
 autoSwitch.checked = autoMode;
@@ -1378,11 +1385,11 @@ byId('close-opinions').addEventListener('click', () => opinionsDialog.close());
 scheduleAuto();
 if (applyProfileUpdate || (saved && !saved.yearRange)) savePlan();
 if (published && !personal) {
-  showProfileLinks(true);
+  profileControls.hidden = false;
 }
 if (!personal && !published) {
   request('./api/profile-status').then(({ available }) => {
-    showProfileLinks(available);
+    profileControls.hidden = !available;
   }).catch(() => {});
   request('./api/catalog').then((rows) => {
     if (!Array.isArray(rows) || !rows.length) return;
