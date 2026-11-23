@@ -44,6 +44,17 @@ test('must-take courses get prerequisites and banned alternatives stay out of th
   assert.equal(result.suggestions.length, 51);
 });
 
+test('Auto uses a calendar exception when a study term cannot hold all six required courses', () => {
+  const data = inputs();
+  const result = solveAuto({ ...data, targets: { ...data.targets, '2026-fall': 5 } });
+  const schedule = new Map(result.suggestions);
+  const rule = evaluateDegree(requirements, archive, schedule).rules.find(({ id }) => id === 'core-3b');
+  assert.equal(rule.met, true);
+  const elsewhere = rule.matched.filter((code) => schedule.get(code) !== '2026-fall');
+  assert.equal(elsewhere.length, 1);
+  assert.ok(requirements.outOfSequence.includes(elsewhere[0]));
+});
+
 test('opinions break ties without adding courses and Shuffle can change the proposed plan', () => {
   const options = inputs({ preferences: { 'EARTH 121': 'interested', 'BIOL 110': 'dislike' } });
   const first = solveAuto(options);

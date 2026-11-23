@@ -24,9 +24,11 @@ export function solveAuto({
   const active = new Set(activeTerms);
   const disabledRules = new Set(disabled);
   const rules = requirements.rules.filter(({ id }) => !disabledRules.has(id));
+  const outOfSequence = new Set(requirements.outOfSequence);
   const coreByCode = new Map(rules.filter(({ type, level }) => type === 'required' && level).flatMap(({ level }) =>
     requirements.coreByLevel[level].map((code) => [code, level]),
   ));
+  const coreInPlacementOrder = [...coreByCode].sort(([a], [b]) => Number(outOfSequence.has(a)) - Number(outOfSequence.has(b)));
   const termByLevel = new Map(timeline.filter((term) => term.level).map((term) => [term.level, term.id]));
   const pins = new Map(Object.entries(plan).flatMap(([term, codes]) => codes.map((code) => [code, term])));
   const capacities = new Map(timeline.map(({ id }) => {
@@ -110,12 +112,14 @@ export function solveAuto({
       if (existing) return termOrder(existing) < before ? base : null;
       if (base.has(code) || banned(code) || !isAcademicCourse(code)) return null;
       if ([...base].some(([chosen]) => outcomes[chosen] !== 'failed' && credit(chosen) === credit(code))) return null;
-      const requiredLevel = coreByCode.get(canonical(code));
+      const course = canonical(code);
+      const requiredLevel = coreByCode.get(course);
       const requiredTerm = termByLevel.get(requiredLevel);
-      const nextTrail = new Set([...trail, canonical(code)]);
+      const nextTrail = new Set([...trail, course]);
       const available = (allowed ?? openTerms).filter((term) => active.has(term) && termOrder(term) < before
-        && (!requiredLevel || term === requiredTerm) && count(base, term) < capacities.get(term));
+        && (!requiredLevel || term === requiredTerm || outOfSequence.has(course)) && count(base, term) < capacities.get(term));
       if (!allowed) available.sort((a, b) => {
+        if (a === requiredTerm || b === requiredTerm) return a === requiredTerm ? -1 : 1;
         if (before !== Infinity) return termOrder(b) - termOrder(a);
         return Math.max(0, count(base, a) - 4) - Math.max(0, count(base, b) - 4) || tie(a, b);
       });
@@ -136,9 +140,12 @@ export function solveAuto({
 
     // Place core courses in their calendar levels. Existing pins are authoritative.
     for (const { id, level } of timeline) {
-      for (const [code, requiredLevel] of coreByCode) {
+      for (const [code, requiredLevel] of coreInPlacementOrder) {
         if (level === requiredLevel) state = place(state, code, [id]) ?? state;
       }
+    }
+    for (const code of coreByCode.keys()) {
+      if (outOfSequence.has(code) && !position(state, code)) state = place(state, code) ?? state;
     }
     for (const rule of rules.filter(({ type, level }) => type === 'required' && !level)) {
       for (const code of rule.codes) state = place(state, code) ?? state;
@@ -207,13 +214,16 @@ export function solveAuto({
     const applyRule = (rule) => {
       const prescribed = termByLevel.get(rule.level);
       const location = openTerms.filter((term) => count(state, term) < capacities.get(term)
-        && (!rule.core || term === prescribed)
         && (!rule.before || termOrder(term) < termOrder(termByLevel.get(rule.before)))
         && (!rule.fromLevel || termOrder(term) >= termOrder(termByLevel.get(rule.fromLevel)))
         && (rule.type !== 'electiveTiming' || rule.levels.some((level) => termByLevel.get(level) === term)));
       location.sort((a, b) => gap(b) - gap(a)
         || Math.max(0, count(state, a) - 4) - Math.max(0, count(state, b) - 4) || tie(a, b));
-      return pick(rule, ruleOptions.get(rule.id), location, gap);
+      const choices = ruleOptions.get(rule.id);
+      if (!rule.core) return pick(rule, choices, location, gap);
+      return pick(rule, choices, location.filter((term) => term === prescribed), gap)
+        || pick(rule, choices.filter((codes) => codes.every((code) => outOfSequence.has(code))),
+          location.filter((term) => term !== prescribed), gap);
     };
 
     for (const rule of rules.filter(({ core }) => core)) applyRule(rule);
