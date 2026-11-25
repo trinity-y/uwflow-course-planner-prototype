@@ -9,10 +9,11 @@ const files = new Map([
   ['/', ['index.html', 'text/html']],
   ['/index.html', ['index.html', 'text/html']],
   ['/styles.css', ['styles.css', 'text/css']],
-  ...['app', 'calendar', 'model', 'graph', 'degree', 'degree-view', 'auto-plan', 'auto-controls', 'auto-worker'].map((name) => [
+  ...['app', 'calendar', 'model', 'graph', 'degree', 'degree-view', 'auto-plan', 'auto-controls', 'auto-worker', 'ratings', 'onboarding', 'transcript', 'calendars',
+    'vendor/pdfjs/pdf.min', 'vendor/pdfjs/pdf.worker.min'].map((name) => [
     `/${name}.mjs`, [`${name}.mjs`, 'text/javascript'],
   ]),
-  ...['degree-requirements', 'calendar-courses'].map((name) => [
+  ...['degree-requirements', 'calendar-courses', 'elective-ratings'].map((name) => [
     `/${name}.json`, [`${name}.json`, 'application/json'],
   ]),
 ]);

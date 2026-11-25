@@ -1,0 +1,251 @@
+{
+  "source": "https://uwflow.com/graphql",
+  "retrieved": "2026-11-25",
+  "courses": {
+    "ANTH 106": {
+      "filled_count": 4,
+      "comment_count": 2,
+      "liked": 0.5,
+      "easy": 0.6666666666666666,
+      "useful": 0.5833333333333334
+    },
+    "BIOL 110": {
+      "filled_count": 156,
+      "comment_count": 42,
+      "liked": 0.8076923076923077,
+      "easy": 0.47641509433962265,
+      "useful": 0.6190476190476191
+    },
+    "BIOL 130": {
+      "filled_count": 862,
+      "comment_count": 209,
+      "liked": 0.5603248259860789,
+      "easy": 0.5168181818181818,
+      "useful": 0.8211050724637681
+    },
+    "BIOL 130L": {
+      "filled_count": 528,
+      "comment_count": 112,
+      "liked": 0.5454545454545454,
+      "easy": 0.6062925170068028,
+      "useful": 0.6652542372881356
+    },
+    "BIOL 239": {
+      "filled_count": 505,
+      "comment_count": 108,
+      "liked": 0.7227722772277227,
+      "easy": 0.5966453674121406,
+      "useful": 0.8404088050314465
+    },
+    "CLAS 104": {
+      "filled_count": 655,
+      "comment_count": 158,
+      "liked": 0.8824427480916031,
+      "easy": 0.9260057471264368,
+      "useful": 0.27126099706744866
+    },
+    "COMMST 100": {
+      "filled_count": 136,
+      "comment_count": 41,
+      "liked": 0.5073529411764706,
+      "easy": 0.8068181818181819,
+      "useful": 0.4393939393939394
+    },
+    "CS 360": {
+      "filled_count": 71,
+      "comment_count": 18,
+      "liked": 0.7605633802816901,
+      "easy": 0.6473214285714286,
+      "useful": 0.5555555555555556
+    },
+    "CS 370": {
+      "filled_count": 314,
+      "comment_count": 82,
+      "liked": 0.802547770700637,
+      "easy": 0.6519607843137255,
+      "useful": 0.8297101449275363
+    },
+    "CS 371": {
+      "filled_count": 66,
+      "comment_count": 20,
+      "liked": 0.6363636363636364,
+      "easy": 0.6794871794871795,
+      "useful": 0.6710526315789473
+    },
+    "CS 442": {
+      "filled_count": 43,
+      "comment_count": 13,
+      "liked": 0.7674418604651163,
+      "easy": 0.4652777777777778,
+      "useful": 0.6621621621621622
+    },
+    "CS 444": {
+      "filled_count": 104,
+      "comment_count": 10,
+      "liked": 0.33653846153846156,
+      "easy": 0.7654639175257733,
+      "useful": 0.9795918367346939
+    },
+    "CS 448": {
+      "filled_count": 6,
+      "comment_count": 6,
+      "liked": 0.6666666666666666,
+      "easy": 0.6666666666666666,
+      "useful": 1.0
+    },
+    "CS 449": {
+      "filled_count": 53,
+      "comment_count": 17,
+      "liked": 0.8301886792452831,
+      "easy": 0.8292682926829268,
+      "useful": 0.73125
+    },
+    "CS 451": {
+      "filled_count": 47,
+      "comment_count": 17,
+      "liked": 0.851063829787234,
+      "easy": 0.7589285714285714,
+      "useful": 0.8303571428571429
+    },
+    "CS 452": {
+      "filled_count": 33,
+      "comment_count": 15,
+      "liked": 0.9090909090909091,
+      "easy": 0.28846153846153844,
+      "useful": 0.9134615384615384
+    },
+    "CS 456": {
+      "filled_count": 151,
+      "comment_count": 43,
+      "liked": 0.6887417218543046,
+      "easy": 0.7355769230769231,
+      "useful": 0.8238095238095238
+    },
+    "CS 480": {
+      "filled_count": 74,
+      "comment_count": 25,
+      "liked": 0.7027027027027027,
+      "easy": 0.37790697674418605,
+      "useful": 0.8546511627906976
+    },
+    "CS 486": {
+      "filled_count": 178,
+      "comment_count": 51,
+      "liked": 0.7696629213483146,
+      "easy": 0.52,
+      "useful": 0.8048780487804879
+    },
+    "CS 488": {
+      "filled_count": 125,
+      "comment_count": 29,
+      "liked": 0.568,
+      "easy": 0.5495495495495496,
+      "useful": 0.5111607142857143
+    },
+    "CS 492": {
+      "filled_count": 72,
+      "comment_count": 31,
+      "liked": 0.7083333333333334,
+      "easy": 0.8365384615384616,
+      "useful": 0.5048076923076923
+    },
+    "EARTH 121": {
+      "filled_count": 264,
+      "comment_count": 74,
+      "liked": 0.49242424242424243,
+      "easy": 0.7542372881355932,
+      "useful": 0.31676136363636365
+    },
+    "EARTH 270": {
+      "filled_count": 55,
+      "comment_count": 19,
+      "liked": 0.6727272727272727,
+      "easy": 0.775,
+      "useful": 0.46875
+    },
+    "ECE 313": {
+      "filled_count": 15,
+      "comment_count": 7,
+      "liked": 0.6,
+      "easy": 0.5833333333333334,
+      "useful": 0.5555555555555556
+    },
+    "ECE 320": {
+      "filled_count": 28,
+      "comment_count": 7,
+      "liked": 0.9285714285714286,
+      "easy": 0.5833333333333334,
+      "useful": 0.9791666666666666
+    },
+    "ECE 327": {
+      "filled_count": 137,
+      "comment_count": 33,
+      "liked": 0.7153284671532847,
+      "easy": 0.35714285714285715,
+      "useful": 0.7853535353535354
+    },
+    "ECE 454": {
+      "filled_count": 65,
+      "comment_count": 17,
+      "liked": 0.8153846153846154,
+      "easy": 0.19811320754716982,
+      "useful": 0.8962264150943396
+    },
+    "ECE 457A": {
+      "filled_count": 82,
+      "comment_count": 25,
+      "liked": 0.8658536585365854,
+      "easy": 0.6268115942028986,
+      "useful": 0.8535714285714285
+    },
+    "ECON 101": {
+      "filled_count": 1675,
+      "comment_count": 332,
+      "liked": 0.46865671641791046,
+      "easy": 0.6960382513661202,
+      "useful": 0.625
+    },
+    "ENGL 109": {
+      "filled_count": 775,
+      "comment_count": 201,
+      "liked": 0.41419354838709677,
+      "easy": 0.7387850467289719,
+      "useful": 0.40311909262759926
+    },
+    "ENGL 119": {
+      "filled_count": 205,
+      "comment_count": 48,
+      "liked": 0.3804878048780488,
+      "easy": 0.8225190839694656,
+      "useful": 0.3683206106870229
+    },
+    "ENVS 105": {
+      "filled_count": 30,
+      "comment_count": 5,
+      "liked": 0.6666666666666666,
+      "easy": 0.6166666666666667,
+      "useful": 0.4666666666666667
+    },
+    "ENVS 200": {
+      "filled_count": 218,
+      "comment_count": 49,
+      "liked": 0.6972477064220184,
+      "easy": 0.5300632911392404,
+      "useful": 0.684375
+    },
+    "PHYS 121": {
+      "filled_count": 457,
+      "comment_count": 95,
+      "liked": 0.6477024070021882,
+      "easy": 0.4553903345724907,
+      "useful": 0.7671102661596958
+    },
+    "PSYCH 101": {
+      "filled_count": 1324,
+      "comment_count": 290,
+      "liked": 0.7877643504531722,
+      "easy": 0.6600955794504182,
+      "useful": 0.7252386634844868
+    }
+  }
+}

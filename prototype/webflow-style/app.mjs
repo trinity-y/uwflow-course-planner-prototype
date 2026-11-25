@@ -1,4 +1,4 @@
-import { calendarUrl, createTerms, firstPlanYear, initialPlan, lastPlanYear, sampleCatalog, seasons, termOrder, termYear, terms as defaultTerms } from './calendar.mjs';
+import { calendarUrl, createTerms, firstPlanYear, initialPlan, lastPlanYear, preloadCore, sampleCatalog, termLabel, termOrder, termYear } from './calendar.mjs';
 import {
   countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isAcademicCourse, isPinned,
   maxTermTarget, missingGroups, normalizeCode, outcomeLabels, parseLivePrerequisites,
@@ -7,7 +7,10 @@ import {
 import { element, renderGraph, termOptions } from './graph.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
 import { renderCourseContributions, renderDegreeReport, renderDegreeSidebar } from './degree-view.mjs';
-import { autoTermLimit, createAutoRunner, opinionPicker, readOpinions, renderOpinions } from './auto-controls.mjs';
+import { openCalendars, recordSolve, renderHistory } from './calendars.mjs';
+import { attachOnboarding } from './onboarding.mjs';
+import { byRatings } from './ratings.mjs';
+import { createAutoRunner, opinionPicker, readOpinions, renderOpinions } from './auto-controls.mjs';
 import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
@@ -22,9 +25,16 @@ const throughLevel = personal && studyLevels.includes(requestedLevel) ? requeste
 const importedProfile = personal
   ? await fetch(published ? './alex-plan.json' : './api/profile').then((response) => response.ok ? response.json() : null).catch(() => null)
   : null;
-const profile = profileThroughLevel(importedProfile, throughLevel);
 const scope = personal ? '-alex' + (throughLevel ? `-through-${throughLevel.toLowerCase()}` : '') : '';
 const storageKey = `uwflow-webflow-planner-v1${scope}`;
+const calendars = openCalendars({
+  getItem: (key) => localStorage.getItem(key),
+  setItem: (key, value) => localStorage.setItem(key, value),
+  removeItem: (key) => localStorage.removeItem(key),
+}, storageKey, personal ? 'Personal calendar' : 'Sample calendar');
+const saved = calendars.saved;
+const setup = saved?.setup;
+const profile = setup ? null : profileThroughLevel(importedProfile, throughLevel);
 const favoritesKey = `uwflow-webflow-planner-favorites-v1${scope}`;
 const equivalents = profile?.equivalents ?? {};
 const pageSize = 30;
@@ -44,7 +54,7 @@ const favoritesList = byId('favorites-list');
 const board = byId('term-board');
 const autoSwitch = byId('auto-mode');
 const opinionsDialog = byId('opinions-dialog');
-const termsById = new Map(defaultTerms.map((term) => [term.id, { ...term, ...profile?.terms?.[term.id] }]));
+const termsById = new Map();
 const statusText = { planned: 'In plan', missing: 'Unscheduled', late: 'Needs an earlier term', failed: 'Failed' };
 const catalog = new Map([
   ...sampleCatalog,
@@ -56,13 +66,7 @@ for (const course of profile?.courses ?? []) {
 }
 const liveDetails = new Map();
 const inFlight = new Map();
-let saved;
 let savedFavorites;
-try {
-  saved = JSON.parse(localStorage.getItem(storageKey));
-} catch {
-  saved = null;
-}
 try {
   savedFavorites = JSON.parse(localStorage.getItem(favoritesKey));
 } catch {
@@ -90,18 +94,21 @@ for (const id of Object.keys({ ...profile?.plan, ...saved?.plan, ...saved?.targe
   if (year !== undefined && !termsById.has(id)) registerTerms({ start: year, end: year });
 }
 registerTerms(yearRange);
-let plan = readPlan(saved?.plan ?? profile?.plan, timeline());
+let plan = saved?.plan ? readPlan(saved.plan, timeline()) : startingPlan();
 let displayPlan = plan;
 let targets = plannerTargets(saved?.targets ?? profile?.targets, !saved?.yearRange);
 let { titles: termTitles, notes: termNotes } = readTermDetails(saved?.termDetails, timeline());
 const savedDisabled = new Set(Array.isArray(saved?.disabledRules) ? saved.disabledRules : []);
-const disabledRules = new Set(requirements.rules.filter(({ id, replaces }) =>
+let disabledRules = new Set(requirements.rules.filter(({ id, replaces }) =>
   savedDisabled.has(id) || savedDisabled.has(replaces),
 ).map(({ id }) => id));
-const preferences = readOpinions(saved?.preferences);
+let preferences = readOpinions(saved?.preferences);
 let autoMode = saved?.autoMode === true;
 let autoSeed = Number.isSafeInteger(saved?.autoSeed) ? saved.autoSeed : 0;
+const historyEntries = Array.isArray(saved?.history) ? saved.history : [];
+let historyPoint = Number.isInteger(saved?.historyPoint) ? saved.historyPoint : -1;
 let autoResult;
+let hideZero = saved?.hideZero !== false;
 let autoSolving = false;
 let autoError = false;
 let opinionLimit = 10;
@@ -159,13 +166,23 @@ const request = async (path) => {
 const announce = (message) => { byId('announcement').textContent = message; };
 
 function registerTerms(range) {
-  const added = createTerms(range).filter(({ id }) => !termsById.has(id));
+  const added = createTerms(range, setup).filter(({ id }) => !termsById.has(id));
   for (const term of added) termsById.set(term.id, { ...term, ...profile?.terms?.[term.id] });
   return added;
 }
 
 function timeline() {
   return [...termsById.values()].sort((a, b) => termOrder(a.id) - termOrder(b.id));
+}
+
+function startingPlan() {
+  const terms = timeline();
+  if (!profile) return initialPlan(terms);
+  const recorded = indexPlan(profile.plan);
+  const lastRecorded = Math.max(-Infinity, ...[...recorded].filter(([code]) => profile.outcomes?.[code])
+    .map(([, id]) => termOrder(id)));
+  const imported = Object.fromEntries(terms.map(({ id }) => [id, profile.plan[id] ?? []]));
+  return preloadCore(readPlan(imported, terms), terms, lastRecorded + 1, equivalents);
 }
 
 function plannerTargets(raw, resetOpenTerms) {
@@ -186,19 +203,35 @@ function placementOptions(label, required, currentTerm) {
   return termOptions(choices, label, required);
 }
 
-function savePlan() {
-  const courses = [...scheduled.keys()].filter((code) => !sampleCatalog.has(code)).map((code) => {
+function solveInputs() {
+  return { plan, targets, outcomes, yearRange, termDetails: { titles: termTitles, notes: termNotes },
+    disabledRules: [...disabledRules], autoSeed, preferences };
+}
+
+function calendarSnapshot() {
+  const courses = [...indexPlan(plan).keys()].filter((code) => !sampleCatalog.has(code)).map((code) => {
     const { name } = getCourse(code);
     return { code, name };
   });
+  return { ...solveInputs(), setup, courses, autoMode, hideZero, history: historyEntries,
+    historyPoint, profileRevision: profile?.revision };
+}
+
+function savePlan() {
   try {
-    localStorage.setItem(storageKey, JSON.stringify({
-      plan, targets, outcomes, courses, yearRange, termDetails: { titles: termTitles, notes: termNotes },
-      disabledRules: [...disabledRules], autoMode, autoSeed, preferences, profileRevision: profile?.revision,
-    }));
+    calendars.save(calendarSnapshot());
+    byId('storage-error').hidden = true;
+    return true;
   } catch {
-    // A browser can deny storage while still allowing the current plan to be edited.
+    storageError();
+    return false;
   }
+}
+
+function storageError() {
+  const error = byId('storage-error');
+  error.textContent = 'Your browser could not save this calendar. Your edits are still open on this page.';
+  error.hidden = false;
 }
 
 function makeDraggable(card, code) {
@@ -221,8 +254,9 @@ function makeDraggable(card, code) {
 }
 
 function updateDropTarget(active) {
-  const targets = autoMode ? '.term-card, #requests-section' : '.term-card';
-  const cell = document.elementFromPoint(active.x, active.y)?.closest(targets);
+  const hit = document.elementFromPoint(active.x, active.y);
+  const cell = hit?.closest('.term-card, #requests-section')
+    ?? (active.source?.matches('.term-card') && hit && !hit.closest('dialog') ? hit.closest('.sidebar') ?? board.parentElement : null);
   if (active.target === cell) return;
   active.target?.classList.remove('drop-active');
   active.target = cell;
@@ -287,8 +321,10 @@ function finishDrag(event) {
     const { source } = active;
     if (active.target.id === 'requests-section') {
       if (source !== active.target) moveToRequests(active.code, Boolean(source));
+    } else if (!active.target.matches('.term-card')) {
+      removeFromPlan(active.code);
     } else {
-      addOrMove(active.code, active.target.dataset.term, source?.id === 'requests-section');
+      addOrMove(active.code, active.target.dataset.term);
     }
   }
   updateScheduleHighlight();
@@ -346,7 +382,7 @@ function withFavorite(control, code) {
 }
 
 function requestCourseButton(code) {
-  if (!autoMode) return undefined;
+  if (!isAcademicCourse(code)) return undefined;
   const requested = preferences[code] === 'required';
   const button = makeButton('auto-request', `Schedule ${code} for me`, requested ? '✓' : '+');
   button.title = 'Schedule for Me';
@@ -367,17 +403,13 @@ function setOpinion(code, value) {
     button.textContent = value === 'required' ? '✓' : '+';
   }
   savePlan();
-  if (autoMode) {
-    if (value === 'banned' && scheduled.has(code)) renderPlan();
-    renderRequests();
-    scheduleAuto();
-  }
+  if (autoMode) scheduleAuto();
+  else renderRequests();
   if (opinionsDialog.open && !dialog.open) showOpinionList();
 }
 
 function renderRequests() {
-  byId('requests-section').hidden = !autoMode;
-  if (!autoMode || drag?.source?.id === 'requests-section') return;
+  if (drag?.source?.id === 'requests-section') return;
   const codes = Object.keys(preferences).filter((code) => preferences[code] === 'required');
   byId('request-count').textContent = codes.length;
   const items = codes.map((code) => {
@@ -394,7 +426,7 @@ function renderRequests() {
     item.append(grip, open, remove, element('span', 'request-status', failure ?? term?.label ?? 'Waiting for a placement'));
     return item;
   });
-  byId('request-list').replaceChildren(...(items.length ? items : [element('p', 'quiet-message', 'Drop a course here to let Auto place it.')]));
+  byId('request-list').replaceChildren(...(items.length ? items : [element('p', 'quiet-message', 'Drop a must-take course here to let the solver choose its term.')]));
 }
 
 function moveToRequests(code, fromTerm) {
@@ -416,36 +448,54 @@ function moveToRequests(code, fromTerm) {
 function renderAutoStatus() {
   byId('auto-toolbar').hidden = !autoMode;
   byId('auto-progress').hidden = !autoSolving;
-  const incomplete = autoResult && (autoResult.met < autoResult.total || autoResult.issues.length
-    || Object.keys(autoResult.unscheduled).length);
-  byId('auto-status').textContent = autoSolving ? 'Solving your plan…' : autoError ? 'Auto planning could not finish. Try Shuffle.'
-    : incomplete ? `Partial plan · ${autoResult.met} of ${autoResult.total} rules met`
-      : autoResult ? `Plan ready · ${autoResult.met} of ${autoResult.total} rules met` : 'Auto plan';
+  byId('solver-seed').value = autoSeed;
+  byId('prev-seed').disabled = autoSeed <= 0;
+  byId('next-seed').disabled = autoSeed >= 2147483647;
+  byId('auto-status').textContent = autoSolving ? 'Solving your plan…' : autoError ? 'Could not complete this solve. Try another seed.'
+    : autoResult?.fits ? `Plan ready · ${autoResult.met} of ${autoResult.total} rules met`
+      : autoResult ? "Can't fit within target." : 'Ready to solve';
   const list = element('ul');
-  if (!autoSolving && autoResult) {
-    const unresolved = Object.keys(autoResult.unscheduled).length;
-    if (unresolved) list.append(element('li', '', `${unresolved} requested ${unresolved === 1 ? 'course needs' : 'courses need'} a placement.`));
+  if (!autoSolving && autoResult && !autoResult.fits) {
+    for (const [code, reason] of Object.entries(autoResult.unscheduled)) list.append(element('li', '', `${code} · ${reason}`));
     for (const issue of autoResult.issues) list.append(element('li', '', issue));
+    if (autoResult.unmet.length) list.append(element('li', '', `Unmet requirements: ${autoResult.unmet.join(', ')}.`));
+    for (const changes of autoResult.alternatives) {
+      const settings = Object.entries(changes).map(([id, count]) => `${termLabel(id)} to ${count}`);
+      list.append(element('li', 'target-advice', `A plan fits if you change ${settings.join(' and ')}.`));
+    }
   }
+  renderHistory(byId('solve-history'), historyEntries, historyPoint, restoreHistory);
   byId('auto-issues').replaceChildren(...(list.childElementCount ? [list] : []));
+}
+
+function saveEdit() {
+  savePlan();
+  if (autoMode) scheduleAuto();
+  else renderPlan();
 }
 
 function scheduleAuto() {
   if (!autoMode) return;
+  autoResult = undefined;
   autoSolving = true;
+  renderPlan();
   autoError = false;
   renderAutoStatus();
-  renderRequests();
   byId('auto-progress').value = 0;
   const terms = timeline();
   autoRunner.run({
-    plan, timeline: terms, activeTerms: terms.filter((term) => inYearRange(term.year)).map(({ id }) => id),
+    plan, timeline: terms,
+    visibleTerms: terms.filter((term) => inYearRange(term.year)).map(({ id }) => id),
+    activeTerms: terms.filter((term) => inYearRange(term.year) && termOrder(term.id) >= (setup?.solveFrom ?? -Infinity))
+      .map(({ id }) => id),
     targets, notes: Object.fromEntries(Object.entries(termNotes).map(([id, notes]) => [id, notes.length])),
     outcomes, preferences, disabled: [...disabledRules], equivalents, seed: autoSeed,
     groups: Object.fromEntries([...catalog].filter(([, course]) => Array.isArray(course.groups)).map(([code, course]) => [code, course.groups])),
   }, (progress) => { byId('auto-progress').value = progress; }, (result) => {
     autoResult = result;
+    historyPoint = recordSolve(historyEntries, historyPoint, solveInputs(), result);
     autoSolving = false;
+    savePlan();
     renderAutoStatus();
     renderPlan();
     if (dialog.open) updateDetails();
@@ -467,7 +517,7 @@ function showOpinionList() {
   const pool = category === 'all' ? Object.keys(preferences)
     : eligible ? [...suggested.filter((code) => eligible.includes(code)), ...eligible]
       : [...suggested, ...Object.keys(preferences), ...sampleCatalog.keys()];
-  const codes = [...new Set(pool)].filter(isAcademicCourse);
+  const codes = [...new Set(pool)].filter(isAcademicCourse).sort(byRatings);
   const fresh = codes.filter((code) => !preferences[code]);
   const rated = codes.filter((code) => preferences[code]);
   const shown = [...fresh.slice(0, opinionLimit), ...rated];
@@ -492,6 +542,12 @@ function locateCourse(code) {
   if (!placement) return;
   if (!inYearRange(placement.term.year)) {
     showYears(Math.min(yearRange.start, placement.term.year), Math.max(yearRange.end, placement.term.year));
+  }
+  if (hideZero && !board.querySelector(`[data-term="${placement.term.id}"]`)) {
+    hideZero = false;
+    byId('hide-zero').checked = false;
+    renderBoard();
+    savePlan();
   }
   const card = board.querySelector(`[data-course="${CSS.escape(placement.code)}"]`);
   if (!card) return;
@@ -632,7 +688,7 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
 }
 
 function loadDetails(codes) {
-  if (personal || published) return;
+  if (personal || published || setup?.imported) return;
   const pending = codes.filter((code) => !liveDetails.has(code) && !inFlight.has(code));
   if (!pending.length) return;
   const params = new URLSearchParams(pending.map((code) => ['code', flowCode(code)]));
@@ -658,22 +714,19 @@ function loadDetails(codes) {
   pending.forEach((code) => inFlight.set(code, loading));
 }
 
-function addOrMove(code, target, fromRequests = false) {
-  const requestedCode = code;
+function addOrMove(code, target) {
   code = actualCode(code);
   if (autoMode && isAcademicCourse(code) && !plan[target]?.includes(code)
-      && plan[target]?.filter(isAcademicCourse).length + (termNotes[target]?.length ?? 0) >= Math.min(autoTermLimit, targets[target])) {
+      && plan[target]?.filter(isAcademicCourse).length + (termNotes[target]?.length ?? 0) >= targets[target]) {
     announce(`${termsById.get(target).label} has no room for another pinned course.`);
     return;
   }
   const next = placeCourse(plan, code, target, outcomes);
-  if (next === plan && !(fromRequests && plan[target]?.includes(code) && !pinned(code))) return;
+  if (next === plan) return;
   const moved = scheduled.has(code);
+  if (preferences[code] === 'banned') delete preferences[code];
   plan = next;
-  if (fromRequests && preferences[requestedCode] === 'required') delete preferences[requestedCode];
-  renderPlan();
-  savePlan();
-  scheduleAuto();
+  saveEdit();
   announce(`${code} ${moved ? 'moved' : 'added'} to ${termsById.get(target).label}.`);
   if (!sampleCatalog.has(code)) loadDetails([code]);
 }
@@ -687,15 +740,15 @@ function removeFromPlan(code) {
   }
   plan = next;
   delete outcomes[code];
-  renderPlan();
-  savePlan();
-  scheduleAuto();
+  if (autoMode && isAcademicCourse(code)) preferences[code] = 'banned';
+  else if (preferences[code] === 'required') delete preferences[code];
+  saveEdit();
   announce(`${code} removed from the plan.`);
 }
 
 function changeGraphTerm(code, target) {
   const request = actualCode(code) === selectedCode && dialogTrigger?.closest('.request-item')?.dataset.course;
-  if (target) addOrMove(request || code, target, Boolean(request));
+  if (target) addOrMove(request || code, target);
   else removeFromPlan(code);
   updateDetails(code);
 }
@@ -725,9 +778,7 @@ function showOutcomeMenu(code) {
       if (outcome === 'planned') delete outcomes[code];
       else outcomes[code] = outcome;
       outcomeDialog.close();
-      renderPlan();
-      savePlan();
-      scheduleAuto();
+      saveEdit();
       announce(`${code} marked ${label.toLowerCase()}.`);
     });
     return button;
@@ -762,6 +813,11 @@ function termCourse(code, term, groups) {
     card.classList.add(`outcome-${outcome}`);
     if (pinned(code)) label.title = 'Locked to this term';
     card.append(label);
+  }
+  if (!outcome && manual && requirements.coreByLevel[term.level]?.includes(code)) {
+    const expected = element('span', 'expected-course', 'Expected');
+    expected.title = 'Required by the SE calendar. This placement has no recorded outcome.';
+    card.append(expected);
   }
   if (autoMode) {
     const pin = makeButton('term-pin', pinned(code) ? `${code} is locked` : `${manual ? 'Unpin' : 'Pin'} ${code}`, '📌');
@@ -864,10 +920,9 @@ function saveTermEdit(remove = false) {
     }
   }
   termEditor.close();
-  if (autoMode && kind === 'note') renderPlan();
-  else renderBoard();
   savePlan();
-  if (kind === 'note') scheduleAuto();
+  if (autoMode && kind === 'note') scheduleAuto();
+  else renderBoard();
   const cell = board.querySelector(`[data-term="${term.id}"]`);
   (cell.querySelector(focus) ?? cell.querySelector('.term-title')).focus({ preventScroll: true });
   announce(`${kind === 'title' ? 'Term title saved' : remove ? 'Note removed' : 'Note saved'} for ${term.label}.`);
@@ -884,7 +939,7 @@ function noteSlot(term, slot, zero) {
 }
 
 function updateSlots(container, term) {
-  const target = autoMode ? Math.min(autoTermLimit, targets[term.id]) : targets[term.id];
+  const target = targets[term.id];
   const zero = target === 0;
   const classes = displayPlan[term.id].filter(isAcademicCourse).length;
   const emptySlots = target - classes - (zero ? 0 : termNotes[term.id]?.length ?? 0);
@@ -898,7 +953,9 @@ function updateSlots(container, term) {
     for (let slot = 0; slot < emptySlots; slot += 1) items.push(noteSlot(term, slot, false));
   } else if (emptySlots < 0) {
     const over = Math.abs(emptySlots);
-    items.push(element('div', 'term-over-target', `${over} over target`));
+    const warning = element('div', 'term-over-target', `${over} over target`);
+    warning.tabIndex = -1;
+    items.push(warning);
   }
   if (zero) items.push(noteSlot(term, 0, true));
   container.replaceChildren(...items);
@@ -913,12 +970,13 @@ function renderTerm(term) {
   const targetLabel = element('label', 'term-target');
   const target = element('select', '');
   target.setAttribute('aria-label', `Course target for ${term.label}`);
-  const limit = autoMode ? autoTermLimit : maxTermTarget;
+  const limit = maxTermTarget;
   target.replaceChildren(...Array.from({ length: limit + 1 }, (_, count) => new Option(count, count)));
   target.value = Math.min(limit, targets[term.id]);
   targetLabel.append(element('span', '', 'Target'), target);
   heading.append(element('span', 'term-type', label), targetLabel);
-  cell.append(heading);
+  cell.append(element('h3', `season-heading ${term.season.toLowerCase()}`, term.label), heading);
+  if (setup?.currentTerm === term.id) heading.prepend(element('span', 'current-term', 'Current'));
   const title = termTitle(term);
   const edit = makeButton(`term-title${title ? '' : ' untitled'}`, `Edit title for ${term.label}${title ? `, ${title}` : ''}`);
   edit.setAttribute('aria-haspopup', 'dialog');
@@ -962,10 +1020,7 @@ function renderTerm(term) {
   updateSlots(slots, term);
   target.addEventListener('change', () => {
     targets[term.id] = Number(target.value);
-    if (autoMode) renderPlan();
-    else updateSlots(slots, term);
-    savePlan();
-    scheduleAuto();
+    saveEdit();
     announce(`${term.label} course target set to ${target.value}.`);
   });
   return cell;
@@ -974,25 +1029,20 @@ function renderTerm(term) {
 function renderBoard() {
   warningList = [];
   const grid = document.createDocumentFragment();
-  grid.append(element('span', 'year-header', 'Year'));
-  for (const season of seasons) {
-    const header = element('div', `season-heading ${season.toLowerCase()}`);
-    const icon = element('span', 'season-icon', { Winter: '❄', Spring: '✿', Fall: '◈' }[season]);
-    icon.setAttribute('aria-hidden', 'true');
-    header.append(icon, element('span', '', season));
-    grid.append(header);
-  }
-  for (let year = yearRange.start; year <= yearRange.end; year += 1) {
-    grid.append(element('h3', 'year-label', year));
-    for (const season of seasons) grid.append(renderTerm(termsById.get(`${year}-${season.toLowerCase()}`)));
-  }
+  const visible = timeline().filter((term) => inYearRange(term.year)
+    && (!hideZero || targets[term.id] > 0 || displayPlan[term.id].some(isAcademicCourse)));
+  for (const term of visible) grid.append(renderTerm(term));
+  if (!visible.length) grid.append(element('p', 'quiet-message', 'All terms in these years have a zero target. Show zero-target terms to edit them.'));
+  const years = [...new Set(visible.map((term) => term.year))];
+  byId('jump-year').replaceChildren(...years.map((year) => new Option(year, year)));
   board.replaceChildren(grid);
+  syncYearNavigation();
   updateTermRules();
   hoveredCourse = board.querySelector('.term-course:hover')?.dataset.course;
   updateScheduleHighlight();
   byId('planned-count').textContent = `${[...scheduled.keys()].filter(isAcademicCourse).length} ${Object.keys(outcomes).length ? 'courses' : 'planned'}`;
   const warning = byId('warning-summary');
-  const count = warningList.length;
+  const count = warningList.length + board.querySelectorAll('.term-over-target').length;
   warning.hidden = count === 0;
   warning.textContent = `${count} ${count === 1 ? 'warning' : 'warnings'}`;
 }
@@ -1150,7 +1200,7 @@ function renderPlan() {
   displayPlan = Object.fromEntries(Object.entries(plan).map(([id, courses]) => [id, [...courses]]));
   if (autoMode && autoResult) {
     for (const [code, term] of autoResult.suggestions) {
-      const limit = Math.min(autoTermLimit, targets[term]) - (termNotes[term]?.length ?? 0);
+      const limit = targets[term] - (termNotes[term]?.length ?? 0);
       if (!manual.has(code) && preferences[code] !== 'banned' && inYearRange(termsById.get(term).year)
           && displayPlan[term].filter(isAcademicCourse).length < limit) displayPlan[term].push(code);
     }
@@ -1188,9 +1238,7 @@ function showYears(start, end) {
     plan[id] = [];
     targets[id] = target;
   }
-  renderPlan();
-  savePlan();
-  scheduleAuto();
+  saveEdit();
 }
 
 for (const input of [startYear, endYear]) {
@@ -1227,7 +1275,7 @@ search.addEventListener('input', () => {
 byId('calendar-link').href = calendarUrl;
 byId('degree-calendar').textContent = `${requirements.program} · ${requirements.calendar}`;
 byId('warning-summary').addEventListener('click', () => {
-  const first = document.querySelector('.warning-trigger');
+  const first = board.querySelector('.term-over-target, .warning-trigger');
   first?.scrollIntoView({ block: 'center', inline: 'center' });
   first?.focus({ preventScroll: true });
 });
@@ -1237,26 +1285,19 @@ function replacePlan(next, message, nextOutcomes = {}) {
   targets = plannerTargets(profile?.targets, true);
   outcomes = readOutcomes(nextOutcomes, indexPlan(plan));
   termNotes = {};
-  renderPlan();
-  savePlan();
-  scheduleAuto();
+  saveEdit();
   announce(message);
 }
 byId('reset-plan').addEventListener('click', () => {
   if (personal) {
     if (profile && window.confirm('Replace your edits with the imported course plan?')) {
       termTitles = {};
-      replacePlan(readPlan(profile.plan, timeline()), 'Imported plan restored.', profile.outcomes);
+      replacePlan(startingPlan(), 'Imported plan restored.', profile.outcomes);
     }
   } else if (window.confirm('Replace your edits with the sample plan?')) {
     termTitles = {};
     replacePlan(initialPlan(timeline()), 'Sample plan restored.');
   }
-});
-byId('clear-plan').addEventListener('click', () => {
-  if (!window.confirm('Start a blank plan? This clears scheduled courses, recorded outcomes, and note cards.')) return;
-  const blank = Object.fromEntries(timeline().map(({ id }) => [id, []]));
-  replacePlan(blank, 'Blank plan started.');
 });
 function showDegreeRule(id) {
   const report = byId('degree-report');
@@ -1306,7 +1347,7 @@ byId('placement-form').addEventListener('submit', (event) => {
   const request = dialogTrigger?.closest('.request-item')?.dataset.course;
   if (!degreeDialog.open) dialogTrigger = null;
   dialog.close();
-  addOrMove(request ?? code, target, Boolean(request));
+  addOrMove(request ?? code, target);
   if (degreeDialog.open) return;
   const cell = document.querySelector(`[data-term="${target}"]`);
   const card = cell?.querySelector(`[data-course="${CSS.escape(code)}"] .term-course-open`);
@@ -1340,7 +1381,7 @@ profileThrough.append(...studyLevels.map((level) => new Option(level, level)));
 profileThrough.value = throughLevel;
 profileThrough.addEventListener('change', updateProfileLink);
 updateProfileLink();
-if (personal) {
+if (personal && !setup) {
   const name = throughLevel ? `Alex’s plan through ${throughLevel}` : 'Alex’s course plan';
   byId('planner-title').textContent = profile ? name : 'Personal plan unavailable';
   byId('open-sample-plan').hidden = false;
@@ -1348,6 +1389,94 @@ if (personal) {
   byId('reset-plan').hidden = !profile;
   profileControls.hidden = !profile;
 }
+const openSetup = attachOnboarding((name, data) => switchCalendar(() => calendars.create(name, data)));
+byId('new-calendar').onclick = openSetup;
+byId('onboarding').addEventListener('close', () => { if (!saved) savePlan(); });
+byId('calendar-picker').replaceChildren(...Object.entries(calendars.names).map(([id, name]) => new Option(name, id)));
+byId('calendar-picker').value = calendars.active;
+byId('calendar-picker').onchange = (event) => switchCalendar(() => calendars.select(event.target.value));
+byId('copy-calendar').onclick = () => {
+  const name = window.prompt('Name this calendar copy', `${calendars.names[calendars.active]} copy`)?.trim();
+  if (name) switchCalendar(() => calendars.create(name, calendarSnapshot()));
+};
+function switchCalendar(action) {
+  if (!savePlan()) return;
+  try {
+    action();
+    autoRunner.cancel();
+    location.reload();
+  } catch {
+    byId('calendar-picker').value = calendars.active;
+    storageError();
+  }
+}
+function restoreHistory(index) {
+  const entry = historyEntries[index];
+  if (!entry) return;
+  autoRunner.cancel();
+  const inputs = structuredClone(entry.inputs);
+  plan = inputs.plan;
+  targets = inputs.targets;
+  outcomes = inputs.outcomes;
+  preferences = inputs.preferences;
+  disabledRules = new Set(inputs.disabledRules);
+  termTitles = inputs.termDetails.titles;
+  termNotes = inputs.termDetails.notes;
+  yearRange = inputs.yearRange;
+  startYear.value = yearRange.start;
+  endYear.value = yearRange.end;
+  termsById.clear();
+  for (const id of Object.keys(plan)) {
+    if (!termsById.has(id)) registerTerms({ start: termYear(id), end: termYear(id) });
+  }
+  autoSeed = inputs.autoSeed;
+  autoMode = autoSwitch.checked = true;
+  autoResult = entry.result;
+  autoError = autoSolving = false;
+  historyPoint = index;
+  renderPlan();
+  renderAutoStatus();
+  savePlan();
+  byId('solve-history').querySelector('[aria-current="true"]')?.focus({ preventScroll: true });
+}
+if (calendars.active !== 'original') byId('planner-title').textContent = calendars.names[calendars.active];
+if (setup) {
+  byId('planner-subtitle').textContent = `Software Engineering, Honours · ${setup.entryYear} entry · Current term ${termLabel(setup.currentTerm)}`;
+  byId('reset-plan').hidden = true;
+}
+byId('hide-zero').checked = hideZero;
+byId('hide-zero').onchange = (event) => { hideZero = event.target.checked; renderBoard(); savePlan(); };
+const jumpYear = byId('jump-year');
+function syncYearNavigation() {
+  const viewport = board.parentElement;
+  const left = viewport.getBoundingClientRect().left;
+  const card = [...board.children].find((node) => node.dataset.term && node.getBoundingClientRect().right > left + 20);
+  if (viewport.scrollLeft > 0 && viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 2) {
+    jumpYear.selectedIndex = jumpYear.length - 1;
+  } else if (card) jumpYear.value = termYear(card.dataset.term);
+  byId('previous-year').disabled = viewport.scrollLeft < 2;
+  byId('next-year').disabled = viewport.scrollLeft + viewport.clientWidth >= viewport.scrollWidth - 2;
+}
+function scrollYear(year) {
+  const target = board.querySelector(`[data-term^="${year}-"]`);
+  if (target) board.parentElement.scrollLeft += target.getBoundingClientRect().left - board.parentElement.getBoundingClientRect().left - 12;
+}
+board.parentElement.addEventListener('scroll', syncYearNavigation, { passive: true });
+jumpYear.onchange = () => scrollYear(jumpYear.value);
+function stepYear(direction) {
+  const years = [...jumpYear.options].map((option) => option.value);
+  const edge = board.parentElement.getBoundingClientRect().left + 12;
+  if (direction < 0) years.reverse();
+  const year = years.find((value) => {
+    const first = board.querySelector(`[data-term^="${value}-"]`);
+    return (first.getBoundingClientRect().left - edge) * direction > 2;
+  });
+  if (year) scrollYear(year);
+  else board.parentElement.scrollLeft = direction > 0 ? board.scrollWidth : 0;
+}
+byId('previous-year').onclick = () => stepYear(-1);
+byId('next-year').onclick = () => stepYear(1);
+new ResizeObserver(syncYearNavigation).observe(board.parentElement);
 renderPlan();
 autoSwitch.checked = autoMode;
 autoSwitch.addEventListener('change', () => {
@@ -1356,15 +1485,19 @@ autoSwitch.addEventListener('change', () => {
   autoSolving = false;
   autoResult = undefined;
   renderAutoStatus();
-  renderPlan();
+  saveEdit();
+});
+function changeSeed(seed) {
+  if (!Number.isInteger(seed) || seed < 0 || seed > 2147483647) return;
+  autoSeed = seed;
   savePlan();
   scheduleAuto();
-});
-byId('shuffle-plan').addEventListener('click', () => {
-  autoSeed += 1;
-  savePlan();
-  scheduleAuto();
-});
+}
+byId('prev-seed').onclick = () => changeSeed(autoSeed - 1);
+byId('next-seed').onclick = () => changeSeed(autoSeed + 1);
+byId('solver-seed').onchange = (event) => {
+  if (event.target.reportValidity()) changeSeed(event.target.valueAsNumber);
+};
 const opinionCategory = byId('opinion-category');
 opinionCategory.append(new Option('Suggested courses', 'suggested'), new Option('All my opinions', 'all'),
   ...requirements.rules.filter((rule) => rule.list && rule.source).map((rule) => new Option(rule.title, rule.id)));
@@ -1382,12 +1515,18 @@ byId('open-opinions').addEventListener('click', () => {
   opinionsDialog.showModal();
 });
 byId('close-opinions').addEventListener('click', () => opinionsDialog.close());
-scheduleAuto();
+const restoredSolve = historyEntries[historyPoint];
+if (autoMode && restoredSolve && JSON.stringify(restoredSolve.inputs) === JSON.stringify(solveInputs())) {
+  autoResult = restoredSolve.result;
+  renderPlan();
+} else scheduleAuto();
+renderAutoStatus();
+if (!saved && !personal && !published) openSetup();
 if (applyProfileUpdate || (saved && !saved.yearRange)) savePlan();
 if (published && !personal) {
   profileControls.hidden = false;
 }
-if (!personal && !published) {
+if (!personal && !published && !setup?.imported) {
   request('./api/profile-status').then(({ available }) => {
     profileControls.hidden = !available;
   }).catch(() => {});

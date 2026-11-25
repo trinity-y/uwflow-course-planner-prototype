@@ -1,7 +1,5 @@
-import { autoTermLimit, opinions, solveAuto } from './auto-plan.mjs';
+import { opinions, solveAuto } from './auto-plan.mjs';
 import { element } from './graph.mjs';
-
-export { autoTermLimit };
 
 export function readOpinions(raw) {
   return Object.fromEntries(Object.entries(raw ?? {}).filter(([code, value]) =>

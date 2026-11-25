@@ -1,3 +1,4 @@
+import archive from './calendar-courses.json' with { type: 'json' };
 import requirements from './degree-requirements.json' with { type: 'json' };
 
 export const calendarUrl = requirements.sources.program;
@@ -37,20 +38,21 @@ export function termLabel(id) {
   return `${seasons[seasonOrder.indexOf(season)]} ${year}`;
 }
 
-export function createTerms({ start, end }) {
+export function createTerms({ start, end }, { entryYear = defaultYearRange.start, levels } = {}) {
   return Array.from({ length: end - start + 1 }, (_, offset) => start + offset).flatMap((year) => seasons.map((season) => {
     const id = `${year}-${season.toLowerCase()}`;
-    const level = studyLevels[id];
+    const sampleId = `${year - entryYear + defaultYearRange.start}-${season.toLowerCase()}`;
+    const level = levels ? levels[id] : studyLevels[sampleId];
     const coreCourses = requirements.coreByLevel[level] ?? [];
     const coreChoices = requirements.rules.filter((rule) => rule.core && rule.level === level)
       .flatMap((rule) => requirements.lists[rule.list].slice(0, rule.count).flat());
     const [minimum, maximum] = requirements.termElectives[level] ?? [0, 0];
     const target = coreCourses.length + coreChoices.length + (level === '2A' ? minimum : maximum);
-    const courses = [...coreCourses, ...coreChoices, ...(sampleElectives[id] ?? [])];
+    const sample = !levels && entryYear === defaultYearRange.start ? sampleElectives[id] : [];
+    const courses = [...coreCourses, ...coreChoices, ...(sample ?? [])];
     return {
       id, year, season, level, courses, target,
-      work: !level && id !== '2023-winter' && id !== '2023-spring' &&
-        year >= defaultYearRange.start && year < defaultYearRange.end,
+      work: !level && (year > entryYear || season === 'Fall') && year < entryYear + 5,
       label: `${season} ${year}`,
     };
   }));
@@ -61,6 +63,22 @@ export const terms = createTerms(defaultYearRange);
 export const initialPlan = (timeline = terms) => Object.fromEntries(
   timeline.map(({ id, courses }) => [id, [...courses]]),
 );
+
+export function preloadCore(plan, timeline, from = -Infinity, equivalents = {}) {
+  const credit = (code) => archive[equivalents[code] ?? code]?.[2] ?? equivalents[code] ?? code;
+  const placed = new Set(Object.values(plan).flat().map(credit));
+  return Object.fromEntries(timeline.map(({ id, level }) => {
+    const courses = [...(plan[id] ?? [])];
+    if (termOrder(id) >= from) {
+      for (const code of requirements.coreByLevel[level] ?? []) {
+        if (placed.has(credit(code))) continue;
+        courses.push(code);
+        placed.add(credit(code));
+      }
+    }
+    return [id, courses];
+  }));
+}
 
 // Each group is required. Array entries are groups that need one course.
 // The curated paths cover a subset of published course requisites.

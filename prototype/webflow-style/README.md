@@ -8,7 +8,18 @@ node prototype/webflow-style/server.mjs
 
 Open [the local planner](http://127.0.0.1:5173). Set `PORT` to use a different port.
 The browser stores changes locally. **Reset sample plan** restores the original schedule.
-**Start blank** clears scheduled courses and note cards and restores term targets.
+**New calendar** opens setup. Choose a Waterloo unofficial undergraduate transcript
+PDF or start with the Honours Software Engineering requirements. Confirm the
+degree, years, current term, study sequence and course targets. Expand a recorded
+term to inspect the courses and outcomes before creating the calendar. Setup
+places missing fixed core courses in editable term slots once. **Expected**
+identifies a required placement with no recorded course outcome. Existing
+attempts keep their transcript term and status. The browser reads PDFs with locally bundled
+[PDF.js 5.6.205](https://www.npmjs.com/package/pdfjs-dist/v/5.6.205).
+Transcript calendars use the bundled course catalog and stay in browser storage.
+
+**Copy** creates an independent named calendar with its solve history. Use the
+calendar selector to switch between copies.
 Use a scheduled course’s **⋯** menu to record its status. Passed and failed
 courses stay in their recorded term. Choose **Planned** to unlock a course for editing.
 
@@ -17,12 +28,17 @@ To enable **Load Alex’s plan** for a private profile, set
 server. The `.local/` directory is ignored by Git. The personal page uses its
 own browser storage and local catalog. Next to **Load Alex’s plan**, leave
 **Load through** set to **All terms** or choose the last study term to include.
-For example, **3A** keeps the schedule through 3A and leaves later terms empty.
+For example, **3A** imports the schedule through 3A. A new calendar also
+preloads required courses in future study terms.
 Each cutoff saves separately.
 
 The sample uses the Fall 2023 timeline with the program rules from
 [Waterloo’s 2024–25 Software Engineering calendar](https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2024-2025#/programs/H1zle10Cs3).
-Each term has an editable class target. Zero-target terms are striped. Use
+Scroll horizontally through the term columns or jump to a year. Each term has
+an editable class target. Empty zero-target and co-op terms are hidden by
+default. Clear **Hide zero-target terms** to edit their targets. Terms with
+academic courses above target stay visible with a warning. Drop an editable
+course on the sidebar or between columns to remove it. Use
 **Start year** and **End year** to choose the visible years. The saved plan keeps
 courses and notes outside that range. Click a term title to edit it, or use the
 plus in an empty slot to add a note card.
@@ -59,10 +75,26 @@ Any static HTTP server can serve this directory. The bundled catalog, planner,
 and prerequisite graphs work with no upstream service. Use
 `PLANNER_OFFLINE=1 node prototype/webflow-style/server.mjs` to try that mode locally.
 
-Turn on **Auto plan** to generate suggestions from a blank plan or alongside
-manual course pins. The browser worker uses the bundled rules and catalog, term
-targets capped at eight courses, and saved opinions. Drop a course into
-**Schedule for Me**, above the year grid, to let Auto choose its term. Drop a
-request back into a term to pin it. Suggestions have grey pins until you pin
-them. **Shuffle** tries another solution. Turning Auto off hides its suggestions
-while retaining the manual schedule and preferences.
+Turn on **Auto plan** in the solver panel to fill the remaining slots. A
+**Must take** preference adds the course to **Schedule for Me**. Dragging a
+course into that area sets the same preference. Published solves satisfy all
+enabled rules, requests, modeled prerequisites and term limits. If the solver
+cannot find a fit, it shows the unresolved constraints and tries other targets
+separately. Suggested target changes require a complete solve with those limits.
+
+Use the seed controls to explore alternatives. Each history entry restores the
+manual placements, preferences, limits and result of that solve. Solving from
+an earlier entry adds a branch. A move appears as a removal from the old term
+and an addition to the new one.
+
+Elective choices use a bundled snapshot of UW Flow aggregate ratings for 35
+courses, retrieved in one limited query on November 25, 2026. Among otherwise
+suitable courses, the solver prefers more ratings, then a higher liked score.
+The snapshot includes ease, usefulness and comment counts. The browsing lists
+use the same ordering. Courses outside the sample remain eligible.
+
+Run the planner tests from the repository root:
+
+```sh
+node --test prototype/webflow-style/*.test.mjs
+```

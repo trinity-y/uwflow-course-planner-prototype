@@ -4,12 +4,12 @@ This is the feature record for the Software Engineering course planner on `alex-
 
 ## Schedule and course discovery
 
-- Show Winter, Spring, and Fall as columns, with one row per calendar year. Use **Start year** and **End year** to choose the visible years. Keep courses and notes outside that range in the saved plan.
-- Label academic terms by study level and show co-op terms alongside them. Click the title area on any term to give it a custom title, such as a company name. Use imported company names as the initial titles in Alex’s plan.
-- Let users search by course code or name and drag cards from the sidebar into terms. Scheduled courses can move between terms unless their outcome locks them in place.
+- Show one chronological column per term. Scroll horizontally or jump to a year. Use **Start year** and **End year** to choose the visible years. Keep courses and notes outside that range in the saved plan.
+- Label academic terms by study level. Hide zero-target terms by default unless they contain an academic course. Click the title area on any term to give it a custom title, such as a company name. Use imported company names as the initial titles in Alex’s plan.
+- Let users search by course code or name and drag cards from the sidebar into terms. Move an editable course between terms or drop it outside a term to remove it.
 - Give each term an editable class target and show remaining capacity as **Empty slots**. Seed study-term targets from the calendar curriculum. Co-op terms and the two trailing open terms start at zero and use a grey striped background. Existing co-op and PD records stay on the board outside the class count.
 - Click the plus in an empty slot to add a note card with a title and optional details, such as an exchange placeholder. Notes use a slot in terms with a positive target. Zero-target terms also accept notes. Click a note to edit or remove it. Keep notes outside degree validation.
-- Offer **Start blank** to clear scheduled courses, recorded outcomes, and note cards. Provide a way to restore the sample schedule or the imported personal schedule.
+- Open **New calendar** to import a transcript locally or begin with the SE requirements. Confirm the inferred degree, current term, years, sequence, and targets. Preload fixed requirements once. Use **Copy** to explore an independent calendar.
 - Organize the sidebar in this order: **Degree requirements**, **Missing prerequisites**, **Favorites**, and **Find courses**. The recommendation tabs from the early sketch were left out of the design.
 - Show a general course catalog under **Find courses** and remove courses from those results once they are scheduled. Apply required-course and elective categories in the degree views.
 - Put a star alongside the course code in the schedule, catalog, prerequisite views, and degree choices. Keep the star inside the course chip where there is one. Give favorites their own sidebar collection for inspection and scheduling. Use CS 448 as the sample favorite.
@@ -26,12 +26,12 @@ This is the feature record for the Software Engineering course planner on `alex-
 
 ## Automatic planning
 
-- Turn on **Auto plan** to generate a Software Engineering schedule using enabled rules, known prerequisites, course requests, pins, and term targets. Plans run in the browser and use a maximum of eight courses per term. Aim for five where capacity and requirements allow.
-- Show **Schedule for Me** as its own drop zone inside **Academic schedule**, just above the year grid. Drag courses in from the sidebar or move a planned course there to let Auto choose its term. Drag a request back into a term to pin it there. Show unplaced requests in red with the reason. Place earlier prerequisites automatically, choosing shorter valid paths first.
-- Use five course states: **Must take**, **Interested**, **Neutral**, **Prefer to avoid**, and **Ban**. Must-take courses are placement goals, bans exclude automatic placements, and interest and avoidance break ties between plans with the same number of courses.
-- Treat manual placements and recorded course outcomes as pins. Show automatic suggestions with dashed borders and a grey pin. A colored pin shows a fixed placement. Turning Auto off hides suggestions and preserves the manual plan, outcomes, requests, opinions, and Shuffle setting.
-- Show real progress during the search. Offer **Shuffle** for a different set of equivalent choices and show a partial plan when constraints leave requirements or requests unresolved.
-- Use course details to give an opinion, or open **I want your opinions** to review categories. Show ten unrated suggestions first, previously rated courses afterward, and an **All my opinions** view.
+- Turn on **Auto plan** to generate a Software Engineering schedule using enabled rules, known prerequisites, course requests, pins, and term targets. Plans run in the browser and enforce the selected course target in every term. Aim for five where capacity and requirements allow.
+- Show **Schedule for Me** as its own drop zone inside **Academic schedule**, just above the term columns. Drag courses in from the sidebar or move a planned course there to let Auto choose its term. Drag a request back into a term to pin it there. Show unplaced requests in red with the reason. Place earlier prerequisites automatically, choosing shorter valid paths first.
+- Use five course states: **Must take**, **Interested**, **Neutral**, **Prefer to avoid**, and **Ban**. Must-take courses appear in **Schedule for Me** and are required for a successful solve, bans exclude automatic placements, and interest and avoidance break ties between plans with the same number of courses.
+- Treat manual placements and recorded course outcomes as pins. Show automatic suggestions with dashed borders and a grey pin. A colored pin shows a fixed placement. Turning Auto off hides suggestions and preserves the manual plan, outcomes, requests, opinions, and seed.
+- Show real progress during the search. Use seed controls to navigate alternatives. Show course additions and removals per term. Restore a solve from history and keep any subsequent branch. On failure, show **Can't fit within target.** and test possible target adjustments without applying them.
+- Use course details to give an opinion, or open **Course preferences** to review categories. Show ten choices without a personal opinion first, then courses with saved opinions. Order elective choices using the bundled UW Flow rating count and liked score.
 - Use the degree checker to verify generated plans. The prototype uses a bounded heuristic search and the bundled prerequisite data. Course availability and prerequisites without a modeled course expression remain manual checks.
 
 ## Degree requirements and progress
@@ -75,7 +75,7 @@ Keep the communication grade minimum of 60%, academic standing, and approved exc
 ## Personal plan and course outcomes
 
 - Provide a **Load Alex’s plan** button in the sample planner. It opens a personal version seeded from the supplied course-plan workbook, including study and co-op placements, the actual term sequence, and noted favorites. Preserve conflicting elective ideas as favorites where the workbook does not give a clear placement.
-- Add a **Load through** selector next to **Load Alex’s plan**. Default to **All terms** and offer each study term as an inclusive cutoff. Choosing **3A** keeps the schedule through 3A, including earlier co-op placements, and leaves 3B, 4A, 4B, and other later terms empty. Keep favorites and save edits separately for each cutoff.
+- Add a **Load through** selector next to **Load Alex’s plan**. Default to **All terms** and offer each study term as an inclusive cutoff. Choosing **3A** keeps the schedule through 3A, including earlier co-op placements, and preloads fixed requirements in later study terms when starting that calendar. Keep favorites and save edits separately for each cutoff.
 - Include every fixed course and seminar in Alex’s plan using Alex’s existing term sequence. Add missing seminars and the required PD courses as planned and preserve recorded outcomes. Put PD 19 and PD 20 in the first two work terms, followed by PD 10 and PD 11 in subsequent work terms. [Waterloo Engineering’s PD guidance](https://uwaterloo.ca/engineering/undergraduate-students/co-op-experience/professional-development)
 - Treat green workbook cells as passed and other scheduled entries as planned unless an outcome is known. Show **Planned**, **Enrolled**, **Passed**, and **Failed** in the course card’s **⋯** menu so the plan can distinguish actual enrollment from proposed courses.
 - Pin passed and failed courses to their recorded term. A user can explicitly change a result to **Planned** to make it editable. Failed courses cannot satisfy prerequisites or degree rules.

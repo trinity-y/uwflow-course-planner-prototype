@@ -1,4 +1,5 @@
 import { degreeCourseSets } from './degree.mjs';
+import { byRatings, ratingLabel } from './ratings.mjs';
 import { element } from './graph.mjs';
 
 const pageSize = 10;
@@ -43,7 +44,7 @@ function courseChoice(code, counted, actions, draggable) {
   const { name } = actions.getCourse(placement?.code ?? code);
   const item = element('div', 'degree-course-choice');
   item.append(courseReference(code, actions, { counted: counted.has(placement?.code ?? code), draggable }),
-    element('span', 'degree-choice-name', name));
+    element('span', 'degree-choice-name', [name, ratingLabel(code)].filter(Boolean).join(' · ')));
   return item;
 }
 
@@ -113,6 +114,9 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
     previousPlan = plan;
     counted = new Set(rule.matched);
     sets = degreeCourseSets(requirements, archive, rule, { remainingOnly, countedElsewhere });
+    if (rule.type !== 'required') sets = sets.map((set) => ({
+      ...set, options: [...set.options].sort(([a], [b]) => byRatings(a, b)),
+    }));
     sizes = sets.map((_, index) => sizes[index] ?? pageSize);
     search.setAttribute('aria-label', `Search eligible courses for ${rule.title}`);
     search.hidden = sets.reduce((sum, set) => sum + set.options.length, 0) <= pageSize && !search.value;

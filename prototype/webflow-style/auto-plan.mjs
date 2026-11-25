@@ -1,8 +1,8 @@
 import { termOrder } from './calendar.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
-import { isAcademicCourse } from './model.mjs';
+import { byRatings, ratings } from './ratings.mjs';
+import { isAcademicCourse, maxTermTarget } from './model.mjs';
 
-export const autoTermLimit = 8;
 export const opinions = {
   required: { symbol: '✓', label: 'Must take', score: 0 },
   interested: { symbol: '+', label: 'Interested', score: 1 },
@@ -17,7 +17,7 @@ function variety(code, seed) {
   return (hash ^ (hash >>> 16)) >>> 0;
 }
 
-export function solveAuto({
+function searchPlan({
   plan, timeline, activeTerms, targets, notes = {}, outcomes = {}, preferences = {},
   requirements, archive, groups = {}, disabled = [], equivalents = {}, seed = 0,
 }, progress = () => {}) {
@@ -32,7 +32,7 @@ export function solveAuto({
   const termByLevel = new Map(timeline.filter((term) => term.level).map((term) => [term.level, term.id]));
   const pins = new Map(Object.entries(plan).flatMap(([term, codes]) => codes.map((code) => [code, term])));
   const capacities = new Map(timeline.map(({ id }) => {
-    const limit = Math.min(autoTermLimit, targets[id] ?? 0);
+    const limit = targets[id] ?? 0;
     return [id, Math.max(0, limit - (limit ? notes[id] ?? 0 : 0))];
   }));
   const openTerms = timeline.map(({ id }) => id).filter((id) => active.has(id) && capacities.get(id) > 0);
@@ -168,7 +168,7 @@ export function solveAuto({
           const knownWork = (codes) => codes.reduce((sum, code) =>
             sum + courseGroups(code).filter((group) => group.options.every((option) => !position(state, option))).length, 0);
           return needed(a) - needed(b) || knownWork(a) - knownWork(b)
-            || score(b[0]) - score(a[0]) || tie(a[0], b[0]);
+            || score(b[0]) - score(a[0]) || byRatings(a[0], b[0]) || tie(a[0], b[0]);
         });
       let winner;
       let winnerReport;
@@ -188,6 +188,7 @@ export function solveAuto({
           const next = nextReport.rules.find(({ id }) => id === rule.id);
           if (next.current <= before.current || nextReport.met < report.met) continue;
           const rank = [state.size - proposal.size, totalProgress(nextReport), planScore(proposal),
+            ratings[codes[0]]?.filled_count ?? 0, ratings[codes[0]]?.liked ?? 0,
             -Math.max(0, count(proposal, term) - 5), priority(term)];
           if (isBetter(rank, winnerRank)) {
             winner = proposal;
@@ -273,7 +274,10 @@ export function solveAuto({
 
   const issues = [];
   for (const { id, label } of timeline) {
-    if (count(pins, id) > capacities.get(id)) issues.push(`${label} has more pinned classes than its available slots.`);
+    const target = targets[id] ?? 0;
+    if (count(pins, id) + (target ? notes[id] ?? 0 : 0) > target) {
+      issues.push(`${label} has more pinned classes or reserved slots than its target.`);
+    }
   }
   for (const [code] of pins) if (banned(code)) issues.push(`${code} is both pinned and banned.`);
   for (const [code, term] of warnings(best.state)) {
@@ -283,6 +287,72 @@ export function solveAuto({
   const unscheduled = Object.fromEntries(misses(best.state).map((code) => [code, outcomes[code] === 'failed'
     ? 'A failed attempt is pinned. The planner supports one placement per course.'
     : 'No placement fits the available slots and known prerequisites.']));
+  for (const rule of best.report.rules.filter((rule) => !rule.disabled)) {
+    for (const { required, scheduled } of rule.elsewhere ?? []) {
+      issues.push(`${required} is required in ${rule.level}. ${scheduled} is pinned in a different term.`);
+    }
+  }
   const suggestions = [...best.state].filter(([code]) => !pins.has(code));
-  return { suggestions, unscheduled, issues, met: best.report.met, total: best.report.total };
+  const unmet = best.report.rules.filter((rule) => !rule.disabled && !rule.met).map((rule) => rule.title);
+  const fits = !issues.length && !unmet.length && !Object.keys(unscheduled).length;
+  return { fits, suggestions: fits ? suggestions : [], unscheduled, issues, unmet, met: best.report.met, total: best.report.total };
+}
+
+// Try small changes first. Use a separate search for each counterfactual, so
+// the editor and the failed solve never receive a relaxed target or placement.
+export function solveAuto(data, progress = () => {}) {
+  const result = searchPlan(data, progress);
+  result.alternatives = [];
+  if (result.fits) return result;
+
+  const active = new Set(data.activeTerms);
+  const visible = new Set(data.visibleTerms ?? data.activeTerms);
+  const used = (id) => (data.plan[id] ?? []).filter(isAcademicCourse).length;
+  const notes = (id) => data.notes?.[id] ?? 0;
+  const blocked = data.timeline.some(({ id }) => !visible.has(id) && used(id) > (data.targets[id] ?? 0))
+    || Object.keys(result.unscheduled).some((code) => data.outcomes?.[code] === 'failed')
+    || Object.values(data.plan).some((courses) => courses.some((code) => data.preferences?.[code] === 'banned'));
+  if (blocked) return result;
+
+  const candidates = data.timeline.filter(({ id }) => visible.has(id));
+  const open = candidates.filter(({ id, level }) => (active.has(id) && level) || data.targets[id] > 0 || used(id) > 0);
+  const extra = candidates.find(({ id, work }) => active.has(id) && !work && !data.targets[id] && !used(id)
+    && termOrder(id) > (termOrder(open.at(-1)?.id) ?? -Infinity));
+
+  const minimum = { ...data.targets };
+  const program = { ...data.targets };
+  const roomier = { ...data.targets };
+  for (const { id, target } of open) {
+    minimum[id] = Math.max(data.targets[id] ?? 0, used(id) + notes(id));
+    program[id] = active.has(id) ? Math.max(minimum[id], target) : minimum[id];
+    roomier[id] = active.has(id) ? Math.min(maxTermTarget, program[id] + 2) : minimum[id];
+  }
+  const trials = [minimum, program];
+  if (extra) trials.push({ ...minimum, [extra.id]: 5 });
+  trials.push(roomier);
+  if (extra) trials.push({ ...roomier, [extra.id]: 5 });
+
+  const tried = new Set([JSON.stringify(data.targets)]);
+  for (const targets of trials) {
+    const key = JSON.stringify(targets);
+    if (tried.has(key) || Object.values(targets).some((value) => value > maxTermTarget)) continue;
+    tried.add(key);
+    const trial = searchPlan({ ...data, targets });
+    if (!trial.fits) continue;
+
+    const changes = {};
+    for (const { id } of candidates) {
+      const load = used(id) + notes(id) + trial.suggestions.filter(([, term]) => term === id).length;
+      if (load > (data.targets[id] ?? 0) && targets[id] > (data.targets[id] ?? 0)) changes[id] = load;
+    }
+    if (!Object.keys(changes).length) continue;
+    const trimmed = { ...data.targets, ...changes };
+    if (JSON.stringify(trimmed) === key || searchPlan({ ...data, targets: trimmed }).fits) {
+      result.alternatives.push(changes);
+    } else {
+      result.alternatives.push(Object.fromEntries(Object.entries(targets).filter(([id, value]) => value !== data.targets[id])));
+    }
+    break;
+  }
+  return result;
 }

@@ -22,10 +22,14 @@
     <header class="page-heading">
       <div>
         <h1 id="planner-title">Course planner</h1>
-        <p>Software Engineering <span aria-hidden="true">·</span> Fall 2023 entry</p>
+        <p id="planner-subtitle">Software Engineering <span aria-hidden="true">·</span> Fall 2023 entry</p>
       </div>
       <div class="plan-controls">
-        <label class="auto-mode-control"><input id="auto-mode" class="degree-rule-toggle" type="checkbox" role="switch"> Auto plan</label>
+        <div class="calendar-picker">
+          <label>Calendar <select id="calendar-picker"></select></label>
+          <button class="button subtle" id="copy-calendar" type="button">Copy</button>
+          <button class="button primary" id="new-calendar" type="button">New calendar</button>
+        </div>
         <form class="year-range" id="year-range" aria-label="Schedule years">
           <label>Start year <input id="start-year" type="number" step="1" required></label>
           <label>End year <input id="end-year" type="number" step="1" required></label>
@@ -38,22 +42,9 @@
           </div>
           <a class="button subtle" id="open-sample-plan" href="./" hidden>Sample planner</a>
           <button class="button subtle" id="reset-plan" type="button"><span class="reset-icon" aria-hidden="true">↺</span> Reset sample plan</button>
-          <button class="button clear-plan" id="clear-plan" type="button">Start blank</button>
         </div>
       </div>
     </header>
-
-    <section class="auto-toolbar" id="auto-toolbar" aria-label="Automatic planning" hidden>
-      <div class="auto-progress">
-        <strong id="auto-status" role="status"></strong>
-        <progress id="auto-progress" max="1" aria-label="Planning progress" hidden></progress>
-        <div id="auto-issues" class="auto-issues"></div>
-      </div>
-      <div class="auto-actions">
-        <button type="button" class="button subtle" id="shuffle-plan">Shuffle</button>
-        <button type="button" class="button primary" id="open-opinions">I want your opinions</button>
-      </div>
-    </section>
 
     <div class="workspace-grid">
       <aside class="sidebar" aria-labelledby="catalog-title">
@@ -102,7 +93,7 @@
           <header class="board-heading">
             <div>
               <h2 id="board-title">Academic schedule</h2>
-              <p>Drag a course into a term to add or move it.</p>
+              <p>Drag between terms to move a course, or back to Courses to remove it.</p>
             </div>
             <div class="board-summary">
               <span class="course-count" id="planned-count"></span>
@@ -117,17 +108,70 @@
               </button>
             </div>
           </header>
-          <section class="requests-section" id="requests-section" aria-labelledby="requests-title" hidden>
+          <section class="requests-section" id="requests-section" aria-labelledby="requests-title">
             <div class="section-heading"><h3 id="requests-title">Schedule for Me</h3><span class="count" id="request-count"></span></div>
             <div id="request-list" class="request-list"></div>
           </section>
         </div>
+        <nav class="board-nav" aria-label="Schedule navigation">
+          <button class="button subtle" type="button" id="previous-year" aria-label="Scroll to previous year">←</button>
+          <label>Jump to year <select id="jump-year"></select></label>
+          <button class="button subtle" type="button" id="next-year" aria-label="Scroll to next year">→</button>
+          <label><input type="checkbox" id="hide-zero"> Hide zero-target terms</label>
+        </nav>
         <div class="board-scroll" tabindex="0" role="region" aria-label="Schedule by year and term">
           <div class="term-board" id="term-board"></div>
         </div>
       </section>
+      <aside class="solver-panel" aria-labelledby="solver-title">
+        <header><h2 id="solver-title">Plan solver</h2>
+          <label class="auto-mode-control"><input id="auto-mode" class="degree-rule-toggle" type="checkbox" role="switch"> Auto plan</label>
+        </header>
+        <div id="auto-toolbar" hidden>
+          <div class="seed-controls">
+            <button class="button subtle" id="prev-seed" type="button" aria-label="Previous seed">−</button>
+            <label>Seed <input type="number" id="solver-seed" min="0" max="2147483647" step="1" required></label>
+            <button class="button subtle" id="next-seed" type="button" aria-label="Next seed">+</button>
+          </div>
+          <div class="auto-progress"><strong id="auto-status" role="status"></strong>
+            <progress id="auto-progress" max="1" aria-label="Planning progress" hidden></progress>
+            <div id="auto-issues" class="auto-issues"></div>
+          </div>
+          <button class="button subtle" type="button" id="open-opinions">Course preferences</button>
+        </div>
+        <h3>Solve history</h3><div id="solve-history"></div>
+      </aside>
     </div>
+    <p id="storage-error" role="alert" hidden></p>
   </main>
+  <dialog class="details setup-dialog" id="onboarding" aria-labelledby="setup-title">
+    <header class="detail-header"><h2 id="setup-title">Set up your calendar</h2>
+      <button class="icon-button close-dialog" id="setup-close" aria-label="Close setup" type="button">×</button>
+    </header>
+    <div class="detail-body">
+      <ol class="setup-steps"><li data-step="1">Choose a starting point</li><li data-step="2">Review your sequence</li></ol>
+      <section id="setup-source">
+        <h3>Import a Waterloo transcript</h3>
+        <p>Choose your unofficial undergraduate PDF. Your browser reads it on this device.</p>
+        <label class="upload-box">Transcript PDF <input type="file" id="transcript-file" accept="application/pdf,.pdf"></label>
+        <button type="button" class="button subtle" id="setup-blank">Start with the SE requirements</button>
+      </section>
+      <form id="setup-form" hidden>
+        <p>Confirm your degree, study terms, and course targets. Required courses will be placed in your new calendar.</p>
+        <strong id="setup-degree"></strong><p id="setup-record"></p>
+        <div class="setup-fields">
+          <label>Calendar name <input id="setup-name" maxlength="60" required></label>
+          <label>Start year <input type="number" id="setup-start" required></label>
+          <label>End year <input type="number" id="setup-end" required></label>
+          <label>Current term <select id="setup-current"></select></label>
+        </div>
+        <table class="setup-sequence"><thead><tr><th>Term and courses</th><th>Study level</th><th>Target</th></tr></thead><tbody id="setup-terms"></tbody></table>
+        <div class="setup-actions"><button type="button" class="button subtle" id="setup-back">Back</button>
+          <button type="submit" class="button primary">Create calendar</button></div>
+      </form>
+      <p id="setup-error" role="status"></p>
+    </div>
+  </dialog>
 
   <dialog class="details" id="course-dialog" aria-labelledby="detail-title">
     <header class="detail-header">

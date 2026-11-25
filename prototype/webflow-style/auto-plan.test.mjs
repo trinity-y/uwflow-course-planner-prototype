@@ -46,7 +46,7 @@ test('must-take courses get prerequisites and banned alternatives stay out of th
 
 test('Auto uses a calendar exception when a study term cannot hold all six required courses', () => {
   const data = inputs();
-  const result = solveAuto({ ...data, targets: { ...data.targets, '2026-fall': 5 } });
+  const result = solveAuto({ ...data, targets: { ...data.targets, '2026-fall': 5, '2027-spring': 8 } });
   const schedule = new Map(result.suggestions);
   const rule = evaluateDegree(requirements, archive, schedule).rules.find(({ id }) => id === 'core-3b');
   assert.equal(rule.met, true);
@@ -55,7 +55,7 @@ test('Auto uses a calendar exception when a study term cannot hold all six requi
   assert.ok(requirements.outOfSequence.includes(elsewhere[0]));
 });
 
-test('opinions break ties without adding courses and Shuffle can change the proposed plan', () => {
+test('opinions break ties without adding courses and seeds can change the proposed plan', () => {
   const options = inputs({ preferences: { 'EARTH 121': 'interested', 'BIOL 110': 'dislike' } });
   const first = solveAuto(options);
   const second = solveAuto({ ...options, seed: 1 });
@@ -78,9 +78,80 @@ test('impossible constraints keep pinned attempts and explain unplaced requests'
     preferences: { 'CS 137': 'required', 'CS 488': 'required' },
   });
   const result = solveAuto(data);
+  assert.equal(result.fits, false);
   assert.deepEqual(plan['2023-fall'], ['CS 137']);
   assert.deepEqual(result.suggestions, []);
   assert.match(result.unscheduled['CS 137'], /failed attempt/);
   assert.ok(result.unscheduled['CS 488']);
   assert.match(result.issues[0], /pinned classes/);
+});
+
+test('an overloaded manual calendar fails atomically and suggests a verified single-target repair', () => {
+  const data = inputs();
+  data.plan['2023-fall'] = [...requirements.coreByLevel['1A']];
+  data.targets['2023-fall'] = 5;
+  const result = solveAuto(data);
+  assert.equal(result.fits, false);
+  assert.deepEqual(result.suggestions, []);
+  assert.deepEqual(result.alternatives, [{ '2023-fall': 6 }]);
+  assert.equal(solveAuto({ ...data, targets: { ...data.targets, ...result.alternatives[0] } }).fits, true);
+  assert.equal(data.targets['2023-fall'], 5);
+  assert.equal(data.plan['2023-fall'].length, 6);
+});
+
+test('no partial electives appear if a must-take cannot fit even with every degree rule disabled', () => {
+  const data = inputs({ preferences: { 'CS 488': 'required' }, disabled: requirements.rules.map((rule) => rule.id) });
+  data.activeTerms = ['2023-fall'];
+  data.targets = { '2023-fall': 1 };
+  const result = solveAuto(data);
+  assert.equal(result.fits, false);
+  assert.deepEqual(result.suggestions, []);
+  assert.ok(result.unscheduled['CS 488']);
+});
+
+test('electives prefer the most rated eligible option, with reproducible placements for a seed', () => {
+  const data = inputs({ disabled: requirements.rules.filter(({ id }) => id !== 'mechanics').map(({ id }) => id) });
+  const first = solveAuto(data);
+  assert.equal(first.fits, true);
+  assert.deepEqual(first.suggestions.map(([code]) => code), ['PHYS 121']);
+  assert.deepEqual(solveAuto(data).suggestions, first.suggestions);
+});
+
+test('notes alone cannot exceed a positive term target during a solve', () => {
+  const data = inputs({ disabled: requirements.rules.map((rule) => rule.id), notes: { '2023-fall': 3 } });
+  data.targets['2023-fall'] = 2;
+  const result = solveAuto(data);
+  assert.equal(result.fits, false);
+  assert.deepEqual(result.alternatives, [{ '2023-fall': 3 }]);
+});
+
+test('a verified alternative can open an additional term while leaving its target at zero', () => {
+  const timeline = terms.filter(({ id }) => ['2023-fall', '2024-spring'].includes(id))
+    .map((term, i) => ({ ...term, level: undefined, target: i ? 0 : 1, work: false }));
+  const data = inputs({
+    plan: { '2023-fall': ['CS 100'], '2024-spring': [] },
+    timeline, activeTerms: timeline.map(({ id }) => id),
+    targets: { '2023-fall': 1, '2024-spring': 0 },
+    preferences: { 'EARTH 121': 'required' }, disabled: requirements.rules.map((rule) => rule.id),
+  });
+  const result = solveAuto(data);
+  assert.equal(result.fits, false);
+  assert.deepEqual(result.suggestions, []);
+  assert.deepEqual(result.alternatives, [{ '2024-spring': 1 }]);
+  assert.equal(data.targets['2024-spring'], 0);
+});
+
+test('capacity advice for a recorded term preserves attempts and only places new courses in active terms', () => {
+  const data = inputs({
+    plan: { '2023-fall': ['CS 100', 'CS 137'], '2024-winter': [] },
+    activeTerms: ['2024-winter'], visibleTerms: ['2023-fall', '2024-winter'],
+    targets: { '2023-fall': 1, '2024-winter': 1 },
+    outcomes: { 'CS 100': 'passed', 'CS 137': 'passed' }, preferences: { 'EARTH 121': 'required' },
+    disabled: requirements.rules.map((rule) => rule.id),
+  });
+  const result = solveAuto(data);
+  assert.equal(result.fits, false);
+  assert.deepEqual(result.alternatives, [{ '2023-fall': 2 }]);
+  const verified = solveAuto({ ...data, targets: { ...data.targets, ...result.alternatives[0] } });
+  assert.deepEqual(verified.suggestions, [['EARTH 121', '2024-winter']]);
 });

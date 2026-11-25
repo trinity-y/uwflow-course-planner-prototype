@@ -27,3 +27,6 @@ __pycache__/
 # Local review screenshots, browser state, and optional tooling dependencies
 /artifacts/
 /tools/browser/node_modules/
+
+# Private Quest transcript downloads
+SSR_TSRPT*.pdf
