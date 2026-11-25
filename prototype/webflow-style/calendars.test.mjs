@@ -30,3 +30,14 @@ test('branching from an older solve preserves its other children and records mov
   input.plan['2030-fall'].push('CS 246');
   assert.deepEqual(history[fork].inputs.plan['2030-fall'], ['CS 135']);
 });
+
+test('freezing a visible solver placement keeps it out of the course diff', () => {
+  const history = [];
+  const term = '2026-fall';
+  const input = { plan: { [term]: [] }, autoSeed: 0 };
+  const first = recordSolve(history, -1, input, { fits: true, suggestions: [['EARTH 121', term]] });
+  const locked = { [term]: { locked: true, suggestions: ['EARTH 121'] } };
+  const second = recordSolve(history, first, { ...input, termLocks: locked }, { fits: true, suggestions: [] });
+  assert.deepEqual(history[second].changes, []);
+  assert.deepEqual(history[second].inputs.termLocks, locked);
+});

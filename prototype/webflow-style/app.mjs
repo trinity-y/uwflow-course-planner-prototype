@@ -1,8 +1,8 @@
-import { calendarUrl, createTerms, firstPlanYear, initialPlan, lastPlanYear, preloadCore, sampleCatalog, termLabel, termOrder, termYear } from './calendar.mjs';
+import { calendarUrl, createTerms, firstPlanYear, initialPlan, isTermLocked, lastPlanYear, preloadCore, sampleCatalog, solverLockCutoff, termLabel, termOrder, termYear } from './calendar.mjs';
 import {
   countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isAcademicCourse, isPinned,
   maxTermTarget, missingGroups, normalizeCode, outcomeLabels, parseLivePrerequisites,
-  placeCourse, profileThroughLevel, readOutcomes, readPlan, readTermDetails, readTermTargets, readYearRange, removeCourse,
+  placeCourse, planWithLockedSuggestions, profileThroughLevel, readOutcomes, readPlan, readTermDetails, readTermTargets, readYearRange, removeCourse,
 } from './model.mjs';
 import { element, renderGraph, termOptions } from './graph.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
@@ -95,7 +95,12 @@ for (const id of Object.keys({ ...profile?.plan, ...saved?.plan, ...saved?.targe
 }
 registerTerms(yearRange);
 let plan = saved?.plan ? readPlan(saved.plan, timeline()) : startingPlan();
+let termLocks = saved?.termLocks ?? {};
+let lockCutoff;
 let displayPlan = plan;
+const locked = (id) => isTermLocked(id, termLocks, lockCutoff);
+const lockedTermIds = () => timeline().filter(({ id }) => locked(id)).map(({ id }) => id);
+updateLockCutoff();
 let targets = plannerTargets(saved?.targets ?? profile?.targets, !saved?.yearRange);
 let { titles: termTitles, notes: termNotes } = readTermDetails(saved?.termDetails, timeline());
 const savedDisabled = new Set(Array.isArray(saved?.disabledRules) ? saved.disabledRules : []);
@@ -205,11 +210,11 @@ function placementOptions(label, required, currentTerm) {
 
 function solveInputs() {
   return { plan, targets, outcomes, yearRange, termDetails: { titles: termTitles, notes: termNotes },
-    disabledRules: [...disabledRules], autoSeed, preferences };
+    disabledRules: [...disabledRules], autoSeed, preferences, termLocks };
 }
 
 function calendarSnapshot() {
-  const courses = [...indexPlan(plan).keys()].filter((code) => !sampleCatalog.has(code)).map((code) => {
+  const courses = [...indexPlan(planWithLockedSuggestions(plan, termLocks)).keys()].filter((code) => !sampleCatalog.has(code)).map((code) => {
     const { name } = getCourse(code);
     return { code, name };
   });
@@ -439,7 +444,10 @@ function moveToRequests(code, fromTerm) {
     announce(`${code} can’t be moved to Schedule for Me. Keep its recorded placement or mark it as planned first.`);
     return;
   }
-  if (fromTerm) plan = removeCourse(plan, code, outcomes);
+  if (fromTerm) {
+    releaseSuggestion(code);
+    plan = removeCourse(plan, code, outcomes);
+  }
   setOpinion(code, 'required');
   renderPlan();
   announce(`${code} moved to Schedule for Me.`);
@@ -468,6 +476,47 @@ function renderAutoStatus() {
   byId('auto-issues').replaceChildren(...(list.childElementCount ? [list] : []));
 }
 
+function holdSuggestion(code, id) {
+  const lock = termLocks[id] ??= {};
+  const suggestions = lock.suggestions ??= [];
+  if (!suggestions.includes(code)) suggestions.push(code);
+}
+
+function releaseSuggestion(code) {
+  const id = scheduled.get(code);
+  const held = termLocks[id]?.suggestions;
+  if (!held?.includes(code)) return false;
+  termLocks[id].suggestions = held.filter((other) => other !== code);
+  return true;
+}
+
+function toggleTermLock(id) {
+  const closing = !locked(id);
+  termLocks[id] = { locked: closing };
+  if (closing) {
+    for (const code of displayPlan[id]) if (!plan[id].includes(code)) holdSuggestion(code, id);
+  }
+  saveEdit();
+  announce(`${termLabel(id)} ${closing ? 'locked' : 'unlocked'} for the solver.`);
+}
+
+function updateLockCutoff() {
+  const previous = lockCutoff;
+  lockCutoff = solverLockCutoff(setup);
+  for (const [id, lock] of Object.entries(termLocks)) {
+    if (lock.locked === undefined && !locked(id)) delete termLocks[id];
+  }
+  return previous !== lockCutoff;
+}
+
+function refreshLockDate() {
+  if (!updateLockCutoff()) return false;
+  for (const [code, id] of autoResult?.suggestions ?? []) {
+    if (locked(id) && displayPlan[id]?.includes(code) && !plan[id].includes(code)) holdSuggestion(code, id);
+  }
+  return true;
+}
+
 function saveEdit() {
   savePlan();
   if (autoMode) scheduleAuto();
@@ -476,6 +525,7 @@ function saveEdit() {
 
 function scheduleAuto() {
   if (!autoMode) return;
+  refreshLockDate();
   autoResult = undefined;
   autoSolving = true;
   renderPlan();
@@ -484,14 +534,16 @@ function scheduleAuto() {
   byId('auto-progress').value = 0;
   const terms = timeline();
   autoRunner.run({
-    plan, timeline: terms,
-    visibleTerms: terms.filter((term) => inYearRange(term.year)).map(({ id }) => id),
-    activeTerms: terms.filter((term) => inYearRange(term.year) && termOrder(term.id) >= (setup?.solveFrom ?? -Infinity))
-      .map(({ id }) => id),
+    plan: planWithLockedSuggestions(plan, termLocks), timeline: terms, lockedTerms: lockedTermIds(),
+    activeTerms: terms.filter((term) => inYearRange(term.year)).map(({ id }) => id),
     targets, notes: Object.fromEntries(Object.entries(termNotes).map(([id, notes]) => [id, notes.length])),
     outcomes, preferences, disabled: [...disabledRules], equivalents, seed: autoSeed,
     groups: Object.fromEntries([...catalog].filter(([, course]) => Array.isArray(course.groups)).map(([code, course]) => [code, course.groups])),
   }, (progress) => { byId('auto-progress').value = progress; }, (result) => {
+    if (refreshLockDate()) {
+      scheduleAuto();
+      return;
+    }
     autoResult = result;
     historyPoint = recordSolve(historyEntries, historyPoint, solveInputs(), result);
     autoSolving = false;
@@ -716,14 +768,16 @@ function loadDetails(codes) {
 
 function addOrMove(code, target) {
   code = actualCode(code);
-  if (autoMode && isAcademicCourse(code) && !plan[target]?.includes(code)
-      && plan[target]?.filter(isAcademicCourse).length + (termNotes[target]?.length ?? 0) >= targets[target]) {
+  const fixed = planWithLockedSuggestions(plan, termLocks);
+  if (autoMode && isAcademicCourse(code) && !fixed[target]?.includes(code)
+      && fixed[target]?.filter(isAcademicCourse).length + (termNotes[target]?.length ?? 0) >= targets[target]) {
     announce(`${termsById.get(target).label} has no room for another pinned course.`);
     return;
   }
   const next = placeCourse(plan, code, target, outcomes);
   if (next === plan) return;
   const moved = scheduled.has(code);
+  releaseSuggestion(code);
   if (preferences[code] === 'banned') delete preferences[code];
   plan = next;
   saveEdit();
@@ -734,7 +788,8 @@ function addOrMove(code, target) {
 function removeFromPlan(code) {
   code = actualCode(code);
   const next = removeCourse(plan, code, outcomes);
-  if (next === plan) {
+  const released = releaseSuggestion(code);
+  if (next === plan && !released) {
     if (autoMode && scheduled.has(code) && !pinned(code)) setOpinion(code, 'banned');
     return;
   }
@@ -774,7 +829,10 @@ function showOutcomeMenu(code) {
     const button = makeButton('button outcome-option', null, label);
     button.setAttribute('aria-pressed', String((outcomes[code] ?? 'planned') === outcome));
     button.addEventListener('click', () => {
-      if (outcome !== 'planned' && !pinned(code)) plan = placeCourse(plan, code, term.id);
+      if (outcome !== 'planned' && !pinned(code)) {
+        releaseSuggestion(code);
+        plan = placeCourse(plan, code, term.id);
+      }
       if (outcome === 'planned') delete outcomes[code];
       else outcomes[code] = outcome;
       outcomeDialog.close();
@@ -975,7 +1033,14 @@ function renderTerm(term) {
   target.value = Math.min(limit, targets[term.id]);
   targetLabel.append(element('span', '', 'Target'), target);
   heading.append(element('span', 'term-type', label), targetLabel);
-  cell.append(element('h3', `season-heading ${term.season.toLowerCase()}`, term.label), heading);
+  const termHeader = element('div', `season-heading ${term.season.toLowerCase()}`);
+  const isLocked = locked(term.id);
+  const lock = makeButton('term-lock', `Solver lock for ${term.label}`, isLocked ? '🔒 Locked' : '🔓 Unlocked');
+  lock.setAttribute('aria-pressed', String(isLocked));
+  lock.title = isLocked ? 'Unlock this term for solver changes' : 'Keep this term fixed during solves';
+  lock.onclick = () => toggleTermLock(term.id);
+  termHeader.append(element('h3', '', term.label), lock);
+  cell.append(termHeader, heading);
   if (setup?.currentTerm === term.id) heading.prepend(element('span', 'current-term', 'Current'));
   const title = termTitle(term);
   const edit = makeButton(`term-title${title ? '' : ' untitled'}`, `Edit title for ${term.label}${title ? `, ${title}` : ''}`);
@@ -1196,12 +1261,12 @@ function renderPlan() {
   const focusCode = card?.dataset.course;
   const focusLabel = focused.getAttribute('aria-label');
   const focusTerm = focused.closest('[data-term]')?.dataset.term;
-  const manual = indexPlan(plan);
-  displayPlan = Object.fromEntries(Object.entries(plan).map(([id, courses]) => [id, [...courses]]));
+  displayPlan = planWithLockedSuggestions(plan, termLocks);
+  const fixed = indexPlan(displayPlan);
   if (autoMode && autoResult) {
     for (const [code, term] of autoResult.suggestions) {
       const limit = targets[term] - (termNotes[term]?.length ?? 0);
-      if (!manual.has(code) && preferences[code] !== 'banned' && inYearRange(termsById.get(term).year)
+      if (!locked(term) && !fixed.has(code) && preferences[code] !== 'banned' && inYearRange(termsById.get(term).year)
           && displayPlan[term].filter(isAcademicCourse).length < limit) displayPlan[term].push(code);
     }
   }
@@ -1280,6 +1345,7 @@ byId('warning-summary').addEventListener('click', () => {
   first?.focus({ preventScroll: true });
 });
 function replacePlan(next, message, nextOutcomes = {}) {
+  termLocks = {};
   plan = next;
   autoResult = undefined;
   targets = plannerTargets(profile?.targets, true);
@@ -1416,6 +1482,7 @@ function restoreHistory(index) {
   autoRunner.cancel();
   const inputs = structuredClone(entry.inputs);
   plan = inputs.plan;
+  termLocks = inputs.termLocks ?? {};
   targets = inputs.targets;
   outcomes = inputs.outcomes;
   preferences = inputs.preferences;
@@ -1431,10 +1498,9 @@ function restoreHistory(index) {
   }
   autoSeed = inputs.autoSeed;
   autoMode = autoSwitch.checked = true;
-  autoResult = entry.result;
   autoError = autoSolving = false;
   historyPoint = index;
-  renderPlan();
+  showCachedSolve(entry);
   renderAutoStatus();
   savePlan();
   byId('solve-history').querySelector('[aria-current="true"]')?.focus({ preventScroll: true });
@@ -1515,10 +1581,37 @@ byId('open-opinions').addEventListener('click', () => {
   opinionsDialog.showModal();
 });
 byId('close-opinions').addEventListener('click', () => opinionsDialog.close());
+function showCachedSolve(entry) {
+  updateLockCutoff();
+  const ids = lockedTermIds();
+  // A saved solution can predate term locks or cross a term boundary while closed.
+  // Freeze its visible placements and recompute any advice under today's locks.
+  if (JSON.stringify(entry.result.lockedTerms ?? []) !== JSON.stringify(ids)) {
+    for (const [code, id] of entry.result.suggestions) if (locked(id)) holdSuggestion(code, id);
+    saveEdit();
+  } else {
+    autoResult = entry.result;
+    renderPlan();
+  }
+}
+
+function checkTermBoundary() {
+  if (refreshLockDate()) saveEdit();
+}
+window.addEventListener('focus', checkTermBoundary);
+function checkAtMidnight() {
+  const midnight = new Date();
+  midnight.setHours(24, 0, 0, 0);
+  setTimeout(() => {
+    checkTermBoundary();
+    checkAtMidnight();
+  }, midnight.getTime() - Date.now());
+}
+checkAtMidnight();
 const restoredSolve = historyEntries[historyPoint];
-if (autoMode && restoredSolve && JSON.stringify(restoredSolve.inputs) === JSON.stringify(solveInputs())) {
-  autoResult = restoredSolve.result;
-  renderPlan();
+const savedInputs = restoredSolve && { ...restoredSolve.inputs, termLocks: restoredSolve.inputs.termLocks ?? {} };
+if (autoMode && restoredSolve && JSON.stringify(savedInputs) === JSON.stringify(solveInputs())) {
+  showCachedSolve(restoredSolve);
 } else scheduleAuto();
 renderAutoStatus();
 if (!saved && !personal && !published) openSetup();

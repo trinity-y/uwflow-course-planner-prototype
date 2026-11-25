@@ -155,3 +155,37 @@ test('capacity advice for a recorded term preserves attempts and only places new
   const verified = solveAuto({ ...data, targets: { ...data.targets, ...result.alternatives[0] } });
   assert.deepEqual(verified.suggestions, [['EARTH 121', '2024-winter']]);
 });
+
+test('a locked term can supply earned prerequisites but cannot receive a missing prerequisite', () => {
+  const past = '2023-fall';
+  const future = '2024-winter';
+  const data = inputs({
+    activeTerms: [past, future], lockedTerms: [past],
+    targets: { [past]: 2, [future]: 1 }, plan: { [past]: [], [future]: ['CS 138'] },
+    disabled: requirements.rules.map(({ id }) => id),
+  });
+  assert.equal(solveAuto(data).fits, false);
+  assert.deepEqual(solveAuto({ ...data, lockedTerms: [] }).suggestions, [['CS 137', past]]);
+  data.plan[past] = ['CS 137'];
+  data.outcomes = { 'CS 137': 'passed' };
+  const result = solveAuto(data);
+  assert.equal(result.fits, true);
+  assert.deepEqual(result.suggestions, []);
+});
+
+test('capacity trials leave a locked term fixed, including when a zero-target term could otherwise open', () => {
+  const past = '2023-fall';
+  const future = '2024-winter';
+  const data = inputs({
+    activeTerms: [past, future], visibleTerms: [past, future], lockedTerms: [future],
+    targets: { [past]: 1, [future]: 0 }, plan: { [past]: ['CS 137'], [future]: [] },
+    preferences: { 'EARTH 121': 'required' }, disabled: requirements.rules.map(({ id }) => id),
+  });
+  const result = solveAuto(data);
+  assert.equal(result.fits, false);
+  assert.deepEqual(result.alternatives, [{ [past]: 2 }]);
+  const overloaded = solveAuto({ ...data, plan: { [past]: [], [future]: ['CS 137'] } });
+  assert.equal(overloaded.fits, false);
+  assert.deepEqual(overloaded.alternatives, []);
+  assert.match(overloaded.issues.join(' '), /Winter 2024 is locked/);
+});

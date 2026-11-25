@@ -1,6 +1,6 @@
 import { termLabel, termOrder } from './calendar.mjs';
 import { element } from './graph.mjs';
-import { indexPlan } from './model.mjs';
+import { indexPlan, planWithLockedSuggestions } from './model.mjs';
 
 export function openCalendars(storage, originalKey, originalName) {
   const key = originalKey + '-calendars';
@@ -47,8 +47,10 @@ export function recordSolve(history, parent, inputs, result) {
   const previous = history[parent];
   const signature = JSON.stringify(inputs);
   if (previous && signature === JSON.stringify(previous.inputs) && JSON.stringify(result) === JSON.stringify(previous.result)) return parent;
-  const before = previous ? new Map([...indexPlan(previous.inputs.plan), ...previous.result.suggestions]) : indexPlan(inputs.plan);
-  const after = new Map([...indexPlan(inputs.plan), ...result.suggestions]);
+  const placements = (inputs, suggestions = []) =>
+    new Map([...indexPlan(planWithLockedSuggestions(inputs.plan, inputs.termLocks)), ...suggestions]);
+  const before = previous ? placements(previous.inputs, previous.result.suggestions) : placements(inputs);
+  const after = placements(inputs, result.suggestions);
   history.push({ parent, inputs: structuredClone(inputs), result, changes: solveDiff(before, after) });
   return history.length - 1;
 }

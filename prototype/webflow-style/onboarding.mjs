@@ -1,7 +1,7 @@
-import { createTerms, firstPlanYear, lastPlanYear, preloadCore, termOrder } from './calendar.mjs';
+import { createTerms, currentTermId, firstPlanYear, lastPlanYear, preloadCore, termOrder } from './calendar.mjs';
 import { element } from './graph.mjs';
 import { maxTermTarget, outcomeLabels } from './model.mjs';
-import { currentTermId, describeTerm, inferRange, inferSequence, levels, programName, readTranscript, sequenceTargets, startCalendar } from './transcript.mjs';
+import { describeTerm, inferRange, inferSequence, levels, programName, readTranscript, sequenceTargets, startCalendar } from './transcript.mjs';
 
 export function attachOnboarding(createCalendar) {
   const byId = (id) => document.getElementById(id);

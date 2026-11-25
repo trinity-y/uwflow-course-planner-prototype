@@ -33,6 +33,18 @@ export function termOrder(id) {
   return year === undefined ? undefined : year * seasons.length + seasonOrder.indexOf(id.slice(5));
 }
 
+export function currentTermId(date = new Date()) {
+  return `${date.getFullYear()}-${seasons[Math.floor(date.getMonth() / 4)].toLowerCase()}`;
+}
+
+export function solverLockCutoff(setup, date = new Date()) {
+  return Math.max(termOrder(currentTermId(date)), setup?.solveFrom ?? -Infinity, termOrder(setup?.currentTerm) ?? -Infinity);
+}
+
+export function isTermLocked(id, locks, cutoff) {
+  return locks[id]?.locked ?? (termOrder(id) < cutoff);
+}
+
 export function termLabel(id) {
   const [year, season] = id.split('-');
   return `${seasons[seasonOrder.indexOf(season)]} ${year}`;

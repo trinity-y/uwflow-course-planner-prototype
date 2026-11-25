@@ -1,4 +1,4 @@
-import { createTerms, defaultYearRange, preloadCore, seasons, termLabel, termOrder, terms as sampleTerms } from './calendar.mjs';
+import { createTerms, defaultYearRange, preloadCore, termLabel, termOrder, terms as sampleTerms } from './calendar.mjs';
 import requirements from './degree-requirements.json' with { type: 'json' };
 import { isAcademicCourse } from './model.mjs';
 
@@ -110,10 +110,6 @@ export function inferSequence(range, entryYear, records = []) {
     }
   }
   return sequence;
-}
-
-export function currentTermId(date = new Date()) {
-  return `${date.getFullYear()}-${seasons[Math.floor(date.getMonth() / 4)].toLowerCase()}`;
 }
 
 export function startCalendar({ range, entryYear, sequence, targets, records = [], currentTerm }) {

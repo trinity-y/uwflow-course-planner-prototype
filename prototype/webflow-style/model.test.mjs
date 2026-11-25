@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { createTerms, initialPlan, sampleCatalog } from './calendar.mjs';
+import { createTerms, initialPlan, isTermLocked, sampleCatalog, solverLockCutoff, termOrder } from './calendar.mjs';
 import {
   buildGraph, countableSchedule, explainMissing, groupProgress, indexPlan, missingGroups,
-  isAcademicCourse, parseLivePrerequisites, placeCourse, profileThroughLevel, readOutcomes, readPlan, readTermDetails,
+  isAcademicCourse, parseLivePrerequisites, placeCourse, planWithLockedSuggestions, profileThroughLevel, readOutcomes, readPlan, readTermDetails,
   readTermTargets, readYearRange, removeCourse,
 } from './model.mjs';
 
@@ -142,4 +142,26 @@ test('live course-only prerequisites keep AND and OR groups separate', () => {
   assert.deepEqual(parseLivePrerequisites('CS 341; Honours BCS only'), {
     groups: null, references: ['CS 341'],
   });
+});
+
+test('term locks follow local term boundaries, completed transcript terms and explicit overrides', () => {
+  const cutoff = (year, month, day) => solverLockCutoff(undefined, new Date(year, month - 1, day));
+  assert.equal(isTermLocked('2026-winter', {}, cutoff(2026, 4, 30)), false);
+  assert.equal(isTermLocked('2026-winter', {}, cutoff(2026, 5, 1)), true);
+  assert.equal(isTermLocked('2026-spring', {}, cutoff(2026, 9, 1)), true);
+  assert.equal(isTermLocked('2026-fall', {}, cutoff(2027, 1, 1)), true);
+  const imported = solverLockCutoff({ solveFrom: termOrder('2027-winter') }, new Date(2026, 10, 25));
+  assert.equal(isTermLocked('2026-fall', {}, imported), true);
+  assert.equal(isTermLocked('2026-fall', { '2026-fall': { locked: false } }, imported), false);
+  assert.equal(isTermLocked('2027-spring', { '2027-spring': { locked: true } }, imported), true);
+});
+
+test('locked suggestions stay with their term until unlocked and respect a later manual placement', () => {
+  const plan = { '2026-fall': ['CS 137'], '2027-winter': ['EARTH 121'] };
+  const lock = { '2026-fall': { locked: true, suggestions: ['PHYS 121', 'EARTH 121'] } };
+  const pinned = planWithLockedSuggestions(plan, lock);
+  assert.deepEqual(pinned['2026-fall'], ['CS 137', 'PHYS 121']);
+  assert.deepEqual(pinned['2027-winter'], ['EARTH 121']);
+  assert.deepEqual(planWithLockedSuggestions(plan, { '2026-fall': { locked: false } })['2026-fall'], ['CS 137']);
+  assert.deepEqual(plan['2026-fall'], ['CS 137']);
 });

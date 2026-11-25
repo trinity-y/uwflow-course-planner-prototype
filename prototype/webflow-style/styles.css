@@ -670,3 +670,7 @@ button:disabled { cursor: default; opacity: .55; }
 #setup-error, #storage-error { color: #903148; }
 #setup-error:empty, #setup-record:empty { display: none; }
 @media (min-width: 961px) { .solver-panel { position: sticky; top: 16px; max-height: calc(100dvh - 32px); overflow: auto; } }
+
+.season-heading > h3 { margin: 0; font: inherit; }
+.term-lock { margin-inline-start: auto; padding: 3px 5px; min-height: 26px; border: 1px solid transparent; border-radius: 5px; background: transparent; color: inherit; font: inherit; font-size: .72rem; white-space: nowrap; }
+.term-lock:hover, .term-lock[aria-pressed="true"] { border-color: currentColor; background: #ffffffa8; }

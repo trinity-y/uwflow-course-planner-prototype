@@ -82,6 +82,12 @@ enabled rules, requests, modeled prerequisites and term limits. If the solver
 cannot find a fit, it shows the unresolved constraints and tries other targets
 separately. Suggested target changes require a complete solve with those limits.
 
+Each term header has a solver lock. Past terms lock when the next Waterloo term
+begins in January, May, or September. Completed transcript terms also start
+locked. You can lock or unlock any term. Locking keeps its displayed courses and
+target fixed across solves. Unlocking releases its automatic suggestions. You
+can still correct a placement manually.
+
 Use the seed controls to explore alternatives. Each history entry restores the
 manual placements, preferences, limits and result of that solve. Solving from
 an earlier entry adds a branch. A move appears as a removal from the old term

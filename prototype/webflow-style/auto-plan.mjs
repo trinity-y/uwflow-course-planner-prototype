@@ -19,7 +19,7 @@ function variety(code, seed) {
 
 function searchPlan({
   plan, timeline, activeTerms, targets, notes = {}, outcomes = {}, preferences = {},
-  requirements, archive, groups = {}, disabled = [], equivalents = {}, seed = 0,
+  requirements, archive, groups = {}, disabled = [], equivalents = {}, seed = 0, lockedTerms = [],
 }, progress = () => {}) {
   const active = new Set(activeTerms);
   const disabledRules = new Set(disabled);
@@ -276,7 +276,8 @@ function searchPlan({
   for (const { id, label } of timeline) {
     const target = targets[id] ?? 0;
     if (count(pins, id) + (target ? notes[id] ?? 0 : 0) > target) {
-      issues.push(`${label} has more pinned classes or reserved slots than its target.`);
+      issues.push(lockedTerms.includes(id) ? `${label} is locked and already exceeds its target.`
+        : `${label} has more pinned classes or reserved slots than its target.`);
     }
   }
   for (const [code] of pins) if (banned(code)) issues.push(`${code} is both pinned and banned.`);
@@ -300,8 +301,15 @@ function searchPlan({
 
 // Try small changes first. Use a separate search for each counterfactual, so
 // the editor and the failed solve never receive a relaxed target or placement.
-export function solveAuto(data, progress = () => {}) {
+export function solveAuto(inputs, progress = () => {}) {
+  const locked = new Set(inputs.lockedTerms ?? []);
+  const data = {
+    ...inputs,
+    activeTerms: inputs.activeTerms.filter((id) => !locked.has(id)),
+    visibleTerms: (inputs.visibleTerms ?? inputs.activeTerms).filter((id) => !locked.has(id)),
+  };
   const result = searchPlan(data, progress);
+  result.lockedTerms = [...locked];
   result.alternatives = [];
   if (result.fits) return result;
 

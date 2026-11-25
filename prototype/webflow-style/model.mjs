@@ -99,6 +99,23 @@ export function removeCourse(plan, code, outcomes = {}) {
   return { ...plan, [term]: courses.filter((item) => item !== code) };
 }
 
+// A term lock holds the suggestions that were visible when it was closed.
+// Keeping them separate from manual placements lets unlocking release just those courses.
+export function planWithLockedSuggestions(plan, termLocks = {}) {
+  const fixed = Object.fromEntries(Object.entries(plan).map(([id, courses]) => [id, [...courses]]));
+  const placed = new Set(Object.values(plan).flat());
+  for (const [id, lock] of Object.entries(termLocks)) {
+    if (!fixed[id] || lock?.locked === false || !Array.isArray(lock?.suggestions)) continue;
+    for (const code of lock.suggestions) {
+      if (!placed.has(code)) {
+        fixed[id].push(code);
+        placed.add(code);
+      }
+    }
+  }
+  return fixed;
+}
+
 export function indexPlan(plan) {
   return new Map(Object.entries(plan).flatMap(([id, codes]) => codes.map((code) => [code, id])));
 }
