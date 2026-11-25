@@ -139,6 +139,10 @@
             <progress id="auto-progress" max="1" aria-label="Planning progress" hidden></progress>
             <div id="auto-issues" class="auto-issues"></div>
           </div>
+          <details class="offering-checks" id="solver-offerings" hidden>
+            <summary id="solver-offerings-title">Course offerings</summary>
+            <ul id="solver-offerings-list"></ul>
+          </details>
           <button class="button subtle" type="button" id="open-opinions">Course preferences</button>
         </div>
         <h3>Solve history</h3><div id="solve-history"></div>
@@ -192,6 +196,17 @@
       <section class="course-contributions" aria-labelledby="detail-contributions-title">
         <h3 id="detail-contributions-title">Degree contributions</h3>
         <div id="detail-contributions"></div>
+      </section>
+      <section class="course-contributions course-offerings" aria-labelledby="detail-offerings-title">
+        <h3 id="detail-offerings-title">Course offerings</h3>
+        <p id="detail-forecast"></p>
+        <p id="detail-offering-warning" class="offering-warning" hidden></p>
+        <p id="detail-published" hidden></p>
+        <details id="detail-offerings-history" hidden>
+          <summary id="detail-history-label"></summary>
+          <ul id="detail-history-years"></ul>
+          <a id="detail-history-source" target="_blank" rel="noopener">View timetable archive ↗</a>
+        </details>
       </section>
       <div class="graph-heading">
         <h3>Prerequisite graph</h3>

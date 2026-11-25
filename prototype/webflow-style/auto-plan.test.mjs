@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { solveAuto } from './auto-plan.mjs';
 import { sampleCatalog, termOrder, terms } from './calendar.mjs';
 import { evaluateDegree } from './degree.mjs';
+import { allowsOffering, offeringStatus, offerings, ratings } from './ratings.mjs';
 import requirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
@@ -27,6 +28,7 @@ test('a blank auto plan meets every enabled rule and fits the academic term targ
   assert.deepEqual(result.issues, []);
   assert.equal(progress.at(-1), 1);
   const schedule = new Map(result.suggestions);
+  for (const [code, id] of schedule) assert.ok(allowsOffering(code, id), `${code} in ${id}`);
   assert.equal(evaluateDegree(requirements, archive, schedule).percent, 100);
   for (const { id, level, target } of terms) {
     assert.ok(result.suggestions.filter(([, term]) => term === id).length <= target);
@@ -42,6 +44,50 @@ test('must-take courses get prerequisites and banned alternatives stay out of th
   assert.ok(termOrder(schedule.get('CS 370')) < termOrder(schedule.get('CS 488')));
   assert.deepEqual(result.unscheduled, {});
   assert.equal(result.suggestions.length, 51);
+});
+
+test('all enhanced courses carry chronological records, with listed terms taking precedence over projections', () => {
+  assert.equal(offerings.size, 35);
+  for (const code of Object.keys(ratings)) {
+    const { history, upcoming } = offerings.get(code);
+    const orders = [...history, ...upcoming].map(termOrder);
+    assert.ok(history.length > 0);
+    assert.deepEqual(orders, [...new Set(orders)].sort((a, b) => a - b));
+  }
+  assert.equal(offeringStatus('CS 448', '2026-winter'), 'listed');
+  assert.equal(offeringStatus('CS 448', '2027-winter'), 'unlisted');
+  assert.equal(offeringStatus('CS 448', '2028-winter'), 'projected');
+  assert.equal(offeringStatus('CS 488', '2027-winter'), 'listed');
+  assert.equal(offeringStatus('CS 488', '2027-spring'), 'projected');
+  assert.equal(offeringStatus('CS 488', '2027-fall'), 'off-season');
+  assert.equal(offeringStatus('ANTH 106', '2029-fall'), 'projected');
+  assert.equal(offeringStatus('ANTH 106', '2029-spring'), 'off-season');
+  assert.equal(offeringStatus('CS 241E', '2027-spring'), 'unknown');
+});
+
+test('must-takes and their prerequisites need compatible offering seasons', () => {
+  const data = inputs({ activeTerms: ['2027-spring', '2027-fall', '2028-winter'],
+    targets: { '2027-spring': 2, '2027-fall': 2, '2028-winter': 1 },
+    preferences: { 'CS 448': 'required' }, groups: { 'CS 448': [{ options: ['BIOL 110'], count: 1 }] },
+    disabled: requirements.rules.map(({ id }) => id) });
+  assert.deepEqual(new Map(solveAuto(data).suggestions), new Map([['BIOL 110', '2027-fall'], ['CS 448', '2028-winter']]));
+  const failed = solveAuto({ ...data, activeTerms: ['2027-spring', '2027-fall'] });
+  assert.equal(failed.fits, false);
+  assert.deepEqual(failed.suggestions, []);
+  assert.deepEqual(failed.alternatives, []);
+  assert.match(failed.unscheduled['CS 448'], /offering.*Winter/);
+  assert.equal(solveAuto({ ...data, lockedTerms: ['2027-fall'] }).fits, false);
+});
+
+test('a manual off-season pin stays put and blocks the solve, while a recorded enrollment stands', () => {
+  const data = inputs({ plan: { '2027-spring': ['BIOL 110'] }, targets: { '2027-spring': 1 },
+    disabled: requirements.rules.map(({ id }) => id) });
+  const result = solveAuto(data);
+  assert.equal(result.fits, false);
+  assert.match(result.issues.join(' '), /BIOL 110 is pinned.*Spring 2027.*Fall/);
+  assert.deepEqual(result.alternatives, []);
+  assert.deepEqual(data.plan['2027-spring'], ['BIOL 110']);
+  assert.equal(solveAuto({ ...data, outcomes: { 'BIOL 110': 'enrolled' } }).fits, true);
 });
 
 test('a locked CS 241E satisfies the CS 241 prerequisite for CS 348', () => {
@@ -128,6 +174,11 @@ test('electives prefer the most rated eligible option, with reproducible placeme
   assert.equal(first.fits, true);
   assert.deepEqual(first.suggestions.map(([code]) => code), ['PHYS 121']);
   assert.deepEqual(solveAuto(data).suggestions, first.suggestions);
+  const springOnly = solveAuto({ ...data, activeTerms: ['2027-spring'] });
+  assert.equal(springOnly.fits, true);
+  assert.equal(springOnly.suggestions.length, 1);
+  assert.ok(['ECE 105', 'PHYS 115'].includes(springOnly.suggestions[0][0]));
+  assert.equal(springOnly.suggestions[0][1], '2027-spring');
 });
 
 test('notes alone cannot exceed a positive term target during a solve', () => {

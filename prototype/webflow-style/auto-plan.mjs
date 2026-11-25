@@ -1,6 +1,6 @@
 import { courseCredit, termOrder } from './calendar.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
-import { byRatings, ratings } from './ratings.mjs';
+import { allowsOffering, byRatings, offeringWarning, offerings, ratings } from './ratings.mjs';
 import { isAcademicCourse, maxTermTarget } from './model.mjs';
 
 export const opinions = {
@@ -118,7 +118,8 @@ function searchPlan({
       const requiredTerm = termByLevel.get(requiredLevel);
       const nextTrail = new Set([...trail, course]);
       const available = (allowed ?? openTerms).filter((term) => active.has(term) && termOrder(term) < before
-        && (!requiredLevel || term === requiredTerm || outOfSequence.has(course)) && count(base, term) < capacities.get(term));
+        && allowsOffering(code, term) && (!requiredLevel || term === requiredTerm || outOfSequence.has(course))
+        && count(base, term) < capacities.get(term));
       if (!allowed) available.sort((a, b) => {
         if (a === requiredTerm || b === requiredTerm) return a === requiredTerm ? -1 : 1;
         if (before !== Infinity) return termOrder(b) - termOrder(a);
@@ -177,7 +178,9 @@ function searchPlan({
       let tried = 0;
       let evaluatedChoices = 0;
       for (const codes of ranked) {
-        for (const term of termsForChoice.slice(0, 5)) {
+        const missing = codes.filter((code) => !position(state, code));
+        const eligible = termsForChoice.filter((term) => missing.every((code) => allowsOffering(code, term)));
+        for (const term of eligible.slice(0, 5)) {
           let proposal = state;
           for (const code of codes) {
             proposal = place(proposal, code, [term]);
@@ -281,14 +284,26 @@ function searchPlan({
         : `${label} has more pinned classes or reserved slots than its target.`);
     }
   }
-  for (const [code] of pins) if (banned(code)) issues.push(`${code} is both pinned and banned.`);
+  for (const [code, term] of pins) {
+    if (banned(code)) issues.push(`${code} is both pinned and banned.`);
+    const warning = !outcomes[code] && offeringWarning(code, term);
+    if (warning) issues.push(`${code} is pinned. ${warning}`);
+  }
   for (const [code, term] of warnings(best.state)) {
     const label = timeline.find(({ id }) => id === term)?.label ?? term;
     issues.push(`${code} needs an earlier prerequisite before ${label}.`);
   }
-  const unscheduled = Object.fromEntries(misses(best.state).map((code) => [code, outcomes[code] === 'failed'
-    ? 'A failed attempt is pinned. The planner supports one placement per course.'
-    : 'No placement fits the available slots and known prerequisites.']));
+  const unscheduled = {};
+  for (const code of misses(best.state)) {
+    if (outcomes[code] === 'failed') {
+      unscheduled[code] = 'A failed attempt is pinned. The planner supports one placement per course.';
+    } else if (offerings.has(code) && !openTerms.some((term) => allowsOffering(code, term))) {
+      const { expected, year } = offerings.get(code);
+      unscheduled[code] = `No open target term matches its offerings. Projected seasons: ${expected.join(', ')} (from ${year}).`;
+    } else {
+      unscheduled[code] = 'No placement fits the available slots and known prerequisites.';
+    }
+  }
   for (const rule of best.report.rules.filter((rule) => !rule.disabled)) {
     for (const { required, scheduled } of rule.elsewhere ?? []) {
       issues.push(`${required} is required in ${rule.level}. ${scheduled} is pinned in a different term.`);
@@ -320,7 +335,8 @@ export function solveAuto(inputs, progress = () => {}) {
   const notes = (id) => data.notes?.[id] ?? 0;
   const blocked = data.timeline.some(({ id }) => !visible.has(id) && used(id) > (data.targets[id] ?? 0))
     || Object.keys(result.unscheduled).some((code) => data.outcomes?.[code] === 'failed')
-    || Object.values(data.plan).some((courses) => courses.some((code) => data.preferences?.[code] === 'banned'));
+    || Object.entries(data.plan).some(([term, courses]) => courses.some((code) => data.preferences?.[code] === 'banned'
+      || (!data.outcomes?.[code] && !allowsOffering(code, term))));
   if (blocked) return result;
 
   const candidates = data.timeline.filter(({ id }) => visible.has(id));

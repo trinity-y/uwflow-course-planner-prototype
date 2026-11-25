@@ -642,6 +642,15 @@ button:disabled { cursor: default; opacity: .55; }
 .solver-panel .auto-mode-control { font-size: .78rem; padding: 5px; gap: 5px; }
 .solver-panel .auto-progress { min-width: 0; }
 .solver-panel #auto-toolbar { display: grid; gap: 10px; margin-top: 12px; }
+.course-offerings p, .course-offerings details, .offering-checks { margin: 4px 0; font-size: .82rem; }
+.course-offerings summary, .offering-checks summary { cursor: pointer; font-weight: 650; }
+.course-offerings ul { display: grid; gap: 3px 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
+.course-offerings ul, .offering-checks ul { list-style: none; margin: 8px 0; padding: 0; }
+.offering-checks li { display: grid; gap: 2px; border-top: 1px solid var(--line); padding: 6px 0; }
+.offering-checks li span { font-size: .75rem; }
+.offering-course { justify-self: start; padding: 0; border: 0; background: transparent; color: var(--blue); font-weight: 700; }
+.offering-course:hover { text-decoration: underline; }
+.offering-warning { color: var(--warning); font-weight: 650; }
 .seed-controls input { width: 6em; }
 #solve-history { max-height: 55dvh; overflow-y: auto; }
 .history-item { display: grid; gap: 3px; border-top: 1px solid var(--line); padding: 8px 0; }

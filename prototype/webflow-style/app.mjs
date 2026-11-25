@@ -10,7 +10,7 @@ import { renderCourseContributions, renderDegreeReport, renderDegreeSidebar } fr
 import { openCalendars, recordSolve, renderHistory } from './calendars.mjs';
 import { attachOnboarding } from './onboarding.mjs';
 import { readImportedPlan } from './transcript.mjs';
-import { byRatings } from './ratings.mjs';
+import { allowsOffering, byRatings, offeringHistory, offerings, offeringStatus, offeringWarning } from './ratings.mjs';
 import { createAutoRunner, opinionPicker, readOpinions, renderOpinions } from './auto-controls.mjs';
 import programRequirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
@@ -226,7 +226,8 @@ function placementOptions(label, required, currentTerm) {
 
 function solveInputs() {
   return { plan, targets, outcomes, yearRange, termDetails: { titles: termTitles, notes: termNotes },
-    disabledRules: [...disabledRules], autoSeed, preferences, termLocks, equivalents, prerequisiteRevision };
+    disabledRules: [...disabledRules], autoSeed, preferences, termLocks, equivalents, prerequisiteRevision,
+    offeringRevision: offeringHistory.retrieved };
 }
 
 function calendarSnapshot() {
@@ -469,6 +470,30 @@ function moveToRequests(code, fromTerm) {
   announce(`${code} moved to Schedule for Me.`);
 }
 
+function renderSolverOfferings() {
+  const placements = indexPlan(planWithLockedSuggestions(plan, termLocks));
+  for (const [code, term] of autoResult?.suggestions ?? []) placements.set(code, term);
+  const courses = new Set([...placements.keys(), ...Object.keys(preferences).filter((code) => preferences[code] === 'required')]);
+  const tracked = [...courses].filter((code) => offerings.has(code)).sort();
+  byId('solver-offerings').hidden = !tracked.length;
+  byId('solver-offerings-title').textContent = `Course offerings (${tracked.length})`;
+  byId('solver-offerings-list').replaceChildren(...tracked.map((code) => {
+    const { expected, history } = offerings.get(code);
+    const term = placements.get(code);
+    const row = element('li');
+    const open = makeButton('offering-course', `View offering history for ${code}`, code);
+    open.onclick = () => showCourse(code, open);
+    row.append(open, element('span', '', `Last recorded: ${termLabel(history.at(-1))} · Projected: ${expected.join(', ')}`));
+    if (term) {
+      const status = offeringStatus(code, term);
+      const warning = !outcomes[code] && offeringWarning(code, term);
+      const label = outcomes[code] ? outcomeLabels[outcomes[code]] : { listed: 'Listed', projected: 'Projected' }[status];
+      row.append(element('span', warning ? 'offering-warning' : '', warning || [label, termLabel(term)].filter(Boolean).join(' · ')));
+    }
+    return row;
+  }));
+}
+
 function renderAutoStatus() {
   byId('auto-toolbar').hidden = !autoMode;
   byId('auto-progress').hidden = !autoSolving;
@@ -489,6 +514,7 @@ function renderAutoStatus() {
     }
   }
   renderHistory(byId('solve-history'), historyEntries, historyPoint, restoreHistory);
+  if (autoMode) renderSolverOfferings();
   byId('auto-issues').replaceChildren(...(list.childElementCount ? [list] : []));
 }
 
@@ -682,11 +708,42 @@ function showCourse(code, trigger, focusPlacement = false, savedGraph) {
   updateDetails(focusPlacement ? code : undefined);
 }
 
+function renderCourseOfferings(code, term) {
+  const data = offerings.get(code);
+  const history = byId('detail-offerings-history');
+  if (history.dataset.course !== code) history.open = false;
+  history.dataset.course = code;
+  history.hidden = !data;
+  const warning = !outcomes[code] && offeringWarning(code, term);
+  byId('detail-offering-warning').hidden = !warning;
+  byId('detail-offering-warning').textContent = warning || '';
+  byId('detail-published').hidden = !data;
+  byId('detail-forecast').textContent = data
+    ? `Projected after ${termLabel(offeringHistory.publishedThrough)}: ${data.expected.join(', ')} · Based on ${data.year} offerings.`
+    : 'Offering history is unavailable for this course.';
+  if (!data) return;
+  const through = termLabel(offeringHistory.publishedThrough);
+  byId('detail-published').textContent = data.upcoming.length
+    ? `Upcoming listed terms: ${data.upcoming.map(termLabel).join(', ')}.`
+    : `No upcoming section is listed through ${through}.`;
+  byId('detail-history-label').textContent = `Recorded offerings (${data.history.length}) · Latest: ${termLabel(data.history.at(-1))}`;
+  const years = new Map();
+  for (const term of data.history) {
+    const [season, year] = termLabel(term).split(' ');
+    if (!years.has(year)) years.set(year, []);
+    years.get(year).push(season);
+  }
+  byId('detail-history-years').replaceChildren(...[...years].reverse().map(([year, seasons]) =>
+    element('li', '', `${year} · ${seasons.join(', ')}`)));
+  byId('detail-history-source').href = new URL(flowCode(code) + '/', offeringHistory.archive);
+}
+
 function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
   const code = selectedCode;
   if (!dialog.open || !code) return;
   const course = getCourse(code);
   const atTerm = scheduled.get(code);
+  renderCourseOfferings(code, atTerm);
   const locked = pinned(code);
   byId('remove-course').hidden = !atTerm || locked;
   byId('locate-detail-course').hidden = !atTerm;
@@ -832,10 +889,11 @@ function changeGraphTerm(code, target) {
   updateDetails(code);
 }
 
-function warningBadge(code, term, groups) {
-  const reason = explainMissing(groups, term.id, prerequisites);
+function warningBadge(code, term, groups, offering) {
+  const reason = [offering, groups.length && explainMissing(groups, term.id, prerequisites)].filter(Boolean).join(' ');
   const container = element('div', 'warning-badge');
-  const button = makeButton('warning-trigger', `Prerequisite warning for ${code}`, '!');
+  const label = offering ? 'Offering warning' : 'Prerequisite warning';
+  const button = makeButton('warning-trigger', `${label} for ${code}`, '!');
   const tip = element('span', 'warning-tip', reason);
   tip.role = 'tooltip';
   tip.id = `warning-${flowCode(code)}`;
@@ -888,7 +946,8 @@ function termCourse(code, term, groups) {
   name.addEventListener('click', () => showCourse(code, open));
   if (!pinned(code)) card.append(grip);
   card.append(withFavorite(open, code), name);
-  if (groups.length) card.append(warningBadge(code, term, groups));
+  const offering = !outcomes[code] && offeringWarning(code, term.id);
+  if (offering || groups.length) card.append(warningBadge(code, term, groups, offering));
   const outcome = outcomeFor(code);
   if (outcome) {
     const label = element('span', `course-outcome ${outcome}`, outcomeLabels[outcome]);
@@ -1131,7 +1190,7 @@ function renderBoard() {
   updateScheduleHighlight();
   byId('planned-count').textContent = `${[...scheduled.keys()].filter(isAcademicCourse).length} ${Object.keys(outcomes).length ? 'courses' : 'planned'}`;
   const warning = byId('warning-summary');
-  const count = warningList.length + board.querySelectorAll('.term-over-target').length;
+  const count = board.querySelectorAll('.warning-trigger, .term-over-target').length;
   warning.hidden = count === 0;
   warning.textContent = `${count} ${count === 1 ? 'warning' : 'warnings'}`;
 }
@@ -1643,9 +1702,11 @@ function currentView() {
     startYear: startYear.valueAsNumber === yearRange.start ? undefined : startYear.value,
     endYear: endYear.valueAsNumber === yearRange.end ? undefined : endYear.value,
     seedInput: byId('solver-seed').valueAsNumber === autoSeed ? undefined : byId('solver-seed').value,
+    solverOfferingsOpen: byId('solver-offerings').open,
     onboarding: onboarding.draft(), degreeOpen: degreeDialog.open, opinionsOpen: opinionsDialog.open,
     outcome: outcomeDialog.open ? outcomeCode : null,
     course: dialog.open ? { code: selectedCode, graph: graphView, target: byId('target-term').value,
+      offeringsOpen: byId('detail-offerings-history').open,
       request: dialogTrigger?.closest('.request-item')?.dataset.course } : null,
     edit: termEditor.open ? { term: termEdit.term.id, kind: termEdit.kind, noteIndex: termEdit.noteIndex,
       title: entryTitle.value, body: entryBody.value } : null,
@@ -1664,6 +1725,7 @@ function rememberView() {
 }
 
 function restoreView() {
+  byId('solver-offerings').open = Boolean(view.solverOfferingsOpen);
   startYear.value = view.startYear ?? yearRange.start;
   endYear.value = view.endYear ?? yearRange.end;
   if (view.seedInput !== undefined) byId('solver-seed').value = view.seedInput;
@@ -1677,6 +1739,7 @@ function restoreView() {
     const request = view.course.request && byId('request-list')
       .querySelector(`[data-course="${CSS.escape(view.course.request)}"] .request-course`);
     showCourse(view.course.code, request, false, view.course.graph);
+    byId('detail-offerings-history').open = Boolean(view.course.offeringsOpen);
     byId('target-term').value = view.course.target;
   }
   if (view.edit && termsById.has(view.edit.term)) {
@@ -1705,9 +1768,9 @@ function showCachedSolve(entry) {
   // A saved solution can predate term locks or cross a term boundary while closed.
   // Freeze its visible placements and recompute any advice under today's locks.
   if (JSON.stringify(entry.result.lockedTerms ?? []) !== JSON.stringify(ids)) {
-    for (const [code, id] of entry.result.suggestions) if (locked(id)) holdSuggestion(code, id);
+    for (const [code, id] of entry.result.suggestions) if (locked(id) && allowsOffering(code, id)) holdSuggestion(code, id);
     saveEdit();
-  } else if ((entry.inputs.prerequisiteRevision ?? 0) !== prerequisiteRevision
+  } else if (entry.inputs.offeringRevision !== offeringHistory.retrieved || (entry.inputs.prerequisiteRevision ?? 0) !== prerequisiteRevision
       || JSON.stringify(entry.inputs.equivalents ?? {}) !== JSON.stringify(equivalents)) {
     scheduleAuto();
   } else {
@@ -1731,7 +1794,7 @@ function checkAtMidnight() {
 checkAtMidnight();
 const restoredSolve = historyEntries[historyPoint];
 const savedInputs = restoredSolve && { ...restoredSolve.inputs, plan: readImportedPlan(restoredSolve.inputs, setup),
-  termLocks: restoredSolve.inputs.termLocks ?? {}, equivalents, prerequisiteRevision };
+  termLocks: restoredSolve.inputs.termLocks ?? {}, equivalents, prerequisiteRevision, offeringRevision: offeringHistory.retrieved };
 if (autoMode && restoredSolve && JSON.stringify(savedInputs) === JSON.stringify(solveInputs())) {
   showCachedSolve(restoredSolve);
 } else scheduleAuto();

@@ -75,7 +75,7 @@ The local server reads UW Flow’s public course index and retrieves prerequisit
 text through read-only GraphQL. Sample graphs use curated course paths. For other
 courses, straightforward course-only AND/OR expressions can produce warnings and
 buckets. More complex text stays visible in the modal for manual review. The
-prototype does not evaluate grades, standing, enrollment restrictions, or term offerings.
+prototype leaves grades, standing and enrollment restrictions for manual review.
 
 Any static HTTP server can serve this directory. The bundled catalog, planner,
 and prerequisite graphs work with no upstream service. Use
@@ -104,6 +104,16 @@ courses, retrieved in one limited query on November 25, 2026. Among otherwise
 suitable courses, the solver prefers more ratings, then a higher liked score.
 The snapshot includes ease, usefulness and comment counts. The browsing lists
 use the same ordering. Courses outside the sample remain eligible.
+
+**Course offerings** shows recorded terms for all 35 enhanced courses, combining
+the [timetable archive](https://uwloo.ca/cs488/) with [UW Flow section listings](https://uwflow.com/course/cs488).
+The November 25, 2026 snapshot covers Fall 2001 through the published Winter 2027
+timetable. For terms within that window the solver requires a listed section.
+For later terms it repeats the seasons recorded in the most recent calendar year
+in which that course ran, through Fall 2026. Open the offering history from a
+course or the solver panel to inspect the evidence. Manual placements outside
+those terms show a warning. Recorded enrollments and results keep their terms.
+Courses without offering data have no season restriction.
 
 Run the planner tests from the repository root:
 
