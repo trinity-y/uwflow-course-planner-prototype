@@ -59,6 +59,31 @@ export function recordSolve(history, parent, inputs, result) {
   return history.length - 1;
 }
 
+// Saved solves store a move as two term edits. Pair them by course in either order.
+export function courseChanges(changes) {
+  const byCourse = new Map();
+  for (const { code, term, added } of changes) {
+    if (!byCourse.has(code)) byCourse.set(code, { code });
+    const change = byCourse.get(code);
+    if (added) change.to = term;
+    else change.from = term;
+  }
+  return [...byCourse.values()];
+}
+
+function changeRow({ code, from, to }) {
+  if (from && to) {
+    const row = element('div', 'diff-moved');
+    const origin = termLabel(from);
+    const destination = termLabel(to);
+    const text = element('span', '', `↪ ${code} · ${origin} → ${destination}`);
+    text.setAttribute('aria-hidden', 'true');
+    row.append(text, element('span', 'sr-only', `${code} moved from ${origin} to ${destination}`));
+    return row;
+  }
+  return element('div', to ? 'diff-added' : 'diff-removed', `${to ? '+' : '−'} ${code} · ${termLabel(to ?? from)}`);
+}
+
 export function renderHistory(container, history, selected, restore) {
   if (!history.length) {
     container.replaceChildren(element('p', 'quiet-message', 'Turn on Auto plan to compare solves here.'));
@@ -71,13 +96,11 @@ export function renderHistory(container, history, selected, restore) {
     button.setAttribute('aria-current', index === selected ? 'true' : 'false');
     button.addEventListener('click', () => restore(index));
     item.append(button);
-    const status = !result.fits ? "Can't fit within target" : changes.length ? `${changes.length} placement changes` : 'No course changes';
+    const courses = courseChanges(changes);
+    const status = !result.fits ? "Can't fit within target" : courses.length
+      ? `${courses.length} placement change${courses.length === 1 ? '' : 's'}` : 'No course changes';
     item.append(element('small', '', parent >= 0 ? `${status} · from solve ${parent + 1}` : status));
-    if (index === selected) {
-      for (const { added, code, term } of changes) {
-        item.append(element('div', added ? 'diff-added' : 'diff-removed', `${added ? '+' : '−'} ${code} · ${termLabel(term)}`));
-      }
-    }
+    if (index === selected) item.append(...courses.map(changeRow));
     return item;
   });
   container.replaceChildren(...entries.reverse());

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { openCalendars, recordSolve } from './calendars.mjs';
+import { courseChanges, openCalendars, recordSolve } from './calendars.mjs';
 
 test('old saves become the original calendar and copied calendars edit independently', () => {
   const items = new Map([['plan', JSON.stringify({ autoSeed: 9 })]]);
@@ -27,8 +27,25 @@ test('branching from an older solve preserves its other children and records mov
   assert.deepEqual(history[next].changes, [
     { code: 'CS 136', term: '2031-winter', added: false }, { code: 'CS 136', term: '2031-spring', added: true },
   ]);
+  assert.deepEqual(courseChanges(history[fork].changes), [
+    { code: 'CS 136', from: '2031-winter', to: '2031-fall' },
+  ]);
   input.plan['2030-fall'].push('CS 246');
   assert.deepEqual(history[fork].inputs.plan['2030-fall'], ['CS 135']);
+});
+
+test('a saved diff shows one row per course, including moves to an earlier term', () => {
+  const changes = [
+    { code: 'CS 350', term: '2030-fall', added: true },
+    { code: 'CS 341', term: '2030-fall', added: false },
+    { code: 'CS 343', term: '2031-winter', added: true },
+    { code: 'CS 350', term: '2031-winter', added: false },
+  ];
+  assert.deepEqual(courseChanges(changes), [
+    { code: 'CS 350', from: '2031-winter', to: '2030-fall' },
+    { code: 'CS 341', from: '2030-fall' },
+    { code: 'CS 343', to: '2031-winter' },
+  ]);
 });
 
 test('calendar views survive reopening, copy independently and leave existing plan saves untouched', () => {

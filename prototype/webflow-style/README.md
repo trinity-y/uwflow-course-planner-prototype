@@ -96,8 +96,8 @@ can still correct a placement manually.
 
 Use the seed controls to explore alternatives. Each history entry restores the
 manual placements, preferences, limits and result of that solve. Solving from
-an earlier entry adds a branch. A move appears as a removal from the old term
-and an addition to the new one.
+an earlier entry adds a branch. Each moved course appears once in orange with
+an arrow from its previous term to its new term.
 
 Elective choices use a bundled snapshot of UW Flow aggregate ratings for 35
 courses, retrieved in one limited query on November 25, 2026. Among otherwise
