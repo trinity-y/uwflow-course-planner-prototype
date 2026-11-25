@@ -10,7 +10,7 @@ import { renderCourseContributions, renderDegreeReport, renderDegreeSidebar } fr
 import { openCalendars, recordSolve, renderHistory } from './calendars.mjs';
 import { attachOnboarding } from './onboarding.mjs';
 import { readImportedPlan } from './transcript.mjs';
-import { allowsOffering, byRatings, offeringHistory, offerings, offeringStatus, offeringWarning } from './ratings.mjs';
+import { allowsOffering, byRatings, offeringHistory, offerings, offeringStatus, offeringWarning, ratingLabel } from './ratings.mjs';
 import { createAutoRunner, opinionPicker, readOpinions, renderOpinions } from './auto-controls.mjs';
 import programRequirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
@@ -753,6 +753,9 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
   const status = byId('detail-status');
   byId('detail-code').textContent = code;
   byId('detail-title').textContent = course.name;
+  const rating = ratingLabel(code);
+  byId('detail-ratings').textContent = rating;
+  byId('detail-ratings').hidden = !rating;
   status.classList.toggle('needs-attention', groups.length > 0);
   if (locked) {
     status.textContent = `${outcomeLabels[outcomeFor(code)]} · Locked to ${termsById.get(atTerm).label}`;
@@ -1478,6 +1481,16 @@ degreeDialog.addEventListener('close', () => {
   refreshDegreeReport = undefined;
   if (!board.contains(document.activeElement)) degreeButton.focus({ preventScroll: true });
 });
+byId('enhanced-count').textContent = offerings.size;
+byId('enhanced-course-list').replaceChildren(...[...offerings.keys()].sort().map((code) => {
+  const open = makeButton('button subtle', null, code);
+  open.title = getCourse(code).name;
+  open.setAttribute('aria-haspopup', 'dialog');
+  open.addEventListener('click', () => showCourse(code, open));
+  const item = element('li');
+  item.append(open);
+  return item;
+}));
 byId('close-dialog').addEventListener('click', () => dialog.close());
 byId('locate-detail-course').addEventListener('click', () => locateCourse(selectedCode));
 dialog.addEventListener('close', () => {
@@ -1703,6 +1716,7 @@ function currentView() {
     endYear: endYear.valueAsNumber === yearRange.end ? undefined : endYear.value,
     seedInput: byId('solver-seed').valueAsNumber === autoSeed ? undefined : byId('solver-seed').value,
     solverOfferingsOpen: byId('solver-offerings').open,
+    enhancedCoursesOpen: byId('enhanced-courses').open,
     onboarding: onboarding.draft(), degreeOpen: degreeDialog.open, opinionsOpen: opinionsDialog.open,
     outcome: outcomeDialog.open ? outcomeCode : null,
     course: dialog.open ? { code: selectedCode, graph: graphView, target: byId('target-term').value,
@@ -1726,6 +1740,7 @@ function rememberView() {
 
 function restoreView() {
   byId('solver-offerings').open = Boolean(view.solverOfferingsOpen);
+  byId('enhanced-courses').open = Boolean(view.enhancedCoursesOpen);
   startYear.value = view.startYear ?? yearRange.start;
   endYear.value = view.endYear ?? yearRange.end;
   if (view.seedInput !== undefined) byId('solver-seed').value = view.seedInput;

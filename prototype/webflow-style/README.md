@@ -103,7 +103,8 @@ Elective choices use a bundled snapshot of UW Flow aggregate ratings for 35
 courses, retrieved in one limited query on November 25, 2026. Among otherwise
 suitable courses, the solver prefers more ratings, then a higher liked score.
 The snapshot includes ease, usefulness and comment counts. The browsing lists
-use the same ordering. Courses outside the sample remain eligible.
+use the same ordering. Courses outside the sample remain eligible. Expand **Enhanced courses**
+at the bottom of the planner to browse the full list and open a course’s ratings and offering history.
 
 **Course offerings** shows recorded terms for all 35 enhanced courses, combining
 the [timetable archive](https://uwloo.ca/cs488/) with [UW Flow section listings](https://uwflow.com/course/cs488).

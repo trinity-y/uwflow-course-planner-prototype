@@ -148,6 +148,11 @@
         <h3>Solve history</h3><div id="solve-history"></div>
       </aside>
     </div>
+    <details id="enhanced-courses" class="enhanced-courses">
+      <summary>Enhanced courses <span class="count" id="enhanced-count"></span></summary>
+      <p>These courses have UW Flow ratings and term-by-term offering history.</p>
+      <ul id="enhanced-course-list"></ul>
+    </details>
     <p id="storage-error" role="alert" hidden></p>
   </main>
   <dialog class="details setup-dialog" id="onboarding" aria-labelledby="setup-title">
@@ -184,6 +189,7 @@
       <div>
         <div class="detail-code course-with-star"><span id="detail-code"></span><span id="detail-favorite"></span></div>
         <h2 id="detail-title"></h2>
+        <p class="quiet-message" id="detail-ratings" hidden></p>
       </div>
       <button type="button" class="icon-button close-dialog" id="close-dialog" aria-label="Close course details" autofocus>×</button>
     </header>

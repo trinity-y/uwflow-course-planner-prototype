@@ -69,6 +69,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .calendar-link span, .detail-links a span { margin-left: 3px; }
 
 .workspace { max-width: 1600px; margin: 0 auto; padding: 37px 42px 56px; }
+.enhanced-courses { margin-top: 18px; padding-top: 6px; border-top: 1px solid var(--line); }
+.enhanced-courses summary { width: fit-content; padding: 8px 0; cursor: pointer; font-size: .9375rem; font-weight: 700; }
+.enhanced-courses .count { margin-left: 4px; }
+.enhanced-courses p { color: var(--muted); font-size: .875rem; }
+.enhanced-courses ul { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 10px 0 0; }
+.enhanced-courses button { min-height: 32px; padding: 4px 9px; color: var(--blue); }
 .page-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 26px; }
 h1, h2, h3, h4, p { margin: 0; }
 .page-heading h1 { font-size: clamp(2rem, 3.6vw, 2.7rem); line-height: 1.06; letter-spacing: -.058em; font-weight: 760; }
