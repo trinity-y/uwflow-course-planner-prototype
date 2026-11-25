@@ -3,7 +3,7 @@ import { element } from './graph.mjs';
 import { maxTermTarget, outcomeLabels } from './model.mjs';
 import { describeTerm, inferRange, inferSequence, levels, programName, readTranscript, sequenceTargets, startCalendar } from './transcript.mjs';
 
-export function attachOnboarding(createCalendar) {
+export function attachOnboarding(createCalendar, rememberView) {
   const byId = (id) => document.getElementById(id);
   const dialog = byId('onboarding');
   const form = byId('setup-form');
@@ -103,18 +103,30 @@ export function attachOnboarding(createCalendar) {
     return true;
   }
 
-  function review(transcript) {
-    records = transcript?.records ?? [];
-    const inferred = inferRange(records);
+  function review({ records: transcriptTerms = [], program = programName, ...draft } = {}) {
+    records = transcriptTerms;
+    const inferred = draft.range ?? inferRange(records);
     start.value = inferred.start;
     end.value = inferred.end;
-    byId('setup-degree').textContent = transcript?.program ?? programName;
-    byId('setup-name').value = records.length ? 'Transcript calendar' : 'SE calendar';
+    byId('setup-degree').textContent = program;
+    byId('setup-name').value = draft.name ?? (records.length ? 'Transcript calendar' : 'SE calendar');
     byId('setup-record').textContent = records.length ? `Latest transcript term · ${describeTerm(records.at(-1).id, records.at(-1).level)}` : '';
     current.replaceChildren();
     step(true);
-    updateRange(true);
+    if (draft.range) {
+      range = inferred;
+      entryYear = range.start;
+      sequence = draft.sequence;
+      targets = draft.targets;
+      renderTerms();
+      current.value = draft.current;
+      start.value = draft.start;
+      end.value = draft.end;
+      const details = byId('setup-terms').querySelectorAll('details');
+      for (const i of draft.expanded ?? []) if (details[i]) details[i].open = true;
+    } else updateRange(true);
     byId('setup-name').focus();
+    rememberView();
   }
   for (const field of [start, end]) {
     field.min = firstPlanYear; field.max = lastPlanYear;
@@ -147,5 +159,20 @@ export function attachOnboarding(createCalendar) {
     const data = startCalendar({ range, entryYear, sequence: Object.fromEntries(academic), targets, records, currentTerm: current.value });
     createCalendar(byId('setup-name').value.trim() || 'SE calendar', data);
   };
-  return () => { step(false); dialog.showModal(); };
+  return {
+    open(draft) {
+      step(false);
+      dialog.showModal();
+      if (draft?.range) review(draft);
+    },
+    draft() {
+      if (!dialog.open) return null;
+      if (form.hidden) return {};
+      return {
+        records, program: byId('setup-degree').textContent, name: byId('setup-name').value,
+        range, sequence, targets, current: current.value, start: start.value, end: end.value,
+        expanded: [...byId('setup-terms').querySelectorAll('details')].flatMap((node, i) => node.open ? [i] : []),
+      };
+    },
+  };
 }

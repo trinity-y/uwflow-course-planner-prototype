@@ -9,23 +9,27 @@ export function openCalendars(storage, originalKey, originalName) {
   };
   const index = () => read(key) ?? { active: 'original', names: { original: originalName } };
   const dataKey = (id) => id === 'original' ? originalKey : originalKey + '-' + id;
+  const viewKey = (id) => dataKey(id) + '-view';
   const active = index().active;
   return {
-    active, names: index().names, saved: read(dataKey(active)),
+    active, names: index().names, saved: read(dataKey(active)), view: read(viewKey(active)) ?? {},
     save(data) { storage.setItem(dataKey(active), JSON.stringify(data)); },
+    saveView(view) { storage.setItem(viewKey(active), JSON.stringify(view)); },
     select(id) {
       const state = index();
       if (!Object.hasOwn(state.names, id)) throw new Error('Calendar unavailable');
       storage.setItem(key, JSON.stringify({ ...state, active: id }));
     },
-    create(name, data) {
+    create(name, data, view) {
       const state = index();
       const id = crypto.randomUUID();
       storage.setItem(dataKey(id), JSON.stringify(data));
       try {
+        if (view) storage.setItem(viewKey(id), JSON.stringify(view));
         storage.setItem(key, JSON.stringify({ active: id, names: { ...state.names, [id]: name } }));
       } catch (error) {
         storage.removeItem(dataKey(id));
+        storage.removeItem(viewKey(id));
         throw error;
       }
     },

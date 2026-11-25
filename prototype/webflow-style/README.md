@@ -7,7 +7,11 @@ node prototype/webflow-style/server.mjs
 ```
 
 Open [the local planner](http://127.0.0.1:5173). Set `PORT` to use a different port.
-The browser stores changes locally. **Reset sample plan** restores the original schedule.
+Each calendar saves automatically in this browser's local storage. Reloading the
+same address restores the active calendar, solve history, searches, open panels,
+scroll position, and unfinished setup or term notes. A transcript review draft
+stores the extracted terms and course outcomes. The browser releases the PDF
+after reading it. **Reset sample plan** restores the original schedule.
 **New calendar** opens setup. Choose a Waterloo unofficial undergraduate transcript
 PDF or start with the Honours Software Engineering requirements. Confirm the
 degree, years, current term, study sequence and course targets. Expand a recorded

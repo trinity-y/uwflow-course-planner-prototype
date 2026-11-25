@@ -34,6 +34,12 @@ const calendars = openCalendars({
   removeItem: (key) => localStorage.removeItem(key),
 }, storageKey, personal ? 'Personal calendar' : 'Sample calendar');
 const saved = calendars.saved;
+const view = calendars.view;
+history.scrollRestoration = 'manual';
+const ruleViews = view.rules ?? {};
+let restoringView = true;
+let leavingCalendar = false;
+let viewTimer;
 const setup = saved?.setup;
 const profile = setup ? null : profileThroughLevel(importedProfile, throughLevel);
 const favoritesKey = `uwflow-webflow-planner-favorites-v1${scope}`;
@@ -51,6 +57,7 @@ const startYear = byId('start-year');
 const endYear = byId('end-year');
 const degreeButton = byId('open-degree-check');
 const search = byId('course-search');
+search.value = view.search ?? '';
 const courseList = byId('catalog-list');
 const favoritesList = byId('favorites-list');
 const board = byId('term-board');
@@ -66,7 +73,9 @@ const catalog = new Map([
 for (const course of profile?.courses ?? []) {
   catalog.set(course.code, { ...catalog.get(course.code), ...course });
 }
-const liveDetails = new Map();
+const liveDetails = new Map(Object.entries(saved?.courseDetails ?? {}));
+const refreshedDetails = new Set();
+let prerequisiteRevision = saved?.prerequisiteRevision ?? 0;
 const inFlight = new Map();
 let savedFavorites;
 try {
@@ -75,8 +84,8 @@ try {
   savedFavorites = null;
 }
 for (const course of Array.isArray(saved?.courses) ? saved.courses : []) {
-  if (typeof course?.code === 'string' && typeof course.name === 'string' && !catalog.has(course.code)) {
-    catalog.set(course.code, { code: course.code, name: course.name });
+  if (typeof course?.code === 'string' && typeof course.name === 'string') {
+    catalog.set(course.code, { ...catalog.get(course.code), code: course.code, name: course.name });
   }
 }
 const favorites = new Set(personal ? [] : ['CS 448']);
@@ -118,7 +127,7 @@ let autoResult;
 let hideZero = saved?.hideZero !== false;
 let autoSolving = false;
 let autoError = false;
-let opinionLimit = 10;
+let opinionLimit = view.opinionLimit ?? 10;
 const autoRunner = createAutoRunner(requirements, archive);
 let termEdit;
 let scheduled = indexPlan(plan);
@@ -141,7 +150,7 @@ let selectedCode;
 let graphView;
 let dialogTrigger;
 let graphCleanup = () => {};
-let resultLimit = pageSize;
+let resultLimit = view.resultLimit ?? pageSize;
 let liveCatalog = false;
 let drag;
 let suppressClick;
@@ -150,6 +159,10 @@ let locatedCourse;
 let outcomeCode;
 
 const getCourse = (code) => catalog.get(code) ?? { code, name: code };
+function applyCourseDetails(code, row) {
+  if (!sampleCatalog.has(code)) catalog.set(code, { ...getCourse(code), name: row.name, ...parseLivePrerequisites(row.prereqs) });
+}
+for (const [code, row] of liveDetails) applyCourseDetails(code, row);
 const actualCode = (code) => scheduled.has(code) ? code : equivalentPlacements.get(code) ?? code;
 const creditCode = (code) => courseCredit(archive, code, equivalents);
 const outcomeFor = (code) => outcomes[actualCode(code)];
@@ -213,15 +226,14 @@ function placementOptions(label, required, currentTerm) {
 
 function solveInputs() {
   return { plan, targets, outcomes, yearRange, termDetails: { titles: termTitles, notes: termNotes },
-    disabledRules: [...disabledRules], autoSeed, preferences, termLocks, equivalents };
+    disabledRules: [...disabledRules], autoSeed, preferences, termLocks, equivalents, prerequisiteRevision };
 }
 
 function calendarSnapshot() {
-  const courses = [...indexPlan(planWithLockedSuggestions(plan, termLocks)).keys()].filter((code) => !sampleCatalog.has(code)).map((code) => {
-    const { name } = getCourse(code);
-    return { code, name };
-  });
-  return { ...solveInputs(), setup, courses, autoMode, hideZero, history: historyEntries,
+  const courses = [...indexPlan(planWithLockedSuggestions(plan, termLocks)).keys()]
+    .filter((code) => getCourse(code).name !== sampleCatalog.get(code)?.name)
+    .map((code) => ({ code, name: getCourse(code).name }));
+  return { ...solveInputs(), setup, courses, courseDetails: Object.fromEntries(liveDetails), autoMode, hideZero, history: historyEntries,
     historyPoint, profileRevision: profile?.revision };
 }
 
@@ -240,6 +252,7 @@ function storageError() {
   const error = byId('storage-error');
   error.textContent = 'Your browser could not save this calendar. Your edits are still open on this page.';
   error.hidden = false;
+  if (byId('onboarding').open) byId('setup-error').textContent = error.textContent;
 }
 
 function makeDraggable(card, code) {
@@ -368,7 +381,7 @@ function favoriteStar(code) {
       const courses = [...favorites].map((code) => ({ code, name: getCourse(code).name }));
       localStorage.setItem(favoritesKey, JSON.stringify(courses));
     } catch {
-      // Keep the current favorites available when browser storage is disabled.
+      storageError();
     }
     const restoreFocus = favoritesList.contains(star) && star === document.activeElement;
     renderFavorites();
@@ -651,10 +664,10 @@ function updateContributions(container, code) {
   renderCourseContributions(container, rules, { usedBy, listedFor }, degreeActions);
 }
 
-function showCourse(code, trigger, focusPlacement = false) {
+function showCourse(code, trigger, focusPlacement = false, savedGraph) {
   code = actualCode(code);
   selectedCode = code;
-  graphView = { course: code, slot: null };
+  graphView = savedGraph ?? { course: code, slot: null };
   dialogTrigger = trigger;
   const currentTerm = scheduled.get(code);
   byId('detail-favorite').replaceChildren(favoriteStar(code));
@@ -744,21 +757,29 @@ function updateDetails(focusCourse = document.activeElement.dataset.graphTerm) {
 
 function loadDetails(codes) {
   if (personal || published || setup?.imported) return;
-  const pending = codes.filter((code) => !liveDetails.has(code) && !inFlight.has(code));
+  const pending = codes.filter((code) => !refreshedDetails.has(code) && !inFlight.has(code));
   if (!pending.length) return;
   const params = new URLSearchParams(pending.map((code) => ['code', flowCode(code)]));
   let graphChanged = false;
   const loading = request(`./api/prerequisites?${params}`).then((rows) => {
     if (!Array.isArray(rows)) return;
     const byCode = new Map(rows.map((row) => [normalizeCode(row.code), row]));
+    let changed = false;
     for (const code of pending) {
       const row = byCode.get(code);
       if (!row) continue;
-      liveDetails.set(code, row);
-      if (sampleCatalog.has(code)) continue;
-      const parsed = parseLivePrerequisites(row.prereqs);
-      catalog.set(code, { ...getCourse(code), name: row.name, ...parsed });
-      graphChanged = true;
+      refreshedDetails.add(code);
+      const previous = liveDetails.get(code);
+      if (previous && row.name === previous.name && row.prereqs === previous.prereqs) continue;
+      liveDetails.set(code, { name: row.name, prereqs: row.prereqs });
+      applyCourseDetails(code, row);
+      changed = true;
+      if (!sampleCatalog.has(code)) graphChanged = true;
+    }
+    if (graphChanged) prerequisiteRevision++;
+    if (changed) {
+      savePlan();
+      rememberView();
     }
     if (graphChanged) renderPlan();
   }).catch(() => {}).finally(() => {
@@ -1433,6 +1454,7 @@ byId('remove-course').addEventListener('click', () => {
 
 const degreeActions = {
   favoriteStar, getCourse, findPlacement, locateCourse, makeDraggable, showCourse, showDegreeRule, setRuleEnabled,
+  ruleView: (id) => ruleViews[id] ??= {},
   requestCourseButton, isAutoMode: () => autoMode, getPlan: () => displayPlan,
 };
 const updateDegreeSidebar = renderDegreeSidebar(byId('degree-course-list'), requirements, archive, degreeActions);
@@ -1447,7 +1469,7 @@ function updateProfileLink() {
   profileLink.href = params.size ? `${path}?${params}` : path;
 }
 profileThrough.append(...studyLevels.map((level) => new Option(level, level)));
-profileThrough.value = throughLevel;
+profileThrough.value = view.profileThrough ?? throughLevel;
 profileThrough.addEventListener('change', updateProfileLink);
 updateProfileLink();
 if (personal && !setup) {
@@ -1458,26 +1480,34 @@ if (personal && !setup) {
   byId('reset-plan').hidden = !profile;
   profileControls.hidden = !profile;
 }
-const openSetup = attachOnboarding((name, data) => switchCalendar(() => calendars.create(name, data)));
-byId('new-calendar').onclick = openSetup;
+const onboarding = attachOnboarding((name, data) => switchCalendar(() => calendars.create(name, data)), rememberView);
+byId('new-calendar').onclick = () => onboarding.open();
 byId('onboarding').addEventListener('close', () => { if (!saved) savePlan(); });
 byId('calendar-picker').replaceChildren(...Object.entries(calendars.names).map(([id, name]) => new Option(name, id)));
 byId('calendar-picker').value = calendars.active;
 byId('calendar-picker').onchange = (event) => switchCalendar(() => calendars.select(event.target.value));
 byId('copy-calendar').onclick = () => {
   const name = window.prompt('Name this calendar copy', `${calendars.names[calendars.active]} copy`)?.trim();
-  if (name) switchCalendar(() => calendars.create(name, calendarSnapshot()));
+  if (name) switchCalendar(() => calendars.create(name, calendarSnapshot(), currentView()));
 };
 function switchCalendar(action) {
   if (!savePlan()) return;
+  const snapshot = currentView();
   try {
+    calendars.saveView(snapshot);
     action();
-    autoRunner.cancel();
-    location.reload();
   } catch {
     byId('calendar-picker').value = calendars.active;
     storageError();
+    return;
   }
+  leavingCalendar = true;
+  // Keep the draft on the originating calendar until creation succeeds.
+  if (snapshot.onboarding) {
+    try { calendars.saveView({ ...snapshot, onboarding: null }); } catch { storageError(); }
+  }
+  autoRunner.cancel();
+  location.reload();
 }
 function restoreHistory(index) {
   const entry = historyEntries[index];
@@ -1570,6 +1600,7 @@ byId('solver-seed').onchange = (event) => {
 const opinionCategory = byId('opinion-category');
 opinionCategory.append(new Option('Suggested courses', 'suggested'), new Option('All my opinions', 'all'),
   ...requirements.rules.filter((rule) => rule.list && rule.source).map((rule) => new Option(rule.title, rule.id)));
+opinionCategory.value = view.opinionCategory ?? 'suggested';
 opinionCategory.addEventListener('change', () => {
   opinionLimit = 10;
   showOpinionList();
@@ -1579,11 +1610,95 @@ byId('more-opinions').addEventListener('click', () => {
   showOpinionList();
 });
 byId('open-opinions').addEventListener('click', () => {
-  opinionLimit = 10;
   showOpinionList();
   opinionsDialog.showModal();
 });
 byId('close-opinions').addEventListener('click', () => opinionsDialog.close());
+
+const scrollRegions = ['.board-scroll', '.sidebar', '#catalog-list', '#degree-course-list', '#prereq-list',
+  '#favorites-list', '#request-list', '.solver-panel', '#solve-history', 'dialog[open] .detail-body', '.graph-scroll'];
+
+function forEachScrollRegion(visit) {
+  for (const selector of scrollRegions) {
+    for (const node of document.querySelectorAll(selector)) {
+      const key = node.classList.contains('detail-body') ? node.closest('dialog').id : selector;
+      visit(node, key);
+    }
+  }
+}
+
+function scrollPositions() {
+  const positions = {};
+  forEachScrollRegion((node, key) => {
+    if (node.scrollLeft || node.scrollTop) positions[key] = [node.scrollLeft, node.scrollTop];
+  });
+  if (window.scrollY) positions.page = [0, window.scrollY];
+  return positions;
+}
+
+function currentView() {
+  return {
+    search: search.value, resultLimit, opinionCategory: opinionCategory.value, opinionLimit,
+    profileThrough: profileThrough.value, rules: ruleViews, scroll: scrollPositions(),
+    startYear: startYear.valueAsNumber === yearRange.start ? undefined : startYear.value,
+    endYear: endYear.valueAsNumber === yearRange.end ? undefined : endYear.value,
+    seedInput: byId('solver-seed').valueAsNumber === autoSeed ? undefined : byId('solver-seed').value,
+    onboarding: onboarding.draft(), degreeOpen: degreeDialog.open, opinionsOpen: opinionsDialog.open,
+    outcome: outcomeDialog.open ? outcomeCode : null,
+    course: dialog.open ? { code: selectedCode, graph: graphView, target: byId('target-term').value,
+      request: dialogTrigger?.closest('.request-item')?.dataset.course } : null,
+    edit: termEditor.open ? { term: termEdit.term.id, kind: termEdit.kind, noteIndex: termEdit.noteIndex,
+      title: entryTitle.value, body: entryBody.value } : null,
+  };
+}
+
+function flushView() {
+  if (viewTimer === undefined || leavingCalendar) return;
+  clearTimeout(viewTimer);
+  viewTimer = undefined;
+  try { calendars.saveView(currentView()); } catch { storageError(); }
+}
+
+function rememberView() {
+  if (!restoringView && !leavingCalendar && viewTimer === undefined) viewTimer = setTimeout(flushView, 150);
+}
+
+function restoreView() {
+  startYear.value = view.startYear ?? yearRange.start;
+  endYear.value = view.endYear ?? yearRange.end;
+  if (view.seedInput !== undefined) byId('solver-seed').value = view.seedInput;
+  if (view.opinionsOpen && autoMode) {
+    showOpinionList();
+    opinionsDialog.showModal();
+  }
+  if (view.degreeOpen) showDegreeRule();
+  if (view.outcome && scheduled.has(view.outcome)) showOutcomeMenu(view.outcome);
+  if (view.course?.code) {
+    const request = view.course.request && byId('request-list')
+      .querySelector(`[data-course="${CSS.escape(view.course.request)}"] .request-course`);
+    showCourse(view.course.code, request, false, view.course.graph);
+    byId('target-term').value = view.course.target;
+  }
+  if (view.edit && termsById.has(view.edit.term)) {
+    openTermEditor(termsById.get(view.edit.term), view.edit.kind, view.edit.noteIndex);
+    entryTitle.value = view.edit.title;
+    entryBody.value = view.edit.body;
+  }
+  if (view.onboarding || (!saved && !personal && !published)) onboarding.open(view.onboarding);
+  forEachScrollRegion((node, key) => {
+    if (view.scroll?.[key]) node.scrollTo(...view.scroll[key]);
+  });
+  if (view.scroll?.page) window.scrollTo(...view.scroll.page);
+  restoringView = false;
+}
+
+// Keep frequent view changes out of the larger calendar and solver history snapshot.
+for (const event of ['input', 'change', 'click', 'close', 'toggle', 'scroll']) {
+  document.addEventListener(event, rememberView, { capture: true, passive: true });
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushView(); });
+window.addEventListener('pagehide', flushView);
+
 function showCachedSolve(entry) {
   updateLockCutoff();
   const ids = lockedTermIds();
@@ -1592,7 +1707,8 @@ function showCachedSolve(entry) {
   if (JSON.stringify(entry.result.lockedTerms ?? []) !== JSON.stringify(ids)) {
     for (const [code, id] of entry.result.suggestions) if (locked(id)) holdSuggestion(code, id);
     saveEdit();
-  } else if (JSON.stringify(entry.inputs.equivalents ?? {}) !== JSON.stringify(equivalents)) {
+  } else if ((entry.inputs.prerequisiteRevision ?? 0) !== prerequisiteRevision
+      || JSON.stringify(entry.inputs.equivalents ?? {}) !== JSON.stringify(equivalents)) {
     scheduleAuto();
   } else {
     autoResult = entry.result;
@@ -1615,12 +1731,12 @@ function checkAtMidnight() {
 checkAtMidnight();
 const restoredSolve = historyEntries[historyPoint];
 const savedInputs = restoredSolve && { ...restoredSolve.inputs, plan: readImportedPlan(restoredSolve.inputs, setup),
-  termLocks: restoredSolve.inputs.termLocks ?? {}, equivalents };
+  termLocks: restoredSolve.inputs.termLocks ?? {}, equivalents, prerequisiteRevision };
 if (autoMode && restoredSolve && JSON.stringify(savedInputs) === JSON.stringify(solveInputs())) {
   showCachedSolve(restoredSolve);
 } else scheduleAuto();
 renderAutoStatus();
-if (!saved && !personal && !published) openSetup();
+restoreView();
 if (applyProfileUpdate || (saved && !saved.yearRange) || (setup?.imported && !saved.equivalents)) savePlan();
 if (published && !personal) {
   profileControls.hidden = false;

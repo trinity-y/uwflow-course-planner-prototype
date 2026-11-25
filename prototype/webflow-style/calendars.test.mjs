@@ -31,6 +31,23 @@ test('branching from an older solve preserves its other children and records mov
   assert.deepEqual(history[fork].inputs.plan['2030-fall'], ['CS 135']);
 });
 
+test('calendar views survive reopening, copy independently and leave existing plan saves untouched', () => {
+  const items = new Map([['plan', '{"autoSeed":9}']]);
+  const storage = { getItem: (key) => items.get(key), setItem: (key, value) => items.set(key, value), removeItem: (key) => items.delete(key) };
+  const open = () => openCalendars(storage, 'plan', 'Sample');
+  const first = open();
+  assert.deepEqual(first.view, {});
+  first.saveView({ search: 'CS', boardLeft: 900 });
+  first.create('Second', first.saved, open().view);
+  const second = open();
+  assert.deepEqual(second.view, { search: 'CS', boardLeft: 900 });
+  second.saveView({ search: 'ECE' });
+  second.select(first.active);
+  assert.deepEqual(open().view, { search: 'CS', boardLeft: 900 });
+  assert.deepEqual(open().saved, { autoSeed: 9 });
+  assert.equal(items.get('plan'), '{"autoSeed":9}');
+});
+
 test('freezing a visible solver placement keeps it out of the course diff', () => {
   const history = [];
   const term = '2026-fall';
@@ -40,4 +57,22 @@ test('freezing a visible solver placement keeps it out of the course diff', () =
   const second = recordSolve(history, first, { ...input, termLocks: locked }, { fits: true, suggestions: [] });
   assert.deepEqual(history[second].changes, []);
   assert.deepEqual(history[second].inputs.termLocks, locked);
+});
+
+test('a full storage quota during copy preserves the original calendar and its setup draft', () => {
+  const items = new Map();
+  const storage = {
+    getItem: (key) => items.get(key),
+    setItem(key, value) {
+      if (key === 'plan-calendars') throw new Error('Quota exceeded');
+      items.set(key, value);
+    },
+    removeItem: (key) => items.delete(key),
+  };
+  const calendar = openCalendars(storage, 'plan', 'Sample');
+  calendar.save({ autoSeed: 3 });
+  calendar.saveView({ onboarding: { name: 'Fall plan' } });
+  const before = new Map(items);
+  assert.throws(() => calendar.create('Second', { autoSeed: 4 }, { search: 'CS' }), /Quota exceeded/);
+  assert.deepEqual(items, before);
 });

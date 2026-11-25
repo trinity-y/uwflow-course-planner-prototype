@@ -48,15 +48,16 @@ function courseChoice(code, counted, actions, draggable) {
   return item;
 }
 
-function coursePicker(requirements, archive, actions, remainingOnly) {
+function coursePicker(requirements, archive, actions, remainingOnly, view) {
   const content = element('div', 'degree-eligible-content');
   const search = element('input', 'degree-eligible-search');
   search.type = 'search';
+  search.value = view.query ?? '';
   search.placeholder = 'Filter by code or title';
   const results = element('div', 'degree-eligible-groups');
   content.append(search, results);
   let sets = [];
-  let sizes = [];
+  const sizes = view.sizes ??= [];
   let signature;
   let previousPlan;
   let counted;
@@ -102,6 +103,7 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
   }
 
   search.addEventListener('input', () => {
+    view.query = search.value;
     sizes.fill(pageSize);
     render();
   });
@@ -117,7 +119,7 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
     if (rule.type !== 'required') sets = sets.map((set) => ({
       ...set, options: [...set.options].sort(([a], [b]) => byRatings(a, b)),
     }));
-    sizes = sets.map((_, index) => sizes[index] ?? pageSize);
+    sets.forEach((_, index) => { sizes[index] ??= pageSize; });
     search.setAttribute('aria-label', `Search eligible courses for ${rule.title}`);
     search.hidden = sets.reduce((sum, set) => sum + set.options.length, 0) <= pageSize && !search.value;
     render();
@@ -126,15 +128,17 @@ function coursePicker(requirements, archive, actions, remainingOnly) {
   return { content, update };
 }
 
-function eligibleCourses(rule, requirements, archive, actions) {
+function eligibleCourses(rule, requirements, archive, actions, view) {
   const details = element('details', 'degree-rule-details degree-eligible');
+  details.open = view.open ?? false;
   details.append(element('summary', '', 'Eligible courses'));
   let current = rule;
   let picker;
   details.addEventListener('toggle', () => {
+    view.open = details.open;
     if (!details.open) return;
     if (!picker) {
-      picker = coursePicker(requirements, archive, actions, false);
+      picker = coursePicker(requirements, archive, actions, false, view);
       details.append(picker.content);
     }
     picker.update(current);
@@ -152,6 +156,8 @@ export function renderDegreeSidebar(container, requirements, archive, actions) {
   const cards = new Map();
   for (const { id, title, description } of requirements.rules) {
     const details = element('details', 'sidebar-degree-rule');
+    const view = actions.ruleView(id).sidebar ??= {};
+    details.open = view.open ?? false;
     const summary = element('summary', 'sidebar-degree-summary');
     const progress = element('span', 'sidebar-degree-progress');
     summary.append(element('span', '', title), progress);
@@ -160,9 +166,10 @@ export function renderDegreeSidebar(container, requirements, archive, actions) {
     let current;
     let countedElsewhere;
     details.addEventListener('toggle', () => {
+      view.open = details.open;
       if (!details.open || !current) return;
       if (!picker) {
-        picker = coursePicker(requirements, archive, actions, true);
+        picker = coursePicker(requirements, archive, actions, true, view);
         const body = element('div', 'sidebar-degree-body');
         body.append(element('p', 'degree-rule-description', description), picker.content);
         details.append(body);
@@ -262,11 +269,13 @@ function ruleRow(rule, requirements, archive, actions) {
   row.append(tracking, counts);
 
   const details = element('details', 'degree-rule-details');
-  details.open = true;
+  const view = actions.ruleView(rule.id);
+  details.open = view.courseDetails ?? true;
+  details.addEventListener('toggle', () => { view.courseDetails = details.open; });
   const counted = element('div', 'degree-counted');
   details.append(element('summary', '', 'Course details'), counted);
   if (rule.source) details.append(sourceLink(requirements.sources[rule.source], 'View calendar requirement'));
-  const eligible = eligibleCourses(rule, requirements, archive, actions);
+  const eligible = eligibleCourses(rule, requirements, archive, actions, view.eligible ??= {});
   row.append(details, eligible.details);
 
   function update(next) {
