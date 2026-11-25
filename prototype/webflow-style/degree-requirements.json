@@ -7,6 +7,7 @@
     "courses": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2024-2025#/courses",
     "promotion": "https://uwaterloo.ca/academic-calendar/undergraduate-studies/catalog/archive/2024-2025#/policy/HyLCpCs4a"
   },
+  "equivalents": { "CS 241E": "CS 241" },
   "coreByLevel": {
     "1A": ["CS 137", "CHE 102", "MATH 115", "MATH 117", "MATH 135", "SE 101"],
     "1B": ["CS 138", "ECE 124", "ECE 140", "MATH 119", "SE 102"],

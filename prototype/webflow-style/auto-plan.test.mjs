@@ -44,6 +44,19 @@ test('must-take courses get prerequisites and banned alternatives stay out of th
   assert.equal(result.suggestions.length, 51);
 });
 
+test('a locked CS 241E satisfies the CS 241 prerequisite for CS 348', () => {
+  const data = inputs({ plan: { '2024-fall': ['CS 241E'], '2025-spring': [] },
+    activeTerms: ['2024-fall', '2025-spring'], lockedTerms: ['2024-fall'],
+    targets: { '2024-fall': 1, '2025-spring': 1 }, outcomes: { 'CS 241E': 'passed' },
+    preferences: { 'CS 348': 'required' }, disabled: requirements.rules.map(({ id }) => id) });
+  assert.deepEqual(solveAuto(data).suggestions, [['CS 348', '2025-spring']]);
+  const both = { ...data, plan: { ...data.plan, '2024-spring': ['CS 241'] },
+    targets: { ...data.targets, '2024-spring': 1 }, outcomes: { 'CS 241E': 'passed', 'CS 241': 'failed' } };
+  assert.deepEqual(solveAuto(both).suggestions, [['CS 348', '2025-spring']]);
+  const failed = solveAuto({ ...data, outcomes: { 'CS 241E': 'failed' } });
+  assert.equal(failed.fits, false);
+});
+
 test('Auto uses a calendar exception when a study term cannot hold all six required courses', () => {
   const data = inputs();
   const result = solveAuto({ ...data, targets: { ...data.targets, '2026-fall': 5, '2027-spring': 8 } });

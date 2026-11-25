@@ -1,4 +1,4 @@
-import { calendarUrl, createTerms, firstPlanYear, initialPlan, isTermLocked, lastPlanYear, preloadCore, sampleCatalog, solverLockCutoff, termLabel, termOrder, termYear } from './calendar.mjs';
+import { calendarUrl, courseCredit, createTerms, firstPlanYear, initialPlan, isTermLocked, lastPlanYear, preloadCore, sampleCatalog, solverLockCutoff, termLabel, termOrder, termYear } from './calendar.mjs';
 import {
   countableSchedule, courseStatus, explainMissing, groupProgress, indexPlan, isAcademicCourse, isPinned,
   maxTermTarget, missingGroups, normalizeCode, outcomeLabels, parseLivePrerequisites,
@@ -9,9 +9,10 @@ import { degreeCourseSets, evaluateDegree } from './degree.mjs';
 import { renderCourseContributions, renderDegreeReport, renderDegreeSidebar } from './degree-view.mjs';
 import { openCalendars, recordSolve, renderHistory } from './calendars.mjs';
 import { attachOnboarding } from './onboarding.mjs';
+import { readImportedPlan } from './transcript.mjs';
 import { byRatings } from './ratings.mjs';
 import { createAutoRunner, opinionPicker, readOpinions, renderOpinions } from './auto-controls.mjs';
-import requirements from './degree-requirements.json' with { type: 'json' };
+import programRequirements from './degree-requirements.json' with { type: 'json' };
 import archive from './calendar-courses.json' with { type: 'json' };
 
 const published = document.documentElement.hasAttribute('data-published-profile');
@@ -19,7 +20,7 @@ const queryParams = new URLSearchParams(location.search);
 const personal = published
   ? queryParams.get('plan') === 'personal'
   : location.pathname === '/personal';
-const studyLevels = Object.keys(requirements.coreByLevel);
+const studyLevels = Object.keys(programRequirements.coreByLevel);
 const requestedLevel = queryParams.get('through') ?? (queryParams.get('variant') === 'without-3b' ? '3A' : '');
 const throughLevel = personal && studyLevels.includes(requestedLevel) ? requestedLevel : '';
 const importedProfile = personal
@@ -36,7 +37,8 @@ const saved = calendars.saved;
 const setup = saved?.setup;
 const profile = setup ? null : profileThroughLevel(importedProfile, throughLevel);
 const favoritesKey = `uwflow-webflow-planner-favorites-v1${scope}`;
-const equivalents = profile?.equivalents ?? {};
+const equivalents = { ...programRequirements.equivalents, ...profile?.equivalents };
+const requirements = { ...programRequirements, equivalents };
 const pageSize = 30;
 const byId = (id) => document.getElementById(id);
 const dialog = byId('course-dialog');
@@ -94,7 +96,7 @@ for (const id of Object.keys({ ...profile?.plan, ...saved?.plan, ...saved?.targe
   if (year !== undefined && !termsById.has(id)) registerTerms({ start: year, end: year });
 }
 registerTerms(yearRange);
-let plan = saved?.plan ? readPlan(saved.plan, timeline()) : startingPlan();
+let plan = saved?.plan ? readPlan(readImportedPlan(saved, setup), timeline()) : startingPlan();
 let termLocks = saved?.termLocks ?? {};
 let lockCutoff;
 let displayPlan = plan;
@@ -149,13 +151,14 @@ let outcomeCode;
 
 const getCourse = (code) => catalog.get(code) ?? { code, name: code };
 const actualCode = (code) => scheduled.has(code) ? code : equivalentPlacements.get(code) ?? code;
-const creditCode = (code) => archive[equivalents[code] ?? code]?.[2] ?? (equivalents[code] ?? code);
+const creditCode = (code) => courseCredit(archive, code, equivalents);
 const outcomeFor = (code) => outcomes[actualCode(code)];
 const pinned = (code) => isPinned(outcomeFor(code));
 function withEquivalents(placements) {
   const result = new Map(placements);
   for (const [required, actual] of equivalentPlacements) {
-    if (placements.has(actual) && !result.has(required)) result.set(required, placements.get(actual));
+    const term = placements.get(actual);
+    if (term && (!result.has(required) || termOrder(term) < termOrder(result.get(required)))) result.set(required, term);
   }
   return result;
 }
@@ -210,7 +213,7 @@ function placementOptions(label, required, currentTerm) {
 
 function solveInputs() {
   return { plan, targets, outcomes, yearRange, termDetails: { titles: termTitles, notes: termNotes },
-    disabledRules: [...disabledRules], autoSeed, preferences, termLocks };
+    disabledRules: [...disabledRules], autoSeed, preferences, termLocks, equivalents };
 }
 
 function calendarSnapshot() {
@@ -872,7 +875,7 @@ function termCourse(code, term, groups) {
     if (pinned(code)) label.title = 'Locked to this term';
     card.append(label);
   }
-  if (!outcome && manual && requirements.coreByLevel[term.level]?.includes(code)) {
+  if (!outcome && manual && requirements.coreByLevel[term.level]?.includes(equivalents[code] ?? code)) {
     const expected = element('span', 'expected-course', 'Expected');
     expected.title = 'Required by the SE calendar. This placement has no recorded outcome.';
     card.append(expected);
@@ -1481,7 +1484,7 @@ function restoreHistory(index) {
   if (!entry) return;
   autoRunner.cancel();
   const inputs = structuredClone(entry.inputs);
-  plan = inputs.plan;
+  plan = readImportedPlan(inputs, setup);
   termLocks = inputs.termLocks ?? {};
   targets = inputs.targets;
   outcomes = inputs.outcomes;
@@ -1589,6 +1592,8 @@ function showCachedSolve(entry) {
   if (JSON.stringify(entry.result.lockedTerms ?? []) !== JSON.stringify(ids)) {
     for (const [code, id] of entry.result.suggestions) if (locked(id)) holdSuggestion(code, id);
     saveEdit();
+  } else if (JSON.stringify(entry.inputs.equivalents ?? {}) !== JSON.stringify(equivalents)) {
+    scheduleAuto();
   } else {
     autoResult = entry.result;
     renderPlan();
@@ -1609,13 +1614,14 @@ function checkAtMidnight() {
 }
 checkAtMidnight();
 const restoredSolve = historyEntries[historyPoint];
-const savedInputs = restoredSolve && { ...restoredSolve.inputs, termLocks: restoredSolve.inputs.termLocks ?? {} };
+const savedInputs = restoredSolve && { ...restoredSolve.inputs, plan: readImportedPlan(restoredSolve.inputs, setup),
+  termLocks: restoredSolve.inputs.termLocks ?? {}, equivalents };
 if (autoMode && restoredSolve && JSON.stringify(savedInputs) === JSON.stringify(solveInputs())) {
   showCachedSolve(restoredSolve);
 } else scheduleAuto();
 renderAutoStatus();
 if (!saved && !personal && !published) openSetup();
-if (applyProfileUpdate || (saved && !saved.yearRange)) savePlan();
+if (applyProfileUpdate || (saved && !saved.yearRange) || (setup?.imported && !saved.equivalents)) savePlan();
 if (published && !personal) {
   profileControls.hidden = false;
 }

@@ -76,8 +76,13 @@ export const initialPlan = (timeline = terms) => Object.fromEntries(
   timeline.map(({ id, courses }) => [id, [...courses]]),
 );
 
-export function preloadCore(plan, timeline, from = -Infinity, equivalents = {}) {
-  const credit = (code) => archive[equivalents[code] ?? code]?.[2] ?? equivalents[code] ?? code;
+export function courseCredit(catalog, code, equivalents) {
+  const required = equivalents?.[code] ?? code;
+  return catalog[required]?.[2] ?? required;
+}
+
+export function preloadCore(plan, timeline, from = -Infinity, equivalents = requirements.equivalents) {
+  const credit = (code) => courseCredit(archive, code, equivalents);
   const placed = new Set(Object.values(plan).flat().map(credit));
   return Object.fromEntries(timeline.map(({ id, level }) => {
     const courses = [...(plan[id] ?? [])];

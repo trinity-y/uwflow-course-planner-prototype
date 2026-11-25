@@ -33,6 +33,16 @@ test('an elective that appears in two lists only fills one slot', () => {
   assert.deepEqual(check(widened, 'humanities').matched, ['CLAS 390']);
 });
 
+test('the SE calendar counts CS 241E toward the 2A core and reserves the credit from electives', () => {
+  const enriched = add(blank(), ['CS 241E'], '2024-fall');
+  const result = report(enriched);
+  assert.deepEqual(check(result, 'core-2a').matched, ['CS 241E']);
+  const electives = check(result, 'elective-total');
+  assert.equal(electives.current, 0);
+  assert.ok(!degreeCourseSets(requirements, archive, electives).some(({ options }) => options.flat().includes('CS 241E')));
+  assert.equal(check(report(add(enriched, ['CS 241'], '2025-spring')), 'academic-units').current, 0.5);
+});
+
 test('cross-listed courses and science pairs each count as a single elective', () => {
   const plan = add(blank(), ['CS 467', 'PHYS 467', 'CHEM 123'], '2026-winter');
   const incomplete = report(plan);

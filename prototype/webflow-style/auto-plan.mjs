@@ -1,4 +1,4 @@
-import { termOrder } from './calendar.mjs';
+import { courseCredit, termOrder } from './calendar.mjs';
 import { degreeCourseSets, evaluateDegree } from './degree.mjs';
 import { byRatings, ratings } from './ratings.mjs';
 import { isAcademicCourse, maxTermTarget } from './model.mjs';
@@ -19,7 +19,7 @@ function variety(code, seed) {
 
 function searchPlan({
   plan, timeline, activeTerms, targets, notes = {}, outcomes = {}, preferences = {},
-  requirements, archive, groups = {}, disabled = [], equivalents = {}, seed = 0, lockedTerms = [],
+  requirements, archive, groups = {}, disabled = [], equivalents = requirements.equivalents ?? {}, seed = 0, lockedTerms = [],
 }, progress = () => {}) {
   const active = new Set(activeTerms);
   const disabledRules = new Set(disabled);
@@ -38,20 +38,21 @@ function searchPlan({
   const openTerms = timeline.map(({ id }) => id).filter((id) => active.has(id) && capacities.get(id) > 0);
   const requested = Object.keys(preferences).filter((code) => preferences[code] === 'required');
   const score = (code) => opinions[preferences[code]]?.score ?? 0;
-  const credit = (code) => archive[equivalents[code] ?? code]?.[2] ?? equivalents[code] ?? code;
+  const credit = (code) => courseCredit(archive, code, equivalents);
   const aliases = new Map(Object.entries(equivalents).map(([code, canonical]) => [canonical, code]));
   const banned = (code) => preferences[code] === 'banned' || preferences[equivalents[code]] === 'banned';
   const canonical = (code) => equivalents[code] ?? code;
   const ruleOptions = new Map(rules.filter(({ type }) => type !== 'required').map((rule) => [
-    rule.id, degreeCourseSets(requirements, archive, rule).flatMap((set) => set.options),
+    rule.id, degreeCourseSets(requirements, archive, rule, { equivalents }).flatMap((set) => set.options),
   ]));
   const evaluated = (state) => evaluateDegree(requirements, archive,
     new Map([...state].filter(([code]) => outcomes[code] !== 'failed')), { timeline, equivalents, disabledRules });
   const count = (state, term) => [...state].filter(([code, id]) => id === term && isAcademicCourse(code)).length;
-  const getCode = (state, code) => state.has(code) ? code : aliases.get(code);
   const position = (state, code) => {
-    const found = getCode(state, code);
-    return outcomes[found] === 'failed' ? undefined : state.get(found);
+    const regular = outcomes[code] === 'failed' ? undefined : state.get(code);
+    const alias = aliases.get(code);
+    const substitute = outcomes[alias] === 'failed' ? undefined : state.get(alias);
+    return substitute && (!regular || termOrder(substitute) < termOrder(regular)) ? substitute : regular;
   };
   const fulfilled = (state, code, term) => termOrder(position(state, code)) < termOrder(term);
   const courseGroups = (code) => groups[code] ?? groups[canonical(code)] ?? [];

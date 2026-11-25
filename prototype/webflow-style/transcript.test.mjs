@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createTerms } from './calendar.mjs';
-import { inferRange, inferSequence, pageLines, parseTranscript, sequenceTargets, startCalendar } from './transcript.mjs';
+import { inferRange, inferSequence, pageLines, parseTranscript, readImportedPlan, sequenceTargets, startCalendar } from './transcript.mjs';
 
 const degree = 'Program: Software Engineering, Honours, Co-operative Program';
 const header = 'Course Description Attempted Earned Grade';
@@ -65,6 +65,29 @@ test('past repeat attempts remain visible when a later attempt earns the credit'
   assert.equal(calendar.outcomes['MATH 115'], 'passed');
   assert.ok(calendar.plan['2031-spring'].includes('MATH 115'));
   assert.equal(calendar.termDetails.notes['2030-fall'][0].title, 'MATH 115 · failed');
+});
+
+test('import keeps the enriched course code and outcome without adding a second 2A course', () => {
+  const { records } = parseTranscript(['Fall 2031', degree, 'Level: 2A Form Of Study: Enrolment', header,
+    'CS 241E Foundations of Sequential Programs (Enriched) 0.50 0.50 CR']);
+  const calendar = startCalendar({ range, entryYear, sequence: { '2031-fall': '2A' }, targets: {}, records, currentTerm: '2031-fall' });
+  assert.deepEqual(calendar.courses, [{ code: 'CS 241E', name: 'Foundations of Sequential Programs (Enriched)' }]);
+  assert.deepEqual(calendar.outcomes, { 'CS 241E': 'passed' });
+  assert.deepEqual(calendar.plan['2031-fall'], ['CS 241E', 'ECE 222', 'SE 201', 'SE 212', 'STAT 206']);
+});
+
+test('older transcript plans and solve snapshots drop only an unrecorded default CS 241', () => {
+  const setup = { imported: true, levels: { '2031-fall': '2A' } };
+  const plan = { '2031-fall': ['CS 241E', 'CS 241', 'ECE 222'] };
+  const old = { plan, outcomes: { 'CS 241E': 'passed' } };
+  assert.deepEqual(readImportedPlan(old, setup), { '2031-fall': ['CS 241E', 'ECE 222'] });
+  for (const inputs of [
+    { ...old, outcomes: { 'CS 241E': 'passed', 'CS 241': 'failed' } },
+    { ...old, preferences: { 'CS 241': 'required' } },
+    { ...old, equivalents: { 'CS 241E': 'CS 241' } },
+    { ...old, plan: { '2031-fall': ['CS 241E'], '2032-winter': ['CS 241'] } },
+  ]) assert.equal(readImportedPlan(inputs, setup), inputs.plan);
+  assert.equal(readImportedPlan(old, undefined), plan);
 });
 
 test('a partial transcript infers entry from the first known study level and extends for a delayed sequence', () => {

@@ -14,7 +14,9 @@ degree, years, current term, study sequence and course targets. Expand a recorde
 term to inspect the courses and outcomes before creating the calendar. Setup
 places missing fixed core courses in editable term slots once. **Expected**
 identifies a required placement with no recorded course outcome. Existing
-attempts keep their transcript term and status. The browser reads PDFs with locally bundled
+attempts keep their transcript term and status. An imported CS 241E keeps its
+enriched course code and fulfills the CS 241 core and prerequisite requirements.
+The browser reads PDFs with locally bundled
 [PDF.js 5.6.205](https://www.npmjs.com/package/pdfjs-dist/v/5.6.205).
 Transcript calendars use the bundled course catalog and stay in browser storage.
 

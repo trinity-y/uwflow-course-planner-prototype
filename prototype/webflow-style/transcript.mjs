@@ -144,9 +144,22 @@ export function startCalendar({ range, entryYear, sequence, targets, records = [
     setup.solveFrom = Math.max(transcriptLimit, termOrder(currentTerm) ?? transcriptLimit);
   }
   return {
-    setup, yearRange: range, plan: preloadCore(plan, terms),
+    setup, yearRange: range, plan: preloadCore(plan, terms), equivalents: requirements.equivalents,
     targets, outcomes, courses, termDetails: { notes }, autoMode: false,
   };
+}
+
+// Older transcript calendars preloaded an extra CS 241 into the prescribed 2A term.
+// Keep recorded attempts and placements the student explicitly requested or moved.
+export function readImportedPlan(inputs, setup) {
+  const { plan, outcomes, preferences } = inputs;
+  if (!setup?.imported || inputs.equivalents?.['CS 241E'] === 'CS 241' || !outcomes?.['CS 241E']
+      || outcomes['CS 241'] || preferences?.['CS 241'] === 'required') return plan;
+  const levelTerm = Object.keys(setup.levels ?? {}).find((id) => setup.levels[id] === '2A');
+  const enrichedTerm = Object.keys(plan).find((id) => Array.isArray(plan[id]) && plan[id].includes('CS 241E'));
+  if (!enrichedTerm || !Array.isArray(plan[levelTerm]) || !plan[levelTerm].includes('CS 241')
+      || (outcomes['CS 241E'] === 'failed' && enrichedTerm !== levelTerm)) return plan;
+  return { ...plan, [levelTerm]: plan[levelTerm].filter((code) => code !== 'CS 241') };
 }
 
 export function sequenceTargets(terms, records) {

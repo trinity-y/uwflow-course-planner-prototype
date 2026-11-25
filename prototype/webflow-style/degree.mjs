@@ -1,14 +1,13 @@
-import { termOrder, terms } from './calendar.mjs';
+import { courseCredit, termOrder, terms } from './calendar.mjs';
 import { isAcademicCourse } from './model.mjs';
 
 const requiredCodes = (requirements, rule) => rule.codes ?? requirements.coreByLevel[rule.level];
 const fixedCourses = (requirements) => requirements.rules.filter(({ type }) => type === 'required')
   .flatMap((rule) => requiredCodes(requirements, rule));
-const creditForCode = (archive, code) => archive[code]?.[2] ?? code;
 const academicUnits = (archive, code) => isAcademicCourse(code) ? archive[code]?.[1] ?? 0 : 0;
 const isHalfCreditElective = (archive, code) => academicUnits(archive, code) === 0.5;
 
-function courseSets(requirements, archive, rule) {
+function courseSets(requirements, archive, rule, creditFor) {
   const { lists } = requirements;
   if (rule.type === 'required') {
     return [{ options: requiredCodes(requirements, rule).map((code) => [code]) }];
@@ -27,17 +26,17 @@ function courseSets(requirements, archive, rule) {
   if (rule.list) return [{ options: lists[rule.list] }];
 
   const approved = new Map();
-  const reserved = new Set(fixedCourses(requirements).map((code) => creditForCode(archive, code)));
+  const reserved = new Set(fixedCourses(requirements).map(creditFor));
   const known = new Set();
   for (const elective of requirements.rules.filter(({ type }) => type === 'elective')) {
     for (const choice of lists[elective.list]) {
-      if (reserved.has(creditForCode(archive, choice[0]))) continue;
+      if (reserved.has(creditFor(choice[0]))) continue;
       approved.set(choice.join('|'), choice);
-      choice.forEach((code) => known.add(creditForCode(archive, code)));
+      choice.forEach((code) => known.add(creditFor(code)));
     }
   }
   const halfCredit = Object.keys(archive).filter((code) => {
-    const credit = creditForCode(archive, code);
+    const credit = creditFor(code);
     return isHalfCreditElective(archive, code) && !reserved.has(credit) && !known.has(credit);
   }).map((code) => [code]);
   return [
@@ -46,17 +45,18 @@ function courseSets(requirements, archive, rule) {
   ];
 }
 
-export function degreeCourseSets(requirements, archive, rule, { remainingOnly = false, countedElsewhere = [] } = {}) {
+export function degreeCourseSets(requirements, archive, rule, { remainingOnly = false, countedElsewhere = [], equivalents = requirements.equivalents } = {}) {
   if (remainingOnly && (rule.met || rule.disabled)) return [];
-  const sets = courseSets(requirements, archive, rule);
+  const creditFor = (code) => courseCredit(archive, code, equivalents);
+  const sets = courseSets(requirements, archive, rule, creditFor);
   if (!remainingOnly) return sets;
 
   const missing = rule.missing && new Set(rule.missing);
-  const counted = new Set([...rule.matched, ...countedElsewhere].map((code) => creditForCode(archive, code)));
+  const counted = new Set([...rule.matched, ...countedElsewhere].map(creditFor));
   return sets.map((set) => ({
     ...set,
     options: set.options.map((codes) => codes.filter((code) =>
-      missing ? missing.has(code) : !counted.has(creditForCode(archive, code)),
+      missing ? missing.has(code) : !counted.has(creditFor(code)),
     )).filter((codes) => codes.length),
   })).filter(({ options }) => options.length);
 }
@@ -90,11 +90,11 @@ function assignElectiveSlots(rules, candidatesByRule) {
   return byRule;
 }
 
-export function evaluateDegree(requirements, archive, scheduled, { timeline = terms, equivalents = {}, disabledRules = new Set() } = {}) {
+export function evaluateDegree(requirements, archive, scheduled, { timeline = terms, equivalents = requirements.equivalents, disabledRules = new Set() } = {}) {
   const termsByLevel = new Map(timeline.filter(({ level }) => level).map(({ level, id }) => [level, id]));
   const flexible = new Set(requirements.outOfSequence);
   const inSequence = (rule, code, term) => !rule.level || term === termsByLevel.get(rule.level) || flexible.has(code);
-  const creditFor = (code) => creditForCode(archive, equivalents[code] ?? code);
+  const creditFor = (code) => courseCredit(archive, code, equivalents);
   const placements = new Map();
   for (const [code, term] of scheduled) {
     const credit = creditFor(code);
